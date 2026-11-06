@@ -1,0 +1,49 @@
+/* Jornada de Bia Sakura V9.4.0 — camada visual experimental.
+   Preserva a estrutura funcional, os temas e os ajustes de acessibilidade. */
+:root{--bia-polish-radius:24px;--bia-polish-shadow:0 8px 28px rgba(73,55,68,.055)}
+html body{font-family:Nunito,system-ui,sans-serif;letter-spacing:.005em}
+html body header[role="banner"]{box-shadow:none!important;border-bottom:1px solid color-mix(in srgb,var(--bia-home-ink,#7b5965) 13%,transparent)!important}
+html body .header-container{max-width:1180px!important;gap:16px!important;padding-block:14px!important}
+html body .header-title h1{font-weight:800!important;letter-spacing:-.035em!important}
+html body .header-title .subtitle{font-weight:600!important;opacity:.8}
+html body .logo-container{border-radius:18px!important;box-shadow:none!important}
+html body .header-brand-title{font-weight:800!important;letter-spacing:-.025em!important}
+html body .nav-menu{box-shadow:none!important;border-bottom:1px solid color-mix(in srgb,var(--bia-home-ink,#7b5965) 10%,transparent)!important}
+html body .nav-container{gap:6px!important;max-width:1180px!important}
+html body .nav-container .nav-item{border-radius:14px!important;box-shadow:none!important;font-weight:750!important}
+html body .main-content{max-width:1120px!important}
+html #page-home{display:flex;flex-direction:column;gap:22px!important}
+html #page-home .intent-section{order:0;position:relative;padding:clamp(18px,3.5vw,36px)!important;border-radius:28px!important;background:var(--bia-home-card,var(--card-bg,#fff))!important;border:1px solid color-mix(in srgb,var(--bia-home-ink,#805361) 15%,transparent)!important;box-shadow:var(--bia-polish-shadow)!important}
+html #page-home .intent-section .section-header{margin-bottom:22px!important}
+html #page-home .intent-section h2{font-size:clamp(1.5rem,3.3vw,2.25rem)!important;letter-spacing:-.035em!important;line-height:1.2!important;margin:6px 0 8px!important}
+html #page-home .bia-eyebrow{font-size:.72rem;letter-spacing:.14em;font-weight:900;color:var(--bia-home-ink,#805361);opacity:.78}
+html #page-home .bia-intro{font-size:1rem;opacity:.82;margin:0;line-height:1.5}
+html #page-home .intent-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:clamp(10px,1.6vw,18px)!important}
+html #page-home .intent-grid .intent-btn{min-height:156px!important;border-radius:21px!important;padding:18px 12px!important;box-shadow:none!important;border-width:1.5px!important;transition:transform .15s ease,box-shadow .15s ease!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:9px!important;line-height:1.25!important}
+html #page-home .intent-grid .intent-btn:hover{transform:translateY(-2px)!important;box-shadow:0 8px 18px rgba(50,30,45,.08)!important}
+html #page-home .intent-grid .intent-btn .intent-icon{width:58px!important;height:58px!important;display:grid!important;place-items:center!important}
+html #page-home .intent-grid .intent-btn .intent-icon img{max-width:48px!important;max-height:48px!important}
+html #page-home .intent-grid .intent-btn span:not(.intent-icon){font-size:1.1rem!important;font-weight:900!important}
+html #page-home .intent-grid .intent-btn small{font-size:.86rem!important;opacity:.85}
+html #page-home .intent-grid .create-symbol-shortcut{order:5;min-height:100px!important;grid-column:1/-1;flex-direction:row!important;justify-content:center!important;gap:12px!important}
+html #page-home .intent-grid .create-symbol-shortcut .intent-icon{width:36px!important;height:36px!important}
+html #page-home .intent-grid .create-symbol-shortcut .intent-icon img{max-width:32px!important;max-height:32px!important}
+html #page-home .intent-grid .create-symbol-shortcut small{display:none!important}
+html #page-home .bia-explore-heading{font-size:1.22rem!important;letter-spacing:-.025em!important;margin:8px 2px -8px!important;font-weight:900!important}
+html #page-home .integrated-modules{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;margin:0!important}
+html #page-home .integrated-modules button{min-height:130px!important;border-radius:21px!important;padding:20px 12px!important;box-shadow:none!important;border-width:1.5px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:12px!important}
+html #page-home .integrated-modules button img{width:44px!important;height:44px!important;object-fit:contain!important}
+html #page-home .integrated-modules button strong{font-size:1rem!important;line-height:1.35!important}
+html #page-home .sakura-home-support{display:flex!important;flex-wrap:wrap!important;gap:9px!important;margin:0!important;padding:10px 0 4px!important;border-top:1px solid color-mix(in srgb,var(--bia-home-ink,#805361) 12%,transparent)!important}
+html #page-home .sakura-home-support button{min-height:48px!important;flex:1 1 160px!important;border-radius:15px!important;padding:10px 14px!important;box-shadow:none!important;font-size:.9rem!important}
+html #page-home :is(.home-quick-symbols-section,.phrase-builder-entry,.communication-hub,.most-used-section){border-radius:22px!important;box-shadow:none!important}
+html #page-home .phrase-builder-toggle{border-radius:20px!important;min-height:76px!important}
+html #page-home .section-header h2{letter-spacing:-.02em}
+html body .visual-bottom-nav{box-shadow:0 -4px 24px rgba(35,30,40,.07)!important}
+html body .visual-bottom-nav .nav-item{border-radius:13px!important}
+html.bia-a11y-contrast #page-home .intent-section{background:#fff!important;border:2px solid #111!important;box-shadow:none!important}
+html.bia-a11y-contrast #page-home .bia-eyebrow{color:#111!important;opacity:1!important}
+html.bia-a11y-calm #page-home .intent-btn{transition:none!important;transform:none!important}
+@media(max-width:800px){html #page-home .intent-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}html #page-home .integrated-modules{grid-template-columns:repeat(2,minmax(0,1fr))!important}html #page-home .intent-grid .intent-btn{min-height:148px!important}}
+@media(max-width:480px){html #page-home{gap:17px!important}html #page-home .intent-section{padding:18px 13px!important;border-radius:22px!important}html #page-home .intent-grid{gap:10px!important}html #page-home .intent-grid .intent-btn{min-height:138px!important;padding:13px 8px!important}html #page-home .integrated-modules button{min-height:116px!important}html #page-home .intent-grid .create-symbol-shortcut{min-height:62px!important}html body .header-container{gap:8px!important}}
+@media(prefers-reduced-motion:reduce){html #page-home .intent-grid .intent-btn{transition:none!important}html #page-home .intent-grid .intent-btn:hover{transform:none!important}}

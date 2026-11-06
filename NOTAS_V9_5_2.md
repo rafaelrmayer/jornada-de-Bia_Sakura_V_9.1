@@ -1,0 +1,1 @@
+V9.5.2 experimental: novo visual minimalista seguindo referência fornecida; cartões grandes, quatro ações principais, ícones SVG lineares, temas pastel e modo escuro. Lógica da voz Francisca mantida exatamente como V9.5.1, ainda não confirmada como corrigida. PIN mantido. Testar em HTTPS e no dispositivo antes de substituir versão estável.

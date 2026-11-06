@@ -1,0 +1,19 @@
+{
+  "name": "Jornada de Bia Sakura",
+  "short_name": "Bia Sakura",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F7DFE5",
+  "theme_color": "#F7DFE5",
+  "description": "Jornada de Bia Sakura: aplicativo de comunicação acessível com apoio de símbolos, voz e aprendizado local.",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

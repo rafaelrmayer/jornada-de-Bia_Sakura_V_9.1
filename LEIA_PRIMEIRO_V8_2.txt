@@ -1,0 +1,13 @@
+JORNADA DE BIA — V8.2
+
+O PIN usa WebCrypto/PBKDF2. Em navegadores que não disponibilizam crypto.subtle ao abrir index.html via file://, o desbloqueio não funciona. Não é seguro contornar essa proteção.
+
+No Linux: abra um terminal na pasta jornada_audit e execute:
+  sh INICIAR_NO_LINUX.sh
+Depois acesse http://localhost:8000 no navegador. Não é necessário instalar dependências caso Python 3 já esteja disponível.
+
+Se Python 3 não estiver disponível, use GitHub Codespaces (encaminhamento de porta) ou hospedagem HTTPS.
+
+Importante: o armazenamento de file:// e http://localhost:8000 é separado. PIN e dados anteriores podem não aparecer no novo endereço. NÃO limpe o armazenamento anterior; faça backup seguro antes de migrar dados.
+
+Correções: saudação Oi, Bia em amarelo/creme claros e escuros; erro de segurança agora exibe aviso visível.

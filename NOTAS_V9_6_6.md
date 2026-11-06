@@ -1,0 +1,1 @@
+V9.6.6: Minha Comunicação com largura controlada, cartões e formulário oculto por padrão; evita esperas repetidas por TTS remoto após falha (60s). Francisca Neural continua dependente de servidor online e CORS; não foi validada em navegador.
