@@ -1,0 +1,43 @@
+/* Jornada de Bia — módulos locais, sem dependências externas */
+(()=>{'use strict';
+const $=id=>document.getElementById(id), KEY='bia-routine-sakura-v1',today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');};
+const defaults=[['Manhã','🌞','Acordar'],['Manhã','🍽️','Tomar café'],['Manhã','🪥','Escovar os dentes'],['Tarde','🎨','Brincar'],['Noite','🛏️','Descansar']].map((a,i)=>({id:'sample'+i,period:a[0],icon:a[1],name:a[2],time:'',done:false}));
+let state;try{state=JSON.parse(localStorage.getItem(KEY));if(!state||!Array.isArray(state.items))throw Error();}catch{state={date:today(),items:defaults};}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state));}catch{alert('Não foi possível salvar os dados locais.');}};
+if(state.date!==today()){state.items.forEach(x=>x.done=false);state.date=today();save();}
+const admin=()=>!!(window.SecurityService?.isUnlocked?.()),make=(tag,txt)=>{const e=document.createElement(tag);if(txt!==undefined)e.textContent=txt;return e;},btn=(txt,fn)=>{const b=make('button',txt);b.type='button';b.onclick=fn;return b;};
+let period='Manhã',edit=false;
+function render(){const tabs=$('biaRoutinePeriods'),list=$('biaRoutineList');tabs.replaceChildren();list.replaceChildren();
+['Manhã','Tarde','Noite'].forEach(p=>{const b=btn(p,()=>{period=p;render();});b.setAttribute('aria-pressed',String(p===period));tabs.append(b);});
+if(edit&&!admin())edit=false;$('biaRoutineEditor').hidden=!edit;$('biaRoutineManage').textContent=edit?'Fechar organização':'🔐 Organizar atividades';
+const items=state.items.filter(x=>x.period===period),next=items.find(x=>!x.done);$('biaRoutineNext').textContent=next?'Próxima atividade: '+next.icon+' '+next.name:'Sem atividades pendentes neste período.';
+if(!items.length)list.append(make('p','Nenhuma atividade neste período.'));
+items.forEach(item=>{const card=make('div');card.className='bia-routine-card'+(item.done?' done':'');const icon=make('span',item.icon);icon.className='bia-icon';card.append(icon);const info=make('div');info.className='bia-info';info.append(make('strong',item.name));if(item.time)info.append(make('p','Horário opcional: '+item.time));card.append(info);const actions=make('div');actions.className='bia-actions';actions.append(btn(item.done?'↩ Desmarcar':'✓ Concluído',()=>{item.done=!item.done;save();render();}));actions.append(btn('Adiar',()=>{const i=state.items.indexOf(item);state.items.splice(i,1);state.items.push(item);save();render();}));
+if(edit&&admin()){actions.append(btn('↑',()=>move(item,-1)));actions.append(btn('↓',()=>move(item,1)));actions.append(btn('Excluir',()=>{if(!admin())return;if(confirm('Excluir atividade?')){state.items=state.items.filter(x=>x!==item);save();render();}}));}card.append(actions);list.append(card);});}
+function move(item,d){if(!admin())return;const arr=state.items.filter(x=>x.period===period),other=arr[arr.indexOf(item)+d];if(!other)return;const a=state.items.indexOf(item),b=state.items.indexOf(other);[state.items[a],state.items[b]]=[state.items[b],state.items[a]];save();render();}
+$('biaRoutineManage').onclick=()=>{if(!admin()){$('biaRoutineFeedback').textContent='Desbloqueie a administração em Configurações.';return;}edit=!edit;render();};
+$('biaRoutineAdd').onclick=()=>{if(!admin()){edit=false;render();return;}const name=$('biaRoutineName').value.trim();if(!name){$('biaRoutineFeedback').textContent='Informe o nome da atividade.';return;}state.items.push({id:'task'+Date.now(),period,name:name.slice(0,60),icon:$('biaRoutineIcon').value,time:$('biaRoutineTime').value,done:false});$('biaRoutineName').value='';$('biaRoutineTime').value='';save();render();};
+document.addEventListener('jornadaBia:sessionExpired',()=>{edit=false;render();});render();
+// Desenho livre: toque, mouse, exportação PNG.
+const canvas=$('biaCanvas'),ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);let drawing=false,last;
+const point=e=>{const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)*canvas.width/r.width,(e.clientY-r.top)*canvas.height/r.height];};
+canvas.onpointerdown=e=>{if(e.pointerType==='mouse'&&e.button!==0)return;drawing=true;last=point(e);canvas.setPointerCapture(e.pointerId);};
+canvas.onpointermove=e=>{if(!drawing)return;const p=point(e);ctx.beginPath();ctx.moveTo(...last);ctx.lineTo(...p);ctx.strokeStyle=$('biaDrawColor').value;ctx.lineWidth=+$('biaDrawSize').value;ctx.lineCap='round';ctx.stroke();last=p;};
+['pointerup','pointercancel','lostpointercapture'].forEach(n=>canvas.addEventListener(n,()=>drawing=false));
+$('biaDrawClear').onclick=()=>{if(confirm('Apagar o desenho?')){ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);}};
+$('biaDrawSave').onclick=()=>{const a=make('a');a.download='desenho-bia.png';a.href=canvas.toDataURL('image/png');a.click();};
+// Jogo de pares, sem tempo limite.
+let deck=[],open=[],matched=0,busy=false,flipTimer=null;
+function game(){if(flipTimer)clearTimeout(flipTimer);const values=['🌸','⭐','🐱','🌈'];deck=[...values,...values].map(v=>({v,up:false,found:false}));for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}open=[];matched=0;busy=false;renderGame();}
+function renderGame(){const grid=$('biaGameGrid');grid.replaceChildren();deck.forEach((c,i)=>{const b=btn(c.up||c.found?c.v:'❔',()=>flip(i));b.disabled=busy||c.found;b.setAttribute('aria-label',c.found?'Par encontrado':c.up?'Figura '+c.v:'Revelar carta '+(i+1));if(c.found)b.className='matched';grid.append(b);});$('biaGameStatus').textContent=matched===4?'Todos os pares encontrados!':'Pares encontrados: '+matched+' de 4.';}
+function flip(i){const c=deck[i];if(busy||c.up||c.found)return;c.up=true;open.push(i);renderGame();if(open.length===2){const [a,b]=open;if(deck[a].v===deck[b].v){deck[a].found=deck[b].found=true;matched++;open=[];renderGame();}else{busy=true;flipTimer=setTimeout(()=>{deck[a].up=deck[b].up=false;open=[];busy=false;renderGame();},1000);}}}
+$('biaGameRestart').onclick=game;game();
+// Sons sintetizados localmente, iniciados apenas por toque.
+let audio=null,source=null,gain=null,interval=null;
+function stop(){if(interval){clearInterval(interval);interval=null;}if(source){try{source.stop();}catch{}source.disconnect();source=null;}if(gain){gain.disconnect();gain=null;}$('biaSoundStatus').textContent='Nenhum som em reprodução.';}
+const volume=()=>Number($('biaSoundVolume').value)/100;
+function note(f){const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(Math.max(.0001,volume()*.3),t+.04);g.gain.exponentialRampToValueAtTime(.0001,t+.4);o.connect(g).connect(audio.destination);o.start();o.stop(t+.42);}
+async function play(kind){stop();try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error();audio??=new AC();await audio.resume();if(kind==='melody'){const seq=[392,440,523.25,440,349.23,392,329.63,392];let i=0;note(seq[i++]);interval=setInterval(()=>note(seq[i++%seq.length]),550);}else{const buffer=audio.createBuffer(1,audio.sampleRate*2,audio.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;source=audio.createBufferSource();source.buffer=buffer;source.loop=true;const filter=audio.createBiquadFilter();filter.type=kind==='rain'?'lowpass':'bandpass';filter.frequency.value=kind==='rain'?800:260;gain=audio.createGain();gain.gain.value=volume()*.55;source.connect(filter).connect(gain).connect(audio.destination);source.start();}$('biaSoundStatus').textContent=kind==='rain'?'Chuva suave tocando.':kind==='wind'?'Brisa tocando.':'Melodia original tocando.';}catch{$('biaSoundStatus').textContent='Áudio indisponível neste aparelho.';}}
+document.querySelectorAll('[data-bia-sound]').forEach(b=>b.onclick=()=>play(b.dataset.biaSound));$('biaSoundStop').onclick=stop;$('biaSoundVolume').oninput=()=>{if(gain)gain.gain.value=volume()*.55;};document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+document.querySelectorAll('[data-bia-activity]').forEach(b=>b.onclick=()=>{const tab=b.dataset.biaActivity;['draw','game','sounds','garden','colors'].forEach(x=>$(x==='draw'?'biaDraw':x==='game'?'biaGame':x==='sounds'?'biaSounds':x==='garden'?'biaGarden':'biaColors').hidden=x!==tab);document.querySelectorAll('[data-bia-activity]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));if(tab!=='sounds')stop();document.dispatchEvent(new CustomEvent('bia:activity-selected',{detail:{tab}}));});document.querySelector('[data-bia-activity="draw"]').setAttribute('aria-pressed','true');
+})();
