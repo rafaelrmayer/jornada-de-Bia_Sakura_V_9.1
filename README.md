@@ -1,93 +1,223 @@
-# A Jornada de Bia — v31.7
+# 🌸 Jornada de Bia | Sakura V9.1
 
-Home simplificada, estabilização de segurança, temas azul/rosa/verde com modo escuro e Random Forest experimental local.
+### Comunicação, autonomia e tecnologia assistiva
 
-## Estrutura
-- `index.html`: estrutura da interface
-- `css/style.css`: estilos extraídos sem alteração intencional
-- `js/app.js`: lógica da aplicação
-- `js/storage.js`: camada centralizada de persistência
-- `js/security.js`: PIN com PBKDF2, sessão e bloqueio por tentativas
-- `js/backup.js`: backup versionado, validação e integridade SHA-256
-- `manifest.json`: configuração PWA
-- `sw.js`: cache offline, versionamento e atualização do PWA
+**“Não é sobre ensinar alguém a falar. É sobre garantir que sua voz possa ser ouvida.”**
 
-## Segurança
-O PIN antigo em texto puro é migrado para PBKDF2-SHA-256 na primeira verificação. A sessão desbloqueada não fica mais persistida em `localStorage`.
+A **Jornada de Bia** é um projeto independente de tecnologia assistiva, desenvolvido para apoiar a comunicação de pessoas autistas com necessidades complexas de comunicação.
 
-Importante: como o app é client-side, isto não equivale a autenticação forte. Quem controla o dispositivo, o navegador ou os arquivos do app pode alterar o código. Para proteção de dados médicos contra um atacante local, a próxima etapa deve ser um cofre criptografado com chave derivada de uma senha do responsável e política clara de recuperação.
+O projeto nasceu de uma motivação pessoal: criar uma ferramenta que ajude minha filha Bia a expressar desejos, necessidades, sentimentos e escolhas de maneira mais acessível.
 
-## Backups
-- Backup completo
-- Backup de configuração
-- Backup automático de segurança antes da importação
-- Validação de tamanho, estrutura, versão e integridade
+A proposta é simples: colocar a tecnologia a serviço da comunicação, respeitando a individualidade de cada pessoa.
 
-## Publicação
-Use GitHub Pages, HTTPS ou outro servidor web. Não abra o PWA diretamente com `file://`, pois Service Worker e APIs de origem segura dependem de uma origem web válida.
+**Desenvolvido por Rafael Ricardo Mayer.**
 
-## V31.2 — tema e modelo experimental
-- Tema Verde Pastel disponível no botão de tema.
-- `js/random-forest.js` contém o classificador experimental de floresta aleatória.
-- O modelo só participa das previsões quando há dados locais suficientes; a lógica anterior permanece como fallback.
+---
 
+## 🌐 Experimente a Jornada de Bia
 
-## V31.4 — consolidação de segurança e interface
-- Mantida a limpeza seletiva do armazenamento da Jornada de Bia.
-- Encerrada a sessão de responsáveis durante a exclusão geral.
-- Cache do Service Worker versionado como `jornada-bia-v31-4`.
-- Preservado o tema Verde Pastel e o módulo experimental de Random Forest.
-- Restauradas pequenas diferenças visuais e de estado de intenção que não faziam parte das melhorias visuais.
-- A exclusão completa deve ser validada em navegador real antes do uso com dados importantes.
+**[Abrir o aplicativo — Sakura V9.1](https://rafaelrmayer.github.io/jornada-de-Bia_Sakura_V_9.1/)**
 
+A aplicação é desenvolvida para a web, com recursos de Progressive Web App (PWA), permitindo experiências de uso em computadores e dispositivos móveis compatíveis.
 
-## V31.5 — identidade e aparência
-- Subtítulo atualizado para: “Não é sobre ensinar alguém a falar. É sobre garantir que sua voz possa ser ouvida.”
-- Configurações de aparência reorganizadas com seleção independente de cor (azul, rosa e verde) e modo escuro.
-- Adicionado tema escuro verde com fundo preto e detalhes verdes.
-- Preferência visual continua salva via StorageService e mantém compatibilidade com temas anteriores.
-- Service Worker atualizado para o cache `jornada-bia-v31-5`.
-- Testes sintáticos e estruturais executados; inspeção visual manual em navegador real continua recomendada.
+**Estado atual:** versão Sakura V9.1 publicada, em evolução e validação contínua.
 
+---
 
-## V31.6 — Random Forest experimental revisado
-- Corrigida a leitura das variáveis de contexto: ambiente, horário e intenção agora são interpretados na ordem em que são gravados.
-- Implementado bootstrap ponderado pela frequência de uso e seleção aleatória de atributos em cada divisão de árvore.
-- Incluídas métricas diagnósticas de amostras, classes e acurácia out-of-bag (OOB), quando calculável.
-- A confiança da previsão representa a proporção de votos das árvores; não é uma probabilidade calibrada.
-- Adicionados testes automatizados com dados sintéticos; esses resultados não representam desempenho real com dados da Jornada de Bia.
-- O modelo permanece local e experimental, com fallback para a previsão já existente.
+## ❤️ Por que a Jornada de Bia existe?
 
+A comunicação não acontece de uma única maneira.
 
-## V31.7 — biometria experimental no navegador
-- Adicionada opção para configurar/remover credencial WebAuthn com autenticador de plataforma e verificação de usuário obrigatória, quando suportado.
-- O Modo Responsável pode tentar autenticar por biometria e mantém o PIN como alternativa.
-- A chave pública e o identificador da credencial ficam armazenados localmente; a biometria não é lida nem enviada pela aplicação.
-- Requer origem segura (HTTPS ou localhost) e navegador/aparelho compatíveis. Credenciais WebAuthn são vinculadas à origem; mudar domínio pode exigir novo registro.
-- Limitação essencial: esta versão é client-side e verifica localmente uma assinatura WebAuthn. Não equivale à autenticação WebAuthn validada por um servidor confiável e não protege contra alteração do código/armazenamento local. Não usar como única proteção de dados sensíveis.
-- O PIN existente permanece como alternativa; remover a credencial biométrica não remove o PIN nem os dados da aplicação.
-- Testes reais em aparelhos e navegadores continuam necessários; não foi possível executar cerimônia biométrica neste ambiente de desenvolvimento.
+Para algumas pessoas, palavras faladas não são o principal caminho para expressar pensamentos, sentimentos e necessidades. A Comunicação Aumentativa e Alternativa (CAA) pode oferecer outras possibilidades.
 
+A Jornada de Bia procura construir uma experiência que seja:
 
-## V31.8 — Correção das estatísticas
-Corrige a abertura/fechamento da seção Estatísticas pelo botão 📊. Consulte `CHANGELOG_V31_8.md`.
+- **Acessível:** com navegação visual e recursos de apoio.
+- **Personalizável:** com cartões e conteúdos adaptáveis.
+- **Acolhedora:** com atenção à experiência sensorial.
+- **Progressiva:** com melhorias baseadas em testes e observações.
+- **Responsável:** com cuidado especial em relação à privacidade e aos dados.
 
+A ferramenta não pretende substituir acompanhamento profissional, métodos de CAA estabelecidos ou a participação das pessoas responsáveis.
 
-## V31.9 — Cartões rápidos na tela inicial
-- Adicionado o atalho **Criar símbolo** na área de cartões principais; ele abre diretamente o formulário de criação.
-- Símbolos personalizados aparecem primeiro na seção **Meus cartões** da tela inicial, com limite visual de 15 cartões. Os demais continuam disponíveis na área de edição/construção.
-- Ao salvar, editar ou excluir símbolos, a lista da tela inicial é atualizada. Tocar em um cartão rápido adiciona o símbolo à frase.
-- Invertida a ordem visual dos banners: **Jornada de Bia** aparece antes da saudação **Vamos conversar**.
-- Cache do Service Worker atualizado para `jornada-bia-v31-9`.
+---
 
+## ✨ Funcionalidades
 
-## V31.18 — teste de compatibilidade biométrica
-Esta versão mantém a biometria como prova de conceito local para teste no Chrome/Android. Requer HTTPS ou localhost. A validação confiável por servidor ainda não está implementada; não usar como única proteção de dados sensíveis. Veja `CHANGELOG_V31_18.md` para o roteiro de teste no Xiaomi e limitações.
+### Comunicação visual
 
+- Cartões com símbolos e frases.
+- Categorias para expressar desejos, necessidades e sentimentos.
+- Construção de frases a partir de cartões.
+- Reprodução de mensagens por síntese de voz.
+- Criação e personalização de cartões.
 
-## Jornada de Bia Sakura V.1.1 — correção do nome do tema
-Esta versão inicia a nova numeração Sakura e corrige o contraste do tooltip com o nome do tema na barra superior nos modos escuros (Rosa escuro, Azul escuro e Verde escuro). O ícone da aplicação continua sendo o girassol. A autenticação biométrica permanece uma prova de conceito local; a validação confiável por servidor ainda não está implementada.
+### Personalização
 
+- Temas visuais e opções de aparência.
+- Configuração de voz.
+- Perfil da criança e informações do responsável.
+- Organização de conteúdos e preferências.
 
-## Sakura V1.3 — contraste das notificações
-Ajusta o contraste e a quebra de texto das notificações `.toast-message` para temas claros/escuros. Veja `CHANGELOG_SAKURA_V1_3.md`.
+### Recursos de apoio
+
+- Rotinas e atividades.
+- Recursos voltados ao conforto sensorial.
+- Informações de apoio para responsáveis.
+- Experiência adaptada para uso em diferentes dispositivos.
+
+### Modo Responsável
+
+Área destinada à configuração e administração do aplicativo, incluindo recursos de proteção de acesso.
+
+A autenticação biométrica disponível no projeto é experimental e não equivale a uma solução de autenticação validada por servidor.
+
+---
+
+## 🧠 Inteligência artificial e personalização
+
+A Jornada de Bia também é um ambiente de pesquisa e experimentação com métodos de aprendizado de máquina.
+
+Entre os componentes estudados estão:
+
+- Registro local de interações.
+- Identificação de padrões de utilização.
+- Sugestões contextuais.
+- Modelos experimentais de Random Forest.
+- Possibilidades futuras de arquiteturas adaptativas com redes neurais artificiais.
+
+**Importante:** os modelos experimentais não possuem validação clínica e não devem ser interpretados como sistemas capazes de determinar autonomamente o que uma pessoa deseja comunicar.
+
+A pessoa que utiliza o aplicativo deve manter o controle sobre a comunicação.
+
+---
+
+## ♿ Acessibilidade
+
+A acessibilidade é um requisito central do projeto.
+
+As áreas de trabalho incluem:
+
+- Navegação por toque e teclado.
+- Identificação acessível de controles.
+- Compatibilidade com tecnologias assistivas.
+- Legibilidade, contraste e temas.
+- Clareza visual e previsibilidade da interface.
+- Redução de barreiras na comunicação.
+
+A compatibilidade com leitores de tela, incluindo TalkBack, está em processo de avaliação prática. A implementação de recursos acessíveis não significa, por si só, conformidade integral com as WCAG.
+
+---
+
+## 🔊 Síntese de voz
+
+O aplicativo utiliza recursos de voz do navegador e possui integração experimental com a voz online **Francisca Neural**.
+
+A reprodução online depende da conectividade e da disponibilidade do serviço externo. Existe uma estratégia de voz alternativa no navegador, cuja confiabilidade está sendo testada.
+
+A prioridade é que a comunicação permaneça disponível mesmo diante de limitações técnicas.
+
+---
+
+## 🔐 Privacidade e segurança
+
+A Jornada de Bia trabalha com informações que podem ser sensíveis, especialmente quando envolvem crianças.
+
+O projeto incorpora mecanismos como:
+
+- Persistência local de dados.
+- Proteção de acesso por PIN.
+- Recursos experimentais de biometria.
+- Backup e restauração.
+- Verificações de integridade.
+- Recursos de funcionamento offline.
+
+**Limitações importantes:** por ser uma aplicação predominantemente client-side, as proteções locais não equivalem a uma arquitetura de segurança com servidor confiável. O aplicativo não deve ser tratado como armazenamento seguro de informações médicas sensíveis sem medidas adicionais de proteção.
+
+A conformidade com a LGPD depende também das práticas reais de coleta, tratamento, armazenamento e compartilhamento de dados.
+
+---
+
+## 🛠️ Tecnologias
+
+| Tecnologia | Aplicação |
+|---|---|
+| HTML5 | Estrutura da interface |
+| CSS3 | Estilos e temas |
+| JavaScript | Funcionalidades e interação |
+| Web Speech API | Síntese de voz do navegador |
+| PWA / Service Worker | Recursos de instalação e cache |
+| WebAuthn | Experimentos de autenticação |
+| Random Forest | Aprendizado de máquina experimental |
+| GitHub Pages | Publicação da aplicação |
+
+---
+
+## 📂 Estrutura do projeto
+
+```text
+jornada-de-Bia_Sakura_V_9.1/
+├── index.html
+├── css/
+├── js/
+│   ├── app.js
+│   ├── storage.js
+│   ├── security.js
+│   ├── backup.js
+│   ├── random-forest.js
+│   └── ...
+├── icons/
+├── manifest.json
+├── sw.js
+└── README.md
+```
+
+A estrutura acima é resumida. O repositório contém módulos adicionais de acessibilidade, atividades, segurança e interface.
+
+---
+
+## 🚧 Estado do desenvolvimento
+
+A Sakura V9.1 está publicada e disponível para testes.
+
+As prioridades atuais são:
+
+1. Validar a navegação com TalkBack.
+2. Investigar a confiabilidade da primeira reprodução de voz.
+3. Revisar acessibilidade e experiência de uso.
+4. Continuar a estabilização e os testes de segurança.
+5. Documentar as funcionalidades e limitações de cada versão.
+
+O desenvolvimento é incremental, com prioridade para estabilidade, acessibilidade e preservação das funcionalidades existentes.
+
+---
+
+## 👨‍💻 Sobre o desenvolvedor
+
+**Rafael Ricardo Mayer**
+
+Desenvolvedor e pesquisador independente, com interesse em inteligência artificial aplicada, acessibilidade, educação e tecnologia assistiva.
+
+A Jornada de Bia integra um conjunto de projetos que procuram explorar como a tecnologia pode contribuir para uma sociedade mais inclusiva.
+
+> Não quero apenas deixar um legado de tecnologia para minhas filhas. Quero ajudar a construir o mundo em que elas vão viver, e contribuir para que esse mundo também seja melhor para outras pessoas.
+
+**[GitHub](https://github.com/rafaelrmayer)** · **[LinkedIn](https://www.linkedin.com/in/rafael-ricardo-mayer-478647a4/)** · **[Portfólio](https://rafaelrmayer.github.io/)**
+
+---
+
+## ❤️ Uma mensagem final
+
+A Jornada de Bia não nasceu apenas como um exercício de programação.
+
+Nasceu da vontade de ouvir, compreender e construir possibilidades.
+
+Cada cartão, cada frase e cada melhoria representam uma tentativa de diminuir a distância entre aquilo que alguém deseja expressar e aquilo que o mundo consegue compreender.
+
+**Comunicação é um direito. A tecnologia deve ajudar a torná-lo acessível.**
+
+🌸 **Jornada de Bia**
+
+*Desenvolvido com amor, pesquisa e tecnologia por Rafael Ricardo Mayer.*
+
+**Sempre rumo à utopia e ao horizonte. ♾️**
