@@ -5668,3 +5668,42 @@ html body #page-my-communication .page-header p {max-width:65ch}
  html body #page-my-communication :is(.my-comm-panel,.page-header){padding:18px!important}
 }
 
+
+/* Correções para celulares: título completo e composição mais compacta. */
+@media (max-width: 760px) {
+  html body .header-container {flex-wrap:wrap!important; gap:8px!important; padding:10px 12px!important;}
+  html body .header-left {flex:1 1 150px!important; min-width:0!important; gap:8px!important;}
+  html body .logo-container {flex:0 0 42px!important;}
+  html body .header-actions {flex:0 0 auto!important; max-width:100%!important;}
+  html body .header-brand-title.sakura-home-link {
+    flex:1 1 auto!important; width:auto!important; max-width:none!important; min-width:0!important;
+    white-space:normal!important; overflow:visible!important; overflow-wrap:anywhere!important;
+    font-size:1rem!important; line-height:1.25!important;
+  }
+  html body .header-brand-title :is(strong,small) {max-width:100%!important; white-space:normal!important;}
+  html body .main-content {padding:8px 12px calc(96px + env(safe-area-inset-bottom))!important;}
+  html #page-home {gap:18px!important;}
+  html #page-home .intent-section {padding:16px 0 4px!important;}
+  html #page-home .intent-section .section-header {margin-bottom:18px!important;}
+  html #page-home .intent-section h2 {font-size:clamp(1.75rem,7vw,2.25rem)!important;}
+  html #page-home .bia-intro {font-size:1rem!important; line-height:1.4!important;}
+  html #page-home .intent-grid {grid-template-columns:repeat(2,minmax(0,1fr))!important; gap:12px!important;}
+  html #page-home .intent-grid .intent-btn:not(.create-symbol-shortcut) {
+    min-height:154px!important; padding:12px 8px!important; border-radius:22px!important;
+  }
+  html #page-home .intent-grid .intent-btn:not(.create-symbol-shortcut) .intent-icon {
+    width:64px!important; height:64px!important; min-width:0!important;
+  }
+  html #page-home .intent-grid .intent-btn:not(.create-symbol-shortcut) .intent-icon img {width:60px!important; height:60px!important;}
+  html #page-home .intent-grid .intent-btn:not(.create-symbol-shortcut) span:not(.intent-icon) {font-size:1.05rem!important; overflow-wrap:anywhere!important;}
+  html #page-home .intent-grid .intent-btn:not(.create-symbol-shortcut) small {font-size:.875rem!important;}
+  html body .sos-floating-button {
+    left:max(12px,env(safe-area-inset-left))!important; right:auto!important;
+    bottom:calc(16px + env(safe-area-inset-bottom))!important; width:54px!important; height:54px!important;
+  }
+  html body .quick-contact-fab {
+    right:max(12px,env(safe-area-inset-right))!important;
+    bottom:calc(16px + env(safe-area-inset-bottom))!important;
+  }
+  html body .fab-main {width:54px!important; height:54px!important;}
+}
