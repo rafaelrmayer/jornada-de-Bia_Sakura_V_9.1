@@ -508,6 +508,9 @@
         let currentVoice = null;
         const EDGE_TTS_URL = 'https://servi-o-edge-tts.onrender.com/api/tts';
         let activeEdgeAudio = null;
+        let speechAudioContext = null;
+        let activeEdgeSource = null;
+        let activeBrowserUtterance = null;
         let activeEdgeObjectUrl = null;
         let edgeSpeechRequest = null;
         // Cache curto para frases repetidas: não armazena dados entre sessões.
@@ -1333,6 +1336,13 @@
 
         function stopCurrentSpeech() {
             speechSequence++;
+            activeBrowserUtterance = null;
+            if (activeEdgeSource) {
+                activeEdgeSource.onended = null;
+                try { activeEdgeSource.stop(); } catch (_) {}
+                activeEdgeSource.disconnect();
+                activeEdgeSource = null;
+            }
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             if (edgeSpeechRequest) { edgeSpeechRequest.abort(); edgeSpeechRequest = null; }
             if (activeEdgeAudio) { activeEdgeAudio.pause(); activeEdgeAudio.removeAttribute('src'); activeEdgeAudio.load(); activeEdgeAudio = null; }
@@ -1359,9 +1369,22 @@
             const timeout = window.setTimeout(() => controller.abort('timeout'), 8000);
             let stage = 'conexão';
             try {
+                // Preparar no toque, antes de qualquer espera de rede. O contexto
+                // permanece disponível para reproduzir a resposta quando ela chegar.
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                let audioReady = null;
+                if (AudioContextClass) {
+                    if (!speechAudioContext || speechAudioContext.state === 'closed') {
+                        speechAudioContext = new AudioContextClass();
+                    }
+                    audioReady = speechAudioContext.state === 'running'
+                        ? Promise.resolve() : speechAudioContext.resume();
+                    // A resposta da rede pode demorar mais que uma rejeição de resume.
+                    audioReady.catch(() => {});
+                }
                 let blob = edgeAudioCache.get(cacheKey);
                 if (!blob) {
-                    edgeVoiceStatus('Francisca Neural · conectando ao serviço…');
+                    edgeVoiceStatus('Francisca Neural · preparando a voz…', true);
                     const response = await fetch(EDGE_TTS_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
@@ -1379,17 +1402,35 @@
                 window.clearTimeout(timeout);
                 if (edgeSpeechRequest !== controller || requestId !== speechSequence) return;
                 stage = 'reprodução';
-                activeEdgeObjectUrl = URL.createObjectURL(blob);
-                const audio = new Audio(activeEdgeObjectUrl);
-                activeEdgeAudio = audio;
-                audio.addEventListener('ended', () => {
-                    if (activeEdgeAudio === audio) {
-                        activeEdgeAudio = null;
-                        if (activeEdgeObjectUrl) URL.revokeObjectURL(activeEdgeObjectUrl);
-                        activeEdgeObjectUrl = null;
-                    }
-                }, { once: true });
-                await audio.play();
+                if (audioReady) {
+                    await audioReady;
+                    if (edgeSpeechRequest !== controller || requestId !== speechSequence) return;
+                    if (speechAudioContext.state !== 'running') throw new Error('Áudio aguardando ativação');
+                    const buffer = await speechAudioContext.decodeAudioData(await blob.arrayBuffer());
+                    if (edgeSpeechRequest !== controller || requestId !== speechSequence) return;
+                    const source = speechAudioContext.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(speechAudioContext.destination);
+                    activeEdgeSource = source;
+                    source.onended = () => {
+                        source.disconnect();
+                        if (activeEdgeSource === source) activeEdgeSource = null;
+                    };
+                    source.start();
+                } else {
+                    // Compatibilidade com navegadores sem Web Audio.
+                    activeEdgeObjectUrl = URL.createObjectURL(blob);
+                    const audio = new Audio(activeEdgeObjectUrl);
+                    activeEdgeAudio = audio;
+                    audio.addEventListener('ended', () => {
+                        if (activeEdgeAudio === audio) {
+                            activeEdgeAudio = null;
+                            if (activeEdgeObjectUrl) URL.revokeObjectURL(activeEdgeObjectUrl);
+                            activeEdgeObjectUrl = null;
+                        }
+                    }, { once: true });
+                    await audio.play();
+                }
                 if (requestId !== speechSequence) return;
                 edgeVoiceStatus('Francisca Neural · reproduzindo');
             } catch (error) {
@@ -1422,25 +1463,21 @@
             utterance.rate = preview ? Math.max(0.86, Math.min(configuredRate, 0.98)) : Math.max(0.78, Math.min(configuredRate, 1.12));
             utterance.pitch = Math.max(0.85, Math.min(configuredPitch, 1.15));
             utterance.volume = 1;
-            // Alguns navegadores Android só carregam as vozes depois da primeira chamada.
-            const speakWhenReady = () => {
-                const refreshedVoice = getSelectedVoice() || getBestVoice();
-                if (refreshedVoice) { utterance.voice = refreshedVoice; utterance.lang = refreshedVoice.lang || 'pt-BR'; }
-                synthesis.speak(utterance);
+            // Falar no próprio gesto, inclusive quando a lista de vozes ainda
+            // está vazia: o sistema pode usar sua voz padrão para pt-BR.
+            activeBrowserUtterance = utterance;
+            utterance.onend = () => {
+                if (activeBrowserUtterance === utterance) activeBrowserUtterance = null;
             };
-            if (!synthesis.getVoices().length) {
-                let started = false;
-                const onReady = () => {
-                    if (started) return;
-                    started = true;
-                    synthesis.removeEventListener?.('voiceschanged', onReady);
-                    speakWhenReady();
-                };
-                synthesis.addEventListener?.('voiceschanged', onReady, { once: true });
-                window.setTimeout(onReady, 700);
-            } else {
-                speakWhenReady();
-            }
+            utterance.onerror = (event) => {
+                if (activeBrowserUtterance !== utterance) return;
+                activeBrowserUtterance = null;
+                if (event.error !== 'canceled' && event.error !== 'interrupted') {
+                    edgeVoiceStatus('Não foi possível iniciar a voz do aparelho. Toque novamente para tentar.', true);
+                }
+            };
+            synthesis.resume();
+            synthesis.speak(utterance);
         }
 
         function speakText(text, preview = false) {
