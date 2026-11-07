@@ -696,6 +696,7 @@
         }
 
         function loadVoices() {
+            const preferredVoice = StorageService.getItem('selectedVoice') || 'edge-francisca';
             const voices = window.speechSynthesis.getVoices();
             voiceSelect.innerHTML = '<option value="default">✨ Melhor voz disponível (navegador)</option><option value="edge-francisca">🌷 Francisca Neural (online)</option>'; 
             const sorted = voices.slice().sort((a,b) => voiceScore(b)-voiceScore(a));
@@ -707,12 +708,10 @@
                 option.textContent = `${voice.name} (${voice.lang})`;
                 voiceSelect.appendChild(option);
             });
-            // Francisca Neural é a preferência fixa. Voz local é apenas fallback
-            // durante falha do serviço online, sem gravar essa troca no perfil.
-            voiceSelect.value = 'edge-francisca';
-            if (StorageService.getItem('selectedVoice') !== 'edge-francisca') {
-                StorageService.setItem('selectedVoice', 'edge-francisca');
-            }
+            // A lista pode chegar depois da abertura. Preserve a escolha salva
+            // mesmo quando a voz ainda não estiver disponível nesta atualização.
+            voiceSelect.value = Array.from(voiceSelect.options).some(option => option.value === preferredVoice)
+                ? preferredVoice : 'default';
             currentVoice = voiceSelect.value === 'default' || voiceSelect.value === 'edge-francisca' ? getBestVoice() : (voices.find(v => v.name === voiceSelect.value) || getBestVoice());
             updateVoiceQuality();
         }
@@ -2715,12 +2714,13 @@
             }
         });
         refreshBiometricSettings();
-        if (speechSynthesisEnabled) { window.speechSynthesis.onvoiceschanged = loadVoices; setTimeout(loadVoices, 250); }
+        if (speechSynthesisEnabled) {
+            window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+            loadVoices();
+        }
 
         loadTheme();
         loadVoiceSettings();
-        if (voiceSelect) voiceSelect.value = 'edge-francisca';
-        StorageService.setItem('selectedVoice', 'edge-francisca');
         renderQuickPhrases();
         document.body.classList.toggle('sakura-on-home', currentPage === 'home');
         setGuardianMode(guardianUnlocked);
