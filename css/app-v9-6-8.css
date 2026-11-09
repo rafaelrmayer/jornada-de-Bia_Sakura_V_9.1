@@ -5707,3 +5707,89 @@ html body #page-my-communication .page-header p {max-width:65ch}
   }
   html body .fab-main {width:54px!important; height:54px!important;}
 }
+
+
+/* JORNADA DE BIA - LAYOUT ADAPTATIVO V1 */
+html #page-home.intent-compact .intent-grid {
+    gap: 10px !important;
+}
+
+html #page-home.intent-compact .intent-grid
+.intent-btn:not(.create-symbol-shortcut) {
+    min-height: 100px !important;
+    padding: 10px 14px !important;
+    border-radius: 20px !important;
+    column-gap: 10px !important;
+}
+
+html #page-home.intent-compact .intent-grid
+.intent-btn:not(.create-symbol-shortcut) .intent-icon {
+    width: 48px !important;
+    height: 48px !important;
+    min-height: 0 !important;
+}
+
+html #page-home.intent-compact .intent-grid
+.intent-btn:not(.create-symbol-shortcut) .intent-icon img {
+    width: 46px !important;
+    height: 46px !important;
+}
+
+html #page-home.intent-compact .intent-grid
+.intent-btn:not(.create-symbol-shortcut) span:not(.intent-icon) {
+    font-size: 1rem !important;
+}
+
+html #page-home.intent-compact .intent-grid
+.intent-btn:not(.create-symbol-shortcut) small {
+    font-size: .82rem !important;
+}
+
+html #page-home.intent-compact .intent-expansion {
+    margin-top: 10px !important;
+}
+
+html #page-home.intent-compact .intent-suggestion {
+    min-height: 56px;
+}
+
+@media (max-width: 720px) {
+    html #page-home.intent-compact .intent-grid
+    .intent-btn:not(.create-symbol-shortcut) {
+        min-height: 100px !important;
+        padding: 10px 8px !important;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto !important;
+    }
+
+    html #page-home.intent-compact .intent-grid
+    .intent-btn:not(.create-symbol-shortcut) .intent-icon {
+        height: 40px !important;
+        grid-row: 1 !important;
+        grid-column: 1 !important;
+    }
+
+    html #page-home.intent-compact .intent-grid
+    .intent-btn:not(.create-symbol-shortcut) .intent-icon img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    html #page-home.intent-compact .intent-grid
+    .intent-btn:not(.create-symbol-shortcut) span:not(.intent-icon) {
+        grid-column: 1 !important;
+        grid-row: 2 !important;
+        font-size: .95rem !important;
+    }
+
+    html #page-home.intent-compact .intent-grid
+    .intent-btn:not(.create-symbol-shortcut) small {
+        display: none !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html #page-home.intent-compact .intent-grid .intent-btn {
+        transition: none !important;
+    }
+}
