@@ -221,3 +221,29 @@ Cada cartão, cada frase e cada melhoria representam uma tentativa de diminuir a
 *Desenvolvido com amor, pesquisa e tecnologia por Rafael Ricardo Mayer.*
 
 **Sempre rumo à utopia e ao horizonte. ♾️**
+
+## Cartões e Neural API (integração opcional)
+
+Minha Comunicação contém um painel com cinco cartões de atividades e duas opções
+fixas. Os cartões funcionam e falam com o mecanismo de voz existente mesmo sem
+API. Não substituem frases personalizadas ou categorias.
+
+Em Configurações, desbloqueie a administração e informe o endereço base HTTPS da
+Neural API. Deixe vazio para desativar. Nenhuma consulta é automática: ao clicar
+em “Ordenar sugestões de demonstração”, o navegador envia somente o período do
+dia e o ID do último cartão escolhido neste painel, mantido apenas na memória
+da sessão. Não envia perfil, nome nem histórico de frases. Escolher uma opção
+fixa limpa esse último ID. O endereço é salvo somente neste navegador.
+
+A API deve permitir a origem https://rafaelrmayer.github.io via CORS e carregar o
+modelo cards-demo. Uma origem inclui protocolo e domínio, sem caminho do projeto.
+O Colab com TestClient não fornece um endereço público para este recurso.
+A publicação HTTPS da API é uma etapa separada.
+
+O botão ordena todos os cartões apenas mediante solicitação. Resposta inválida,
+timeout de cinco segundos ou indisponibilidade preservam as opções. Os textos
+são locais; a resposta externa deve corresponder ao contrato exato. As duas
+opções fixas não são ordenadas. A demonstração usa dados sintéticos e não foi
+validada como personalização. Os pedidos não incluem credenciais.
+
+Verificação: `node --test tests/*.test.cjs`.

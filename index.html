@@ -33,6 +33,7 @@
     
     <!-- Ícones via emoji -->
     <link rel="stylesheet" href="css/app-v9-6-8.css">
+    <link rel="stylesheet" href="css/card-suggestions.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
 </head>
@@ -514,6 +515,17 @@
                 <div class="guardian-access-inline"><span id="adminAccessStatus" role="status">🔒 Administração bloqueada</span><button type="button" id="settingsAdminUnlock">🔐 Desbloquear administração</button></div>
 
                 <div class="settings-group"><h3>♿ Acessibilidade e personalização</h3><p>Desbloqueie a administração para modificar estas opções. Preferências salvas apenas neste aparelho.</p><div id="biaExperiencePrefs" class="bia-prefs"></div><p id="biaExperienceStatus" role="status"></p></div>
+                <section class="settings-group" aria-labelledby="neuralApiTitle">
+                    <h3 id="neuralApiTitle">Conexão de demonstração dos cartões</h3>
+                    <p>Opcional. Desbloqueie a administração para configurar. Ao solicitar sugestões, enviaremos ao servidor escolhido apenas o período do dia e o último cartão deste painel escolhido nesta sessão. Sem nome ou histórico de frases.</p>
+                    <form id="neuralApiForm">
+                        <label for="neuralApiUrl">Endereço HTTPS da Neural API</label>
+                        <input id="neuralApiUrl" type="url" placeholder="https://sua-api.example" autocomplete="off">
+                        <button type="submit" class="btn-secondary">Salvar conexão</button>
+                        <p>Deixe o endereço vazio e salve para desativar.</p>
+                    </form>
+                    <p id="neuralApiConfigStatus" role="status"></p>
+                </section>
                 <section class="settings-group bia-a11y-settings" aria-labelledby="biaA11yHeading">
                   <h3 id="biaA11yHeading">👁️ Visão, movimento e estímulos</h3>
                   <p>Estas preferências podem ser ajustadas sem desbloquear a administração. São salvas somente neste aparelho.</p>
@@ -902,6 +914,16 @@
             <h2 id="myCommunicationTitle">💬 Minha Comunicação</h2>
             <p>Organize suas frases e categorias do seu jeito. Você e seu responsável podem personalizar este espaço.</p>
         </div>
+        <section class="my-comm-panel" aria-labelledby="neuralCardsTitle">
+            <h3 id="neuralCardsTitle">O que quero fazer?</h3>
+            <p>Escolha um cartão para falar. Todas as opções ficam disponíveis.</p>
+            <div id="neuralCards" class="neural-card-grid" aria-label="Cartões de atividades"></div>
+            <div id="neuralCardsFixed" class="neural-card-grid" aria-label="Outras escolhas"></div>
+            <p id="neuralCardsChoice" role="status" aria-live="polite"></p>
+            <button id="neuralCardsSuggest" type="button" class="btn-secondary">Ordenar sugestões de demonstração</button>
+            <p id="neuralCardsStatus" role="status" aria-live="polite">Cartões em ordem padrão.</p>
+            <p>As sugestões usam dados fictícios e não representam suas preferências. A ordem só muda quando você solicita.</p>
+        </section>
         <section class="my-comm-panel" aria-labelledby="myCommPhraseTitle">
             <div class="section-header"><div><h3 id="myCommPhraseTitle">Minhas frases</h3><p class="my-comm-helper">Escolha uma categoria para ver as frases ou visualize todas.</p></div><button class="btn-primary" id="myCommAddPhrase" type="button">＋ Nova frase</button></div>
             <form id="myCommPhraseForm" class="my-comm-form" hidden>
@@ -1004,6 +1026,7 @@
     <script src="js/random-forest.js"></script>
     <script src="js/neural-assistant.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/card-suggestions.js"></script>
     <script src="js/emotions.js"></script>
     <script src="js/routine-activities.js"></script>
     <script src="js/experience.js"></script>
