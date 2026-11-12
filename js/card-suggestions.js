@@ -41,7 +41,50 @@
   function speak(phrase) {
     if (typeof root.speakText === 'function') root.speakText(phrase);
     el('neuralCardsChoice').textContent = 'Você escolheu: ' + phrase;
+    el('homeModelCardsChoice').textContent = 'Você escolheu: ' + phrase;
   }
+  function clearHome() {
+    el('homeModelCards').hidden = true;
+    el('cardSuggestionNotice').hidden = true;
+  }
+  function publishHome() {
+    const homeGrid = el('homeModelCardsGrid');
+    homeGrid.replaceChildren();
+    for (const id of order) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'neural-card';
+      button.textContent = PHRASES[id]; button.dataset.homeCardId = String(id);
+      button.addEventListener('click', () => { last = id; speak(PHRASES[id]); });
+      homeGrid.appendChild(button);
+    }
+    const fixed = el('homeModelCardsFixed');
+    fixed.replaceChildren();
+    for (const phrase of FIXED) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'neural-card'; button.textContent = phrase;
+      button.addEventListener('click', () => { last = null; speak(phrase); });
+      fixed.appendChild(button);
+    }
+    el('homeModelCardsChoice').textContent = '';
+    el('homeModelCards').hidden = false;
+    el('cardSuggestionNotice').hidden = false;
+  }
+  el('homeModelCardsHide').addEventListener('click', () => {
+    clearHome();
+    document.querySelector('#page-home .intent-btn')?.focus();
+  });
+  el('cardSuggestionDismiss').addEventListener('click', () => {
+    el('cardSuggestionNotice').hidden = true;
+    el('neuralCardsSuggest').focus();
+  });
+  el('cardSuggestionOpen').addEventListener('click', () => {
+    el('cardSuggestionNotice').hidden = true;
+    if (typeof root.showPage === 'function') root.showPage('home');
+    setTimeout(() => {
+      el('homeModelCards').scrollIntoView({block: 'start'});
+      el('homeModelCardsGrid').querySelector('button')?.focus();
+    }, 0);
+  });
   function render() {
     grid.replaceChildren();
     for (const id of order) {
@@ -74,6 +117,7 @@
       localStorage.setItem(modeKey, mode);
       if (value) localStorage.setItem(key, value); else localStorage.removeItem(key);
       revision++;
+      clearHome();
       order = [0, 1, 2, 3, 4]; render();
       el('neuralApiConfigStatus').textContent = mode === 'local' ? 'Sugestões locais ativadas. Nenhum contexto é enviado à API.' : 'API selecionada. A conexão só ocorre ao solicitar sugestões.';
       status('Cartões em ordem padrão.');
@@ -89,6 +133,7 @@
         if (JSON.stringify(root.BiaCardModel?.phrases) !== JSON.stringify(PHRASES)) throw new Error('Cartões incompatíveis.');
         order = root.BiaCardInference.order(root.BiaCardModel, period, last);
         render();
+        publishHome();
         status('Sugestões calculadas neste aparelho com dados fictícios. Você escolhe o que comunicar.');
       } catch { status('Sugestões locais indisponíveis. Todos os cartões continuam disponíveis.'); }
       return;
@@ -100,7 +145,7 @@
     try {
       const next = await request(base, hour < 12 ? 'manha' : hour < 18 ? 'tarde' : 'noite', last);
       if (current !== revision) return;
-      order = next; render();
+      order = next; render(); publishHome();
       status('Ordem sugerida por modelo com dados fictícios. Você escolhe o que comunicar.');
     } catch {
       if (current === revision) status('Não foi possível obter sugestões. Todos os cartões continuam disponíveis.');

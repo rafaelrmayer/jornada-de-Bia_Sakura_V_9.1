@@ -112,6 +112,14 @@
                 </div>
             </section>
 
+<section id="homeModelCards" class="my-comm-panel" aria-labelledby="homeModelCardsTitle" hidden>
+    <h2 id="homeModelCardsTitle">Sugestões de comunicação</h2>
+    <p>Demonstração com dados fictícios. Você escolhe o que comunicar.</p>
+    <div id="homeModelCardsGrid" class="neural-card-grid" aria-label="Cartões sugeridos"></div>
+    <div id="homeModelCardsFixed" class="neural-card-grid" aria-label="Outras escolhas"></div>
+    <p id="homeModelCardsChoice" role="status" aria-live="polite"></p>
+    <button id="homeModelCardsHide" type="button" class="btn-secondary">Ocultar sugestões</button>
+</section>
 <section id="biaMaybeSection" class="bia-maybe" aria-label="Sugestões opcionais" hidden>
 <h2><img src="icons/butterfly-sakura.svg" alt="" aria-hidden="true"> Talvez você queira...</h2>
 <p class="bia-maybe-hint">Sugestões baseadas em escolhas anteriores. Você decide.</p>
@@ -922,7 +930,7 @@
             <div id="neuralCards" class="neural-card-grid" aria-label="Cartões de atividades"></div>
             <div id="neuralCardsFixed" class="neural-card-grid" aria-label="Outras escolhas"></div>
             <p id="neuralCardsChoice" role="status" aria-live="polite"></p>
-            <button id="neuralCardsSuggest" type="button" class="btn-secondary">Ordenar sugestões de demonstração</button>
+            <button id="neuralCardsSuggest" type="button" class="btn-secondary">Ordenar e enviar sugestões ao início</button>
             <p id="neuralCardsStatus" role="status" aria-live="polite">Cartões em ordem padrão.</p>
             <p>As sugestões usam dados fictícios e não representam suas preferências. A ordem só muda quando você solicita.</p>
         </section>
@@ -1006,6 +1014,11 @@
         </section>
     </section>
 
+    <aside id="cardSuggestionNotice" class="card-suggestion-notice" aria-label="Aviso de sugestões" hidden>
+        <p role="status" aria-live="polite">Há sugestões de comunicação disponíveis no início.</p>
+        <button type="button" data-page="home" id="cardSuggestionOpen">Ver no início</button>
+        <button type="button" id="cardSuggestionDismiss">Dispensar aviso</button>
+    </aside>
     <!-- ===== FOOTER ===== -->
     <footer role="contentinfo">
         <div class="footer-content">

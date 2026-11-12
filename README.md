@@ -272,3 +272,18 @@ pontuações (tolerância 1e-5) e ordenação exata para todos os contextos vál
 Após o primeiro carregamento online, o service worker inclui os pesos e o motor
 local no cache para uso offline. Se algum recurso local falhar, os sete cartões
 continuam disponíveis. Publicação em GitHub Pages depende da integração do PR.
+
+### Sugestões no início e avisos dentro do aplicativo
+
+Em Minha Comunicação, “Ordenar e enviar sugestões ao início” calcula a ordem e
+publica os cinco cartões e as duas opções fixas no início. O aviso interno oferece
+“Ver no início” e “Dispensar aviso”. Ver abre a página inicial e leva o foco ao
+primeiro cartão. Dispensar fecha apenas o aviso; “Ocultar sugestões” remove o
+painel. Nenhuma fala acontece sem escolha de cartão. As escolhas nos dois painéis
+compartilham o mesmo último ID durante a sessão.
+
+As sugestões continuam demonstrativas e sintéticas. O painel e o aviso não são
+persistidos, não são notificações do sistema e não aparecem com o aplicativo
+fechado. Não há agendamento, timer de lembrete ou permissão de notificações.
+A publicação depende de uma solicitação explícita; não executa inferência em
+segundo plano. Alterar o modo de conexão limpa o painel e aviso anteriores.
