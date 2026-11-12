@@ -221,3 +221,54 @@ Cada cartão, cada frase e cada melhoria representam uma tentativa de diminuir a
 *Desenvolvido com amor, pesquisa e tecnologia por Rafael Ricardo Mayer.*
 
 **Sempre rumo à utopia e ao horizonte. ♾️**
+
+## Cartões e Neural API (integração opcional)
+
+Minha Comunicação contém um painel com cinco cartões de atividades e duas opções
+fixas. Os cartões funcionam e falam com o mecanismo de voz existente mesmo sem
+API. Não substituem frases personalizadas ou categorias.
+
+Por padrão, a ordenação usa a rede 9 → 16 → ReLU → 5 diretamente em JavaScript,
+com os pesos sintéticos exportados do treinamento reproduzível da Neural API.
+Não depende de servidor ou bibliotecas externas. A inferência não envia contexto
+à rede. A voz continua usando a preferência existente do aplicativo, que pode
+incluir um serviço externo. O último cartão fica apenas na memória da sessão;
+escolher uma opção fixa limpa esse ID.
+
+Em Configurações, desbloqueie a administração para selecionar “API externa” e
+informar um endereço base HTTPS. Somente nesse modo, ao clicar em “Ordenar
+sugestões de demonstração”, o navegador envia período do dia e ID do último
+cartão. Não envia perfil, nome ou histórico de frases. Selecione “Neste aparelho”
+para voltar ao cálculo local. Nenhuma consulta ou ordenação é automática.
+
+A API deve permitir a origem https://rafaelrmayer.github.io via CORS e carregar o
+modelo cards-demo. Uma origem inclui protocolo e domínio, sem caminho do projeto.
+O Colab com TestClient não fornece um endereço público para este recurso.
+A publicação HTTPS da API é uma etapa separada.
+
+O botão ordena todos os cartões apenas mediante solicitação. Resposta inválida,
+timeout de cinco segundos ou indisponibilidade preservam as opções. Os textos
+são locais; a resposta externa deve corresponder ao contrato exato. As duas
+opções fixas não são ordenadas. A demonstração usa dados sintéticos e não foi
+validada como personalização. Os pedidos não incluem credenciais.
+
+Verificação: `node --test tests/*.test.cjs`.
+
+
+### Pesos da demonstração no navegador
+
+`js/card-model-data.js` contém os pesos sintéticos, vocabulário e versão do
+PyTorch de origem. `js/card-model.js` executa as duas camadas lineares e ReLU;
+não treina nem registra escolhas. As pontuações servem apenas para ordenar.
+O modelo não superou a regra simples nos dados sintéticos (55,3% contra 57,3%).
+Não foi validado como personalização para a Bia.
+
+Para atualizar a exportação, gere um checkpoint com
+`scripts/train_cards_demo.py` do repositório neural-api, depois execute, em um
+ambiente com PyTorch: `python scripts/export-card-model.py /caminho/modelo.pt`.
+O script exporta os pesos e 18 referências de teste. Os testes Node comparam
+pontuações (tolerância 1e-5) e ordenação exata para todos os contextos válidos.
+
+Após o primeiro carregamento online, o service worker inclui os pesos e o motor
+local no cache para uso offline. Se algum recurso local falhar, os sete cartões
+continuam disponíveis. Publicação em GitHub Pages depende da integração do PR.

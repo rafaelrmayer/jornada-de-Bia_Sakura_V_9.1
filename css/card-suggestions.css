@@ -1,0 +1,5 @@
+.neural-card-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:1rem;margin:1rem 0;}
+.neural-card {font:inherit;font-weight:700;color:inherit;background:var(--card-bg,Canvas);border:2px solid currentColor;border-radius:1rem;padding:1.25rem;min-height:72px;cursor:pointer;overflow-wrap:anywhere;}
+.neural-card:focus-visible {outline:3px solid currentColor;outline-offset:4px;}
+#neuralApiForm {display:grid;gap:.75rem;}
+#neuralApiUrl {font:inherit;max-width:100%;padding:.75rem;}
