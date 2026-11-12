@@ -1,8 +1,10 @@
-const CACHE = 'jornada-bia-sakura-v9-6-12';
+const CACHE = 'jornada-bia-sakura-v9-6-13';
 const CORE = [
   './',
   './index.html',
   './js/card-suggestions.js',
+  './js/card-model-data.js',
+  './js/card-model.js',
   './css/card-suggestions.css',
   './css/app-v9-6-8.css',
   './icons/zen-sakura-logo.svg', './assets/sakura-petalas.svg', './icons/zen-girassol.svg', './css/refinamento-v9-4.css',
@@ -26,7 +28,7 @@ const CORE = [
   './icons/add.svg'
 ];
 self.addEventListener('install', e => e.waitUntil(
-  caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())
+  caches.open(CACHE).then(c => c.addAll([...new Set(CORE)])).then(() => self.skipWaiting())
 ));
 self.addEventListener('activate', e => e.waitUntil(
   caches.keys()

@@ -517,12 +517,14 @@
                 <div class="settings-group"><h3>♿ Acessibilidade e personalização</h3><p>Desbloqueie a administração para modificar estas opções. Preferências salvas apenas neste aparelho.</p><div id="biaExperiencePrefs" class="bia-prefs"></div><p id="biaExperienceStatus" role="status"></p></div>
                 <section class="settings-group" aria-labelledby="neuralApiTitle">
                     <h3 id="neuralApiTitle">Conexão de demonstração dos cartões</h3>
-                    <p>Opcional. Desbloqueie a administração para configurar. Ao solicitar sugestões, enviaremos ao servidor escolhido apenas o período do dia e o último cartão deste painel escolhido nesta sessão. Sem nome ou histórico de frases.</p>
+                    <p>Por padrão, as sugestões são calculadas neste aparelho, sem enviar contexto à API. Desbloqueie a administração para mudar. No modo API externa, ao solicitar sugestões, enviamos somente o período do dia e o último cartão deste painel escolhido nesta sessão. Sem nome ou histórico de frases.</p>
                     <form id="neuralApiForm">
-                        <label for="neuralApiUrl">Endereço HTTPS da Neural API</label>
+                        <label for="neuralCardsMode">Onde calcular as sugestões</label>
+                        <select id="neuralCardsMode"><option value="local">Neste aparelho (sem API)</option><option value="remote">API externa (HTTPS)</option></select>
+                        <label for="neuralApiUrl">Endereço HTTPS (somente para API externa)</label>
                         <input id="neuralApiUrl" type="url" placeholder="https://sua-api.example" autocomplete="off">
                         <button type="submit" class="btn-secondary">Salvar conexão</button>
-                        <p>Deixe o endereço vazio e salve para desativar.</p>
+                        <p>O modo neste aparelho funciona sem servidor. Só o modo API externa envia contexto.</p>
                     </form>
                     <p id="neuralApiConfigStatus" role="status"></p>
                 </section>
@@ -1026,6 +1028,8 @@
     <script src="js/random-forest.js"></script>
     <script src="js/neural-assistant.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/card-model-data.js"></script>
+    <script src="js/card-model.js"></script>
     <script src="js/card-suggestions.js"></script>
     <script src="js/emotions.js"></script>
     <script src="js/routine-activities.js"></script>

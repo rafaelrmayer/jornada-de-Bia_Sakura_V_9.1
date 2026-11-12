@@ -36,6 +36,7 @@
   if (!grid) return;
   let last = null, order = [0, 1, 2, 3, 4], revision = 0;
   const key = 'bia-card-api-url';
+  const modeKey = 'bia-card-suggestion-mode';
   const status = text => { el('neuralCardsStatus').textContent = text; };
   function speak(phrase) {
     if (typeof root.speakText === 'function') root.speakText(phrase);
@@ -57,7 +58,10 @@
     button.addEventListener('click', () => { last = null; speak(phrase); });
     el('neuralCardsFixed').appendChild(button);
   });
-  try { el('neuralApiUrl').value = localStorage.getItem(key) || ''; } catch {}
+  try {
+    el('neuralApiUrl').value = localStorage.getItem(key) || '';
+    el('neuralCardsMode').value = localStorage.getItem(modeKey) === 'remote' ? 'remote' : 'local';
+  } catch {}
   el('neuralApiForm').addEventListener('submit', event => {
     event.preventDefault();
     if (!root.SecurityService?.isUnlocked?.()) {
@@ -65,22 +69,34 @@
     }
     const value = el('neuralApiUrl').value.trim();
     try {
-      if (value) endpoint(value);
+      const mode = el('neuralCardsMode').value;
+      if (mode === 'remote') endpoint(value);
+      localStorage.setItem(modeKey, mode);
       if (value) localStorage.setItem(key, value); else localStorage.removeItem(key);
       revision++;
       order = [0, 1, 2, 3, 4]; render();
-      el('neuralApiConfigStatus').textContent = value ? 'Endereço salvo. A conexão só ocorre ao solicitar sugestões.' : 'Conexão desativada.';
+      el('neuralApiConfigStatus').textContent = mode === 'local' ? 'Sugestões locais ativadas. Nenhum contexto é enviado à API.' : 'API selecionada. A conexão só ocorre ao solicitar sugestões.';
       status('Cartões em ordem padrão.');
     } catch (error) { el('neuralApiConfigStatus').textContent = error.message; }
   });
   el('neuralCardsSuggest').addEventListener('click', async () => {
-    let base;
-    try { base = localStorage.getItem(key); } catch {}
+    let base, mode = 'local';
+    try { base = localStorage.getItem(key); mode = localStorage.getItem(modeKey) || 'local'; } catch {}
+    const hour = new Date().getHours();
+    const period = hour < 12 ? 0 : hour < 18 ? 1 : 2;
+    if (mode !== 'remote') {
+      try {
+        if (JSON.stringify(root.BiaCardModel?.phrases) !== JSON.stringify(PHRASES)) throw new Error('Cartões incompatíveis.');
+        order = root.BiaCardInference.order(root.BiaCardModel, period, last);
+        render();
+        status('Sugestões calculadas neste aparelho com dados fictícios. Você escolhe o que comunicar.');
+      } catch { status('Sugestões locais indisponíveis. Todos os cartões continuam disponíveis.'); }
+      return;
+    }
     if (!base) { status('Cartões disponíveis em ordem padrão. A conexão pode ser configurada em Configurações.'); return; }
     const current = ++revision;
     el('neuralCardsSuggest').disabled = true;
     status('Buscando sugestões de demonstração…');
-    const hour = new Date().getHours();
     try {
       const next = await request(base, hour < 12 ? 'manha' : hour < 18 ? 'tarde' : 'noite', last);
       if (current !== revision) return;
