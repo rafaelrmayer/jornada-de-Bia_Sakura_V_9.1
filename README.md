@@ -385,3 +385,13 @@ frase aumenta seu contador, mas não cria novos pares contexto/frase para atingi
 artificialmente o mínimo de linhas de treinamento. Não há aprendizado ao cadastrar,
 editar ou visualizar a lista. Falha no aprendizado não bloqueia a fala. Os dados
 continuam locais e os modelos permanecem em observação.
+
+### Apagar frases cadastradas em lote
+
+No fim da lista de Minha Comunicação, Apagar todas as frases remove apenas o
+repertório de frases personalizadas deste navegador, de todas as categorias,
+inclusive quando há um filtro ativo. Exige administração desbloqueada e uma
+confirmação com a quantidade total. Cancelar não modifica dados. Categorias,
+símbolos, favoritos, configurações e todo o aprendizado/modelos são preservados.
+A exclusão não remove frases já aprendidas: elas podem continuar no diagnóstico
+dos modelos. O botão fica desativado quando não há frases cadastradas.

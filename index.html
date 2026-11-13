@@ -932,6 +932,11 @@
                 <div class="my-comm-form-actions"><button class="btn-save" type="submit">Salvar frase</button><button class="btn-secondary" id="myCommCancelPhrase" type="button">Cancelar</button></div>
             </form>
             <div id="myCommPhraseList" class="my-comm-list" aria-live="polite"></div>
+            <div class="my-comm-bulk-clear">
+                <p>Esta ação abrange todas as frases, inclusive de outras categorias. Desbloqueie a administração para apagar. O aprendizado dos modelos, categorias, símbolos, favoritos e configurações são preservados.</p>
+                <button id="myCommClearAll" class="btn-secondary" type="button">Apagar todas as frases</button>
+                <p id="myCommClearStatus" role="status" aria-live="polite"></p>
+            </div>
         </section>
         <section class="my-comm-panel" aria-labelledby="myCommCategoryTitle">
             <div class="section-header"><h3 id="myCommCategoryTitle">Explore por assunto</h3><button class="my-comm-show-all" id="myCommShowAll" type="button">Ver todas as frases</button></div>
