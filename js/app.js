@@ -2849,6 +2849,7 @@
         cats.innerHTML=data.categories.map(name=>{const count=data.phrases.filter(p=>(p.category||'Geral')===name).length;const selected=activeCategory===name;const removable=!['Geral','Necessidades','Alimentação','Rotina','Sentimentos','Pessoas','Atividades'].includes(name);return `<div class="my-comm-category-wrap"><button type="button" class="my-comm-category-card${selected?' is-active':''}" data-category="${safe(name)}" aria-pressed="${selected}"><span class="my-comm-category-emoji" aria-hidden="true">${categoryEmoji[name]||'✨'}</span><span class="my-comm-category-name">${safe(name)}</span><span class="my-comm-category-count">${count} ${count===1?'frase':'frases'}</span></button>${removable?`<button type="button" class="my-comm-category-remove" data-remove-category="${safe(name)}" aria-label="Excluir categoria ${safe(name)}">×</button>`:''}</div>`}).join('');
         const symbols=Array.isArray(symbolsData)?symbolsData:[];
         syms.innerHTML=symbols.map(s=>{const fav=data.favoriteSymbols.includes(String(s.id));return `<div class="my-comm-symbol"><span class="emoji">${safe(s.emoji||'🔹')}</span><strong>${safe(s.label||'Símbolo')}</strong><button type="button" data-favorite-symbol="${safe(s.id)}" aria-pressed="${fav}" aria-label="${fav?'Retirar':'Adicionar'} ${safe(s.label)} ${fav?'dos':'aos'} favoritos">${fav?'★ Favorito':'☆ Favoritar'}</button></div>`}).join('');
+        const clearAll=el('myCommClearAll');if(clearAll)clearAll.disabled=data.phrases.length===0;
         const showAll=el('myCommShowAll'); if(showAll){showAll.classList.toggle('is-active',activeCategory==='*');showAll.textContent=activeCategory==='*'?'Todas as frases':'Ver todas as frases';}
     }
     el('myCommAddPhrase')?.addEventListener('click',()=>{editingId=null;el('myCommPhraseForm').reset();syncCategorySelect();if(activeCategory!=='*'&&data.categories.includes(activeCategory))el('myCommPhraseCategory').value=activeCategory;el('myCommPhraseForm').hidden=false;el('myCommPhraseText').focus();});
@@ -2856,6 +2857,19 @@
     el('myCommPhraseForm')?.addEventListener('submit',e=>{e.preventDefault();const text=el('myCommPhraseText').value.trim();if(!text)return;const category=el('myCommPhraseCategory').value||'Geral';if(editingId){const item=data.phrases.find(p=>p.id===editingId);if(item){item.text=text;item.category=category;}}else data.phrases.push({id:`phrase-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,text,category});activeCategory=category;save();el('myCommPhraseForm').hidden=true;editingId=null;render();});
     el('myCommCategoryForm')?.addEventListener('submit',e=>{e.preventDefault();const input=el('myCommCategoryName'),name=input.value.trim();if(!name)return;if(data.categories.some(c=>c.toLocaleLowerCase()===name.toLocaleLowerCase())){input.setCustomValidity('Essa categoria já existe.');input.reportValidity();return;}input.setCustomValidity('');data.categories.push(name);save();input.value='';activeCategory=name;render();});
     el('myCommShowAll')?.addEventListener('click',()=>{activeCategory='*';render();});
+    el('myCommClearAll')?.addEventListener('click',()=>{
+        const feedback=el('myCommClearStatus');
+        if(!window.SecurityService?.isUnlocked?.()){feedback.textContent='Desbloqueie a administração em Apoio para apagar todas as frases.';return;}
+        if(!data.phrases.length)return;
+        const message='Apagar todas as '+data.phrases.length+' frases cadastradas neste navegador, de todas as categorias? O aprendizado dos modelos, categorias e favoritos serão preservados. Esta ação não pode ser desfeita.';
+        if(!confirm(message))return;
+        const next={...data,phrases:[]};
+        if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false){feedback.textContent='Não foi possível apagar as frases neste navegador.';return;}
+        data=next;editingId=null;activeCategory='*';el('myCommPhraseForm').hidden=true;
+        render();
+        feedback.textContent='Todas as frases foram apagadas. O aprendizado, categorias e favoritos foram preservados.';
+        el('myCommAddPhrase').focus();
+    });
     document.addEventListener('click',e=>{
         const remove=e.target.closest('[data-remove-category]');
         if(remove){e.preventDefault();e.stopPropagation();const name=remove.dataset.removeCategory;if(name&&confirm(`Excluir a categoria “${name}”? As frases serão movidas para “Geral”.`)){data.categories=data.categories.filter(c=>c!==name);data.phrases.forEach(p=>{if((p.category||'Geral')===name)p.category='Geral';});if(activeCategory===name)activeCategory='Geral';save();render();}return;}
