@@ -302,3 +302,17 @@ Em celular, a barra usa duas linhas para preservar alvos de toque e rótulos;
 em telas largas, uma linha. navigation-layout.js mede a altura real da barra e
 do aviso de instalação, reservando espaço no documento e posicionando o aviso
 acima da navegação. O cache PWA inclui o novo controlador de layout.
+
+### Visual Sakura acolhedor
+
+O início concentra quatro escolhas: Quero, Preciso, Como estou e Meus cartões,
+com ícones maiores, fundos sólidos e detalhes em rosa suave (ou a paleta do tema).
+Eu estou aqui permanece como ação separada. Criar símbolo, Médico, Categorias,
+Modo Calmo, Música e Atividades e Assistente ficam em Apoio; a proteção
+administrativa existente permanece. O menu inferior reúne cinco destinos.
+
+Meus cartões apresenta ícones com frases, alvos de toque maiores e indicação da
+escolha via borda/fundo e aria-pressed. Não altera a ordem durante a escolha.
+As opções fixas continuam presentes. Os estilos estão em css/sakura-friendly.css,
+incluído no cache PWA, com variantes para temas escuros e alto contraste. Não
+introduz animações ou reprodução automática.

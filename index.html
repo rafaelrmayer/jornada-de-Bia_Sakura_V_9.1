@@ -34,6 +34,7 @@
     <!-- Ícones via emoji -->
     <link rel="stylesheet" href="css/app-v9-6-8.css">
     <link rel="stylesheet" href="css/card-suggestions.css">
+    <link rel="stylesheet" href="css/sakura-friendly.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
 </head>
@@ -75,8 +76,6 @@
         <button class="nav-item active" data-page="home" type="button"><span>⌂</span><small>Início</small></button>
         <button class="nav-item" data-page="my-communication" type="button"><span>💬</span><small>Comunicação</small></button>
         <button class="nav-item" data-page="routine" type="button"><span>📅</span><small>Rotina</small></button>
-        <button class="nav-item" data-page="activities" type="button"><span>🎵</span><small>Atividades</small></button>
-        <button class="nav-item" data-page="assistant" type="button"><span>🦋</span><small>Assistente</small></button>
         <button class="nav-item" data-page="cards" type="button"><span>🔣</span><small>Cartões</small></button>
         <button class="nav-item" data-page="settings" type="button"><span>⚙</span><small>Apoio</small></button>
     </nav>
@@ -102,9 +101,10 @@
                     <button class="intent-btn" data-intent="quero" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/zen-heart.svg" alt=""></span><span>Quero</span><small>Escolher algo</small></button>
                     <button class="intent-btn" data-intent="preciso" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/zen-hands.svg" alt=""></span><span>Preciso</span><small>Pedir ajuda</small></button>
                     <button class="intent-btn" data-intent="sentindo" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/zen-smile.svg" alt=""></span><span>Como estou</span><small>Mostrar o que sinto</small></button>
-                    <button class="intent-btn create-symbol-shortcut" id="homeCreateSymbolBtn" type="button" aria-label="Criar símbolo"><span class="intent-icon" aria-hidden="true"><img src="icons/add.svg" alt=""></span><span>Criar símbolo</span><small>adicionar cartão</small></button>
-                    <button class="intent-btn intent-here-btn" id="hereBtn" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/zen-heart-rays.svg" alt=""></span><span>Eu estou aqui</span><small>Me comunicar</small></button>
+                    <button class="intent-btn nav-item home-cards-intent" data-page="cards" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/chat.svg" alt=""></span><span>Meus cartões</span><small>Do meu jeito</small></button>
+
                 </div>
+                <div class="home-gentle-action"><button class="intent-btn intent-here-btn" id="hereBtn" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/zen-heart-rays.svg" alt=""></span><span>Eu estou aqui</span><small>Me comunicar</small></button><p>Uma escolha de cada vez, no seu tempo.</p></div>
                 <div class="intent-expansion" id="intentExpansion" hidden aria-live="polite">
                     <div class="intent-expansion-header">
                         <div><strong id="intentExpansionTitle">Escolha uma opção</strong><small id="intentExpansionHint">Sugestões para você</small></div>
@@ -123,13 +123,6 @@
               <h2>🌸 Talvez você queira...</h2><strong id="biaHabitTitle"></strong>
               <p id="biaHabitDescription"></p><div class="bia-habit-actions"><button type="button" id="biaHabitOpen">Abrir atividade</button><button type="button" id="biaHabitDismiss">Agora não</button></div>
             </section>
-            <section class="sakura-home-support" aria-label="Área de apoio"><button type="button" data-page="medical">🏥 Médico</button><button type="button" data-page="edit-symbols">🗂️ Categorias</button><button type="button" data-page="sensory-crisis">🌸 Modo Calmo</button><button type="button" data-page="settings">⚙️ Configurações</button></section>
-
-
-            <section class="home-quick-symbols-section" aria-label="Abrir meus cartões">
-                <button class="section-header-toggle nav-item" type="button" data-page="cards"><h2>🔣 Meus cartões</h2><span aria-hidden="true">›</span></button>
-            </section>
-
             <!-- Construtor de frase: fechado por padrão para reduzir estímulos -->
             <section class="phrase-builder-entry" aria-label="Construir uma frase">
                 <button class="phrase-builder-toggle" id="phraseBuilderToggle" type="button" aria-expanded="false" aria-controls="phraseBuilderContent">
@@ -486,6 +479,9 @@
                 <h3>⚙️ Configurações</h3>
                 <p class="settings-subtitle">Personalize a experiência e acesse as áreas de apoio.</p>
                 <section class="support-links" aria-label="Área de apoio">
+                    <button class="intent-btn create-symbol-shortcut" id="homeCreateSymbolBtn" type="button" aria-label="Criar símbolo"><span class="intent-icon" aria-hidden="true"><img src="icons/add.svg" alt=""></span><span>Criar símbolo</span><small>adicionar cartão</small></button>
+                    <button type="button" data-page="activities">🎵 Música e atividades</button>
+                    <button type="button" data-page="assistant">🦋 Assistente</button>
                     <button type="button" data-page="medical">🏥 Médico</button>
                     <button type="button" data-page="edit-symbols">🗂️ Categorias</button>
                     <button type="button" data-page="sensory-crisis">🌸 Modo Calmo</button>
@@ -898,10 +894,10 @@
     </main>
 
     <section class="page-section" id="page-cards" aria-labelledby="cardsPageTitle">
-        <div class="page-header"><h2 id="cardsPageTitle">🔣 Meus cartões</h2><p>Escolha o que você quer comunicar.</p></div>
+        <div class="page-header friendly-cards-heading"><span aria-hidden="true" class="friendly-flower">🌷</span><div><h2 id="cardsPageTitle">Meus cartões</h2><p>Meu jeito de dizer, no meu tempo.</p></div></div>
         <section class="my-comm-panel" aria-labelledby="neuralCardsTitle">
             <h3 id="neuralCardsTitle">O que quero fazer?</h3>
-            <p>Escolha um cartão para falar. Todas as opções ficam disponíveis.</p>
+            <p>Toque no cartão para falar. Você pode escolher outra coisa a qualquer momento.</p>
             <div id="neuralCards" class="neural-card-grid" aria-label="Cartões de atividades"></div>
             <div id="neuralCardsFixed" class="neural-card-grid" aria-label="Outras escolhas"></div>
             <p id="neuralCardsChoice" role="status" aria-live="polite"></p>
