@@ -1,4 +1,4 @@
-const CACHE = 'jornada-bia-sakura-v9-6-23';
+const CACHE = 'jornada-bia-sakura-v9-6-24';
 const CORE = [
   './',
   './index.html',
