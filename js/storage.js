@@ -21,7 +21,7 @@
         const keys=[];
         for(let i=0;i<localStorage.length;i++){
           const k=localStorage.key(i);
-          if(k && (legacyKeys.has(k) || k.startsWith(PREFIX))) keys.push(k);
+          if(k && (legacyKeys.has(k) || k.startsWith(PREFIX) || window.JornadaModuleData?.keys.includes(k))) keys.push(k);
         }
         keys.forEach(k=>localStorage.removeItem(k));
         return true;

@@ -1,6 +1,6 @@
 /* Jornada de Bia v31.1 - versioned backup and validation */
 (() => {
-  const BACKUP_VERSION = 3;
+  const BACKUP_VERSION = 4;
   const MAX_BYTES = 5 * 1024 * 1024;
   const CONFIG_KEYS = new Set(['symbolsData','voiceRate','voicePitch','autoSpeak','theme']);
   const safeJson = v => { try { return JSON.parse(v); } catch { return null; } };
@@ -24,6 +24,7 @@
     if (d.history && !Array.isArray(d.history)) throw new Error('Histórico inválido');
     if (d.favoriteIds && !Array.isArray(d.favoriteIds)) throw new Error('Favoritos inválidos');
     if (d.symbolUsage && typeof d.symbolUsage !== 'object') throw new Error('Uso de símbolos inválido');
+    if(d.moduleData!==undefined)JornadaModuleData.validate(d.moduleData);
     return true;
   }
   window.BackupService = {
@@ -57,6 +58,7 @@
       }
       if (p.type === 'configuration') {
         if (!Array.isArray(p.data.symbolsData)) throw new Error('Configuração inválida');
+        p.data=Object.fromEntries(Object.entries(p.data).filter(([key])=>CONFIG_KEYS.has(key)));
       } else { validateData(p.data); }
       return p;
     },
