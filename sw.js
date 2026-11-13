@@ -1,4 +1,4 @@
-const CACHE = 'jornada-bia-sakura-v9-6-16';
+const CACHE = 'jornada-bia-sakura-v9-6-17';
 const CORE = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const CORE = [
   './js/card-model-data.js',
   './js/card-model.js',
   './css/card-suggestions.css',
+  './css/sakura-friendly.css',
   './css/app-v9-6-8.css',
   './icons/zen-sakura-logo.svg', './assets/sakura-petalas.svg', './icons/zen-girassol.svg', './css/refinamento-v9-4.css',
   './js/security.js',

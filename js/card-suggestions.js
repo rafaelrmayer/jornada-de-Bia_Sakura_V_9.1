@@ -2,6 +2,7 @@
 (function (root) {
   'use strict';
   const PHRASES = ['Quero comer.', 'Quero jogar Zelda: Ocarina of Time.', 'Quero descansar.', 'Quero desenhar.', 'Quero ouvir uma história.'];
+  const ICONS = ['🍽️', '🎮', '🛋️', '🎨', '📖'];
   const FIXED = ['Quero outra coisa.', 'Não quero agora.'];
   function endpoint(value) {
     const url = new URL(value);
@@ -42,20 +43,30 @@
     if (typeof root.speakText === 'function') root.speakText(phrase);
     el('neuralCardsChoice').textContent = 'Você escolheu: ' + phrase;
   }
+  function choose(button, phrase, id) {
+    last = id;
+    document.querySelectorAll('#neuralCards button, #neuralCardsFixed button').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    speak(phrase);
+  }
   function render() {
     grid.replaceChildren();
     for (const id of order) {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'neural-card';
-      button.textContent = PHRASES[id]; button.dataset.cardId = String(id);
-      button.addEventListener('click', () => { last = id; speak(PHRASES[id]); });
+      const icon = document.createElement('span');
+      icon.className = 'friendly-card-icon'; icon.textContent = ICONS[id]; icon.setAttribute('aria-hidden', 'true');
+      const label = document.createElement('span'); label.className = 'friendly-card-label'; label.textContent = PHRASES[id];
+      button.append(icon, label); button.dataset.cardId = String(id);
+      button.setAttribute('aria-pressed', 'false');
+      button.addEventListener('click', () => choose(button, PHRASES[id], id));
       grid.appendChild(button);
     }
   }
   FIXED.forEach(phrase => {
     const button = document.createElement('button'); button.type = 'button';
     button.className = 'neural-card'; button.textContent = phrase;
-    button.addEventListener('click', () => { last = null; speak(phrase); });
+    button.setAttribute('aria-pressed', 'false');
+    button.addEventListener('click', () => choose(button, phrase, null));
     el('neuralCardsFixed').appendChild(button);
   });
   try {
