@@ -477,9 +477,10 @@
                 if(bar)bar.style.width=Math.min(100,Math.max(4,d.score*4))+'%';
                 status.textContent=selectedSymbols.length?'Analisando':'Observando';
             }
-            learn(text){
+            learn(text, {standalone = false} = {}){
                 if(!text)return;
-                const key=this.contextKey(); const seq=selectedSymbols.map(s=>s.id).join(',')||'none';
+                const key=standalone?[this.environment,this.timeBucket(),'frase-personalizada'].join('|'):this.contextKey();
+                const seq=standalone?'none':(selectedSymbols.map(s=>s.id).join(',')||'none');
                 if(!window.JornadaContextRecords?.record(this.stats,key,seq,text))return;
                 this.save();
                 this.randomForestModel=null; this.randomForestSignature=''; this.neuralModel=null; this.neuralSignature='';
@@ -1635,6 +1636,7 @@
                 target.setAttribute('aria-label', title ? title.textContent.trim() : 'Conteúdo da Jornada de Bia');
                 target.focus({ preventScroll: true });
                 document.dispatchEvent(new CustomEvent('bia:pagechange', {detail: {page: requestedPage}}));
+                if(requestedPage==='assistant')contextBrain.render();
             } else {
                 // Proteção adicional caso o HTML e o mapa de páginas saiam de sincronia.
                 currentPage = 'home';
@@ -2435,6 +2437,14 @@
         function recordPhraseUse(text){
             const key='phraseUsage'; const data=JSON.parse(StorageService.getItem(key)||'{}'); data[text]=(data[text]||0)+1; StorageService.setItem(key,JSON.stringify(data));
         }
+        function communicatePersonalPhrase(text) {
+            const phrase=String(text||'').trim();
+            if(!phrase)return;
+            speakText(phrase);
+            // O registro acompanha a escolha explícita; não depende de a voz terminar.
+            try { recordPhraseUse(phrase); } catch(e) { /* A fala continua disponível. */ }
+            try { contextBrain.learn(phrase,{standalone:true}); contextBrain.render(); } catch(e) { /* Falha de aprendizado não impede comunicação. */ }
+        }
         function speakNaturalMessage(){
             if(!selectedSymbols.length)return;
             const generated=phraseGenerator.generatePhrase(selectedSymbols); speakText(generated?.text || selectedSymbols.map(s=>s.label).join(' '));
@@ -2851,7 +2861,7 @@
         if(remove){e.preventDefault();e.stopPropagation();const name=remove.dataset.removeCategory;if(name&&confirm(`Excluir a categoria “${name}”? As frases serão movidas para “Geral”.`)){data.categories=data.categories.filter(c=>c!==name);data.phrases.forEach(p=>{if((p.category||'Geral')===name)p.category='Geral';});if(activeCategory===name)activeCategory='Geral';save();render();}return;}
         const category=e.target.closest('[data-category]');if(category){activeCategory=category.dataset.category;render();return;}
         const b=e.target.closest('button');if(!b)return;
-        if(b.dataset.speak){const p=data.phrases.find(x=>x.id===b.dataset.speak);if(p&&typeof speakText==='function'){speakText(p.text);if(typeof recordPhraseUse==='function')recordPhraseUse(p.text);}}
+        if(b.dataset.speak){const p=data.phrases.find(x=>x.id===b.dataset.speak);if(p)communicatePersonalPhrase(p.text);}
         if(b.dataset.edit){const p=data.phrases.find(x=>x.id===b.dataset.edit);if(p){editingId=p.id;el('myCommPhraseText').value=p.text;syncCategorySelect();el('myCommPhraseCategory').value=data.categories.includes(p.category)?p.category:'Geral';el('myCommPhraseForm').hidden=false;el('myCommPhraseText').focus();}}
         if(b.dataset.delete){const p=data.phrases.find(x=>x.id===b.dataset.delete);if(p&&confirm(`Excluir a frase “${p.text}”?`)){data.phrases=data.phrases.filter(x=>x.id!==p.id);save();render();}}
         if(b.dataset.favoriteSymbol){const id=String(b.dataset.favoriteSymbol);data.favoriteSymbols=data.favoriteSymbols.includes(id)?data.favoriteSymbols.filter(x=>x!==id):[...data.favoriteSymbols,id];save();render();}
