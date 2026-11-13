@@ -316,3 +316,15 @@ escolha via borda/fundo e aria-pressed. Não altera a ordem durante a escolha.
 As opções fixas continuam presentes. Os estilos estão em css/sakura-friendly.css,
 incluído no cache PWA, com variantes para temas escuros e alto contraste. Não
 introduz animações ou reprodução automática.
+
+### Fundos em degradê e paleta azul
+
+As paletas selecionáveis são rosa e azul, com modo escuro independente. Verde e
+verde escuro salvos anteriormente migram para azul e azul escuro, respectivamente.
+O fundo usa degradês estáticos (rosa chá/pêssego/creme ou azul céu), sem galhos,
+pétalas ou textura decorativa. A flor pequena do cabeçalho permanece.
+
+O cabeçalho usa um tom mais profundo para manter o nome e o subtítulo brancos
+legíveis. Os cartões preservam fundos claros e textos escuros; os temas escuros
+e alto contraste continuam disponíveis. Testes de paleta cobrem migração,
+restauração e alternância claro/escuro.
