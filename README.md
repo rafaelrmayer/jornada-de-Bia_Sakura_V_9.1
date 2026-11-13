@@ -328,3 +328,7 @@ O cabeçalho usa um tom mais profundo para manter o nome e o subtítulo brancos
 legíveis. Os cartões preservam fundos claros e textos escuros; os temas escuros
 e alto contraste continuam disponíveis. Testes de paleta cobrem migração,
 restauração e alternância claro/escuro.
+
+Música voltou ao menu inferior, abrindo Música e Atividades. A barra usa seis
+destinos, em uma linha no computador e duas de três no celular. O acesso em Apoio
+permanece disponível.
