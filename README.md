@@ -426,3 +426,24 @@ Coincidir com a próxima escolha não confirma necessidade, personalização ou
 benefício de comunicação. Testes manuais não são amostras independentes de uso
 real, e a escolha de contexto pode influenciar os resultados. A avaliação não
 altera a participação dos modelos, que continua em observação.
+
+### Recuperação automática para cálculo local
+
+Em API externa, Atualizar cartões tenta o servidor por até cinco segundos. Falha
+de rede/HTTP, resposta incompatível ou timeout acionam o mesmo modelo local
+embarcado. Sem internet detectada ou sem endereço, usa local sem pedido externo.
+A mensagem informa “Usando processamento neste aparelho”; sucesso remoto informa
+“Cartões atualizados pelo servidor”. Isso não altera a preferência salva: uma
+próxima atualização explícita tenta novamente a API, sem reconexões automáticas.
+
+Se o modelo local também estiver indisponível ou retornar ordem inválida, mantém
+a lista existente e as duas opções fixas. Escolher um cartão durante um pedido,
+sair da página ou mudar configuração cancela/invalida a atualização pendente;
+respostas atrasadas não podem reordenar a tela depois da escolha. Os botões de
+comunicação permanecem disponíveis enquanto a consulta acontece. Não há fala
+ou envio de escolhas automático. A recuperação trata o cálculo da ordem; a voz
+continua usando suas configurações existentes e disponibilidade no dispositivo.
+
+O uso offline completo da página exige carregamento e instalação do cache PWA
+antes da desconexão. Suspensão/cold start da hospedagem pode ultrapassar os cinco
+segundos e resultar em cálculo local mesmo que o servidor esteja iniciando.

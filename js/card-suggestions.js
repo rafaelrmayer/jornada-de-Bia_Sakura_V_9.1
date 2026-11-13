@@ -17,9 +17,12 @@
         JSON.stringify(data.fixed_options) !== JSON.stringify(FIXED)) throw new Error('Resposta incompatível.');
     return data.cards.map(c => c.id);
   }
-  async function request(base, period, last, fetcher = root.fetch.bind(root), timeout = 5000) {
+  async function request(base, period, last, fetcher = root.fetch.bind(root), timeout = 5000, signal) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
+    const abort = () => controller.abort();
+    if (signal?.aborted) abort();
+    signal?.addEventListener('abort', abort, {once:true});
+    const timer = setTimeout(abort, timeout);
     try {
       const response = await fetcher(endpoint(base), {
         method: 'POST', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store',
@@ -28,14 +31,29 @@
       });
       if (!response.ok) throw new Error('API indisponível.');
       return validate(await response.json());
-    } finally { clearTimeout(timer); }
+    } finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = {endpoint, validate, request};
+  function validateOrder(order) {
+    if (!Array.isArray(order) || order.length !== 5 || new Set(order).size !== 5 || !order.every(id=>Number.isInteger(id)&&id>=0&&id<5)) throw new Error('Ordem local incompatível.');
+    return order;
+  }
+  async function resolveOrder({base, period, last, remote, online=true, local, fetcher, timeout=5000, signal}) {
+    if (signal?.aborted) throw new Error('Atualização cancelada.');
+    if (remote && base && online) {
+      try {
+        const order = await request(base, ['manha','tarde','noite'][period], last, fetcher, timeout, signal);
+        if (signal?.aborted) throw new Error('Atualização cancelada.');
+        return {order, source:'remote'};
+      } catch (error) { if (signal?.aborted) throw error; }
+    }
+    return {order:validateOrder(local()), source:'local'};
+  }
+  if (typeof module !== 'undefined' && module.exports) module.exports = {endpoint, validate, request, resolveOrder};
   if (!root.document) return;
   const el = id => document.getElementById(id);
   const grid = el('neuralCards');
   if (!grid) return;
-  let last = null, order = [0, 1, 2, 3, 4], revision = 0;
+  let last = null, order = [0, 1, 2, 3, 4], revision = 0, activeRequest = null;
   const key = 'bia-card-api-url';
   const modeKey = 'bia-card-suggestion-mode';
   const status = text => { el('neuralCardsStatus').textContent = text; };
@@ -43,7 +61,13 @@
     if (typeof root.speakText === 'function') root.speakText(phrase);
     el('neuralCardsChoice').textContent = 'Você escolheu: ' + phrase;
   }
+  function cancelUpdate() {
+    revision++;
+    activeRequest?.abort(); activeRequest=null;
+    el('neuralCardsSuggest').disabled=false;
+  }
   function choose(button, phrase, id) {
+    if(activeRequest){cancelUpdate();status('Escolha mantida. Você pode atualizar os cartões quando quiser.');}
     last = id;
     document.querySelectorAll('#neuralCards button, #neuralCardsFixed button').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
     speak(phrase);
@@ -84,41 +108,40 @@
       if (mode === 'remote') endpoint(value);
       localStorage.setItem(modeKey, mode);
       if (value) localStorage.setItem(key, value); else localStorage.removeItem(key);
-      revision++;
+      cancelUpdate();
       order = [0, 1, 2, 3, 4]; render();
       el('neuralApiConfigStatus').textContent = mode === 'local' ? 'Sugestões locais ativadas. Nenhum contexto é enviado à API.' : 'API selecionada. A conexão só ocorre ao solicitar sugestões.';
       status('Cartões disponíveis.');
     } catch (error) { el('neuralApiConfigStatus').textContent = error.message; }
   });
   el('neuralCardsSuggest').addEventListener('click', async () => {
-    let base, mode = 'local';
-    try { base = localStorage.getItem(key); mode = localStorage.getItem(modeKey) || 'local'; } catch {}
-    const hour = new Date().getHours();
-    const period = hour < 12 ? 0 : hour < 18 ? 1 : 2;
-    if (mode !== 'remote') {
-      try {
-        if (JSON.stringify(root.BiaCardModel?.phrases) !== JSON.stringify(PHRASES)) throw new Error('Cartões incompatíveis.');
-        order = root.BiaCardInference.order(root.BiaCardModel, period, last);
-        render();
-        status('Cartões atualizados.');
-      } catch { status('Sugestões locais indisponíveis. Todos os cartões continuam disponíveis.'); }
-      return;
-    }
-    if (!base) { status('Cartões disponíveis em ordem padrão. A conexão pode ser configurada em Configurações.'); return; }
-    const current = ++revision;
-    el('neuralCardsSuggest').disabled = true;
-    status('Buscando sugestões de demonstração…');
+    let base, mode='local';
+    try { base=localStorage.getItem(key); mode=localStorage.getItem(modeKey)||'local'; } catch {}
+    cancelUpdate();
+    const current=revision;
+    const controller=new AbortController();activeRequest=controller;
+    const hour=new Date().getHours();const period=hour<12?0:hour<18?1:2;
+    const snapshotLast=last;
+    el('neuralCardsSuggest').disabled=true;
+    status(mode==='remote'?'Atualizando cartões…':'Processando neste aparelho…');
     try {
-      const next = await request(base, hour < 12 ? 'manha' : hour < 18 ? 'tarde' : 'noite', last);
-      if (current !== revision) return;
-      order = next; render();
-      status('Cartões atualizados.');
+      const result=await resolveOrder({base,period,last:snapshotLast,remote:mode==='remote',online:root.navigator?.onLine!==false,signal:controller.signal,
+        local:()=>{
+          if(JSON.stringify(root.BiaCardModel?.phrases)!==JSON.stringify(PHRASES))throw new Error('Cartões incompatíveis.');
+          return root.BiaCardInference.order(root.BiaCardModel,period,snapshotLast);
+        }});
+      if(current!==revision)return;
+      order=result.order;render();
+      el('neuralCardsStatus').dataset.source=result.source;
+      status(result.source==='remote'?'Cartões atualizados pelo servidor.':mode==='remote'?'Usando processamento neste aparelho.':'Cartões atualizados neste aparelho.');
     } catch {
-      if (current === revision) status('Não foi possível obter sugestões. Todos os cartões continuam disponíveis.');
-    } finally { el('neuralCardsSuggest').disabled = false; }
+      if(current===revision){el('neuralCardsStatus').dataset.source='preserved';status('Cartões mantidos. Você pode continuar escolhendo.');}
+    } finally {
+      if(current===revision){activeRequest=null;el('neuralCardsSuggest').disabled=false;}
+    }
   });
   document.addEventListener('bia:pagechange', event => {
-    if (event.detail?.page !== 'cards') return;
+    if (event.detail?.page !== 'cards') {if(activeRequest){cancelUpdate();status('Cartões disponíveis.');}return;}
     let mode = 'local';
     try { mode = localStorage.getItem(modeKey) || 'local'; } catch {}
     // Entrar na página nunca inicia envio automático para um serviço externo.
