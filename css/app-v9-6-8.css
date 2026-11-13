@@ -4959,7 +4959,7 @@ html[data-theme="dark-cream"] body .sensory-crisis-entry .sensory-crisis-btn:foc
 .bia-maybe[hidden]{display:none!important}.bia-maybe h2{display:flex;align-items:center;gap:12px;font-size:1.2rem;color:inherit!important}.bia-maybe h2 img{width:48px;height:48px}.bia-maybe-hint{color:inherit!important;opacity:.9}.bia-maybe-list{display:flex;flex-wrap:wrap;gap:12px}.bia-maybe-choice{min-height:52px;flex:1 1 170px;border-radius:14px;border:2px solid var(--ui-border,#8c8087);background:var(--sakura-control,var(--card-bg));color:var(--sakura-ink,var(--text));font:inherit;font-weight:650;padding:12px;cursor:pointer}.bia-maybe-choice:focus-visible{outline:3px solid #2478ac;outline-offset:3px}.bia-ai-controls{padding:12px;border:1px solid var(--ui-border,#8c8087);border-radius:14px;margin:12px 0;color:var(--sakura-ink,var(--text))}
 
 /* V8.1 — navegação só nas páginas internas; menu principal da home já tem cartões */
-body.sakura-on-home .visual-bottom-nav{display:none!important}
+/* A navegação inferior permanece disponível também no início. */
 body.sakura-on-home .main-content{padding-bottom:24px!important}
 /* Acesso ao Modo Calmo permanece nos cartões de apoio */
 #page-home .sakura-duplicate-calm{display:none!important}
@@ -5792,4 +5792,17 @@ html #page-home.intent-compact .intent-suggestion {
     html #page-home.intent-compact .intent-grid .intent-btn {
         transition: none !important;
     }
+}
+
+/* Navegação inferior contínua em todas as páginas. */
+html body .visual-bottom-nav {
+  display:grid!important;
+  grid-template-columns:repeat(7,minmax(0,1fr))!important;
+  z-index:1100;
+}
+html body {padding-bottom:calc(var(--bia-bottom-nav-height,90px) + var(--bia-install-banner-height,0px))!important;}
+html body .install-banner {bottom:var(--bia-bottom-nav-height,90px)!important;}
+@media(max-width:620px) {
+  html body .visual-bottom-nav {grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+  html body .visual-bottom-nav .nav-item {padding:6px 3px!important;min-width:0;}
 }
