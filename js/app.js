@@ -390,7 +390,7 @@
                 this.environment=StorageService.getItem('environmentContext')||'auto';
                 this.lastPrediction=''; this.lastScore=0; this.randomForestModel=null; this.randomForestSignature=''; this.neuralModel=null; this.neuralSignature=''; this.load();
             }
-            load(){try{this.stats=JSON.parse(StorageService.getItem('contextBrainData')||'{}')||{};}catch(e){this.stats={};}}
+            load(){try{const data=JSON.parse(StorageService.getItem('contextBrainData')||'{}');this.stats=data&&typeof data==='object'&&!Array.isArray(data)?data:{};}catch(e){this.stats={};}}
             save(){try{StorageService.setItem('contextBrainData',JSON.stringify(this.stats));}catch(e){}}
             timeBucket(){const h=new Date().getHours(); if(h>=6&&h<11)return 'manhã'; if(h>=11&&h<15)return 'almoco'; if(h>=15&&h<19)return 'tarde'; return 'noite';}
             timeLabel(){return {manhã:'Manhã',almoco:'Almoço',tarde:'Tarde',noite:'Noite'}[this.timeBucket()]}
@@ -399,11 +399,12 @@
             envKey(){return this.environment==='auto' ? (contextAnalyzer.analyzeContext(selectedSymbols)?.context||'auto') : this.environment;}
             contextKey(){return [this.envKey(),this.timeBucket(),selectedIntent||'nenhuma'].join('|');}
             recentPhrase(){const usage=JSON.parse(StorageService.getItem('phraseUsage')||'{}');const arr=Object.entries(usage).sort((a,b)=>b[1]-a[1]);return arr[0]?.[0]||'Ainda aprendendo';}
-            learnedCount(){return Object.values(this.stats).reduce((a,v)=>a+(typeof v==='number'?v:(v?.count||0)),0)}
+            trainingRecords(){return window.JornadaContextRecords?.trainingRecords(this.stats)||{};}
+            learnedCount(){return Object.values(this.trainingRecords()).reduce((sum,row)=>sum+row.count,0)}
             candidateRows(){
                 const key=this.contextKey(), rows=[];
-                for(const [k,v] of Object.entries(this.stats)){
-                    if(!k.startsWith(key+'|')) continue;
+                for(const v of Object.values(this.trainingRecords())){
+                    if(!v.contextKey.startsWith(key+'|')) continue;
                     if(v?.text) rows.push({text:v.text,count:v.count||1,score:(v.count||1)*4});
                 }
                 return rows.sort((a,b)=>b.score-a.score);
@@ -418,12 +419,12 @@
                 if(selectedSymbols.length && !learned.length){const generated=phraseGenerator.generatePhrase(selectedSymbols);if(generated)prediction=generated.text;}
                 const score=learned[0]?.score||0;
                 // Random Forest experimental, local-only. Reuse the model until local learning data changes.
-                // It may influence the phrase only with enough samples, multiple classes and a strong vote margin.
+                // Observação: o resultado não substitui a frase do motor contextual.
                 try {
-                    const records = this.stats || {};
+                    const records = this.trainingRecords();
                     const recordCount = Object.values(records).filter(v => v && typeof v === 'object' && typeof v.text === 'string' && v.text.trim()).length;
                     if (window.JornadaRandomForest && recordCount >= 8) {
-                        const signature = Object.keys(records).sort().join('¦') + '§' + recordCount + '§' + Object.values(records).reduce((sum, v) => sum + (Number(v?.count) || 0), 0);
+                        const signature = window.JornadaContextRecords.signature(this.stats);
                         if (!this.randomForestModel || this.randomForestSignature !== signature) {
                             const rf = new window.JornadaRandomForest({trees: 21, seed: 731});
                             const trained = rf.train(records);
@@ -439,12 +440,11 @@
                     }
                 } catch (e) { /* keep the established prediction path if RF cannot run */ }
 
-                // Rede neural local experimental: só influencia a sugestão quando concorda com o RF.
-                // Em caso de poucos dados, divergência ou baixa confiança, mantém o resultado anterior.
+                // Rede neural local separada da Neural API: comparação offline, sem alterar a frase.
                 try {
-                    const records=this.stats||{};
+                    const records=this.trainingRecords();
                     const rows=Object.values(records).filter(v=>v&&typeof v.text==='string'&&v.text.trim());
-                    const signature=Object.keys(records).sort().join('¦')+'§'+rows.reduce((sum,v)=>sum+(Number(v.count)||0),0);
+                    const signature=window.JornadaContextRecords.signature(this.stats);
                     let nnResult=null,rfResult=null;
                     if(window.JornadaNeuralAssistant&&rows.length>=8){
                         if(!this.neuralModel||this.neuralSignature!==signature){
@@ -457,7 +457,8 @@
                         rfResult=this.randomForestModel?.predict(key,{seq});
                         // V8: comparar sem alterar a frase nem automatizar comunicação.
                     }
-                    const stats=document.getElementById('biaAiStats');if(stats)stats.textContent='Registros locais: '+rows.length+' · Random Forest: '+(rfResult?'disponível':'aguardando')+' · Rede neural: '+(nnResult?'disponível (observação)':'aguardando')+'.';
+                    const memory=window.JornadaContextRecords.summary(this.stats);
+                    const stats=document.getElementById('biaAiStats');if(stats)stats.textContent='Escolhas registradas após a atualização: '+memory.verifiedChoices+' · Registros antigos (contagem não verificada): '+memory.legacyRows+' · Random Forest: '+(this.randomForestModel?.model?.length?'disponível (observação)':'aguardando')+' · Rede neural local: '+(nnResult?'disponível (observação)':'aguardando')+'.';
                     const panel=document.getElementById('biaAssistantSummary');
                     if(panel){panel.textContent=nnResult&&rfResult?
                         'Random Forest: '+rfResult.text+' · Rede neural: '+nnResult.text+'. '+(nnResult.text===rfResult.text?'Os modelos concordam.':'Os modelos divergem; sugestões conservadoras mantidas.'):
@@ -479,10 +480,8 @@
             learn(text){
                 if(!text)return;
                 const key=this.contextKey(); const seq=selectedSymbols.map(s=>s.id).join(',')||'none';
-                const k=key+'|'+seq;
-                const old=this.stats[k]&&typeof this.stats[k]==='object'?this.stats[k]:{count:0,text:'',seq};
-                old.count++; old.text=text; old.seq=seq; old.lastUsed=Date.now();
-                this.stats[k]=old; this.save();
+                if(!window.JornadaContextRecords?.record(this.stats,key,seq,text))return;
+                this.save();
                 this.randomForestModel=null; this.randomForestSignature=''; this.neuralModel=null; this.neuralSignature='';
             }
         }

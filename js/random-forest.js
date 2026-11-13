@@ -10,6 +10,7 @@
       this.trees = Math.max(3, Math.min(51, Math.floor(Number(options.trees) || 9)));
       const requestedSeed = Number(options.seed);
       this.seed = Number.isFinite(requestedSeed) ? ((requestedSeed >>> 0) || 731) : 731;
+      this.initialSeed = this.seed;
       this.model = [];
       this.labels = [];
       this.featuresList = ['environment', 'time', 'intent', 'sequence', 'symbolCount', 'firstSymbol', 'lastSymbol'];
@@ -22,7 +23,7 @@
     }
 
     features(key, row = {}) {
-      const parts = String(key || '').split('|');
+      const parts = String(row.contextKey || key || '').split('|');
       const sequenceFromKey = parts.slice(3).join('|');
       const sequence = sequenceFromKey || String(row.seq || 'none');
       const symbols = sequence === 'none' ? [] : sequence.split(',').filter(Boolean);
@@ -38,6 +39,7 @@
     }
 
     train(records) {
+      this.seed = this.initialSeed;
       const data = [];
       for (const [key, row] of Object.entries(records || {})) {
         if (!row || typeof row !== 'object' || typeof row.text !== 'string' || !row.text.trim()) continue;
@@ -52,7 +54,7 @@
       this.metrics = { ready: false, samples: data.length, weightedSamples, classes: this.labels.length, oobAccuracy: null };
       if (data.length < 5 || this.labels.length < 2) return this.metrics;
 
-      const oobVotes = new Map(data.map(item => [item.id, {}]));
+      const oobVotes = new Map(data.map(item => [item.id, Object.create(null)]));
       for (let t = 0; t < this.trees; t++) {
         const sample = [];
         const inBag = new Set();
@@ -100,7 +102,7 @@
     }
 
     buildTree(rows, depth) {
-      const counts = {};
+      const counts = Object.create(null);
       rows.forEach(row => { counts[row.y] = (counts[row.y] || 0) + 1; });
       const majority = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
       if (depth >= 5 || Object.keys(counts).length === 1 || rows.length < 4) return { label: majority };
@@ -115,7 +117,7 @@
       let best = null, bestScore = Infinity;
 
       for (const feature of chosenFeatures) {
-        const groups = {};
+        const groups = Object.create(null);
         rows.forEach(row => {
           const value = String(row.x[feature] ?? '?');
           (groups[value] || (groups[value] = [])).push(row);
@@ -123,7 +125,7 @@
         if (Object.keys(groups).length < 2) continue;
         let score = 0;
         for (const group of Object.values(groups)) {
-          const groupCounts = {};
+          const groupCounts = Object.create(null);
           group.forEach(row => { groupCounts[row.y] = (groupCounts[row.y] || 0) + 1; });
           let entropy = 0;
           for (const count of Object.values(groupCounts)) {
@@ -136,7 +138,7 @@
       }
 
       if (!best) return { label: majority };
-      const branches = {};
+      const branches = Object.create(null);
       for (const [value, group] of Object.entries(best.groups)) branches[value] = this.buildTree(group, depth + 1);
       return { feature: best.feature, branches, label: majority };
     }
@@ -152,7 +154,7 @@
     predict(key, row = {}) {
       if (!this.model.length) return null;
       const features = this.features(key, row);
-      const votes = {};
+      const votes = Object.create(null);
       for (const tree of this.model) {
         const label = this.predictTree(tree, features);
         if (label) votes[label] = (votes[label] || 0) + 1;

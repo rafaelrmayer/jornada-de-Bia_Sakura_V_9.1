@@ -332,3 +332,40 @@ restauração e alternância claro/escuro.
 Música voltou ao menu inferior, abrindo Música e Atividades. A barra usa seis
 destinos, em uma linha no computador e duas de três no celular. O acesso em Apoio
 permanece disponível.
+
+### Memória contextual e avaliação do Random Forest
+
+As novas escolhas de frases são armazenadas em contextBrainData como registros
+versionados (recordVersion: 2), separados por contexto/sequência e frase. Repetir
+uma frase incrementa somente sua contagem; escolher outra mantém ambas.
+contextKey contém as entradas do modelo, enquanto a chave de armazenamento inclui
+a identidade da frase. RF e MLP usam contextKey explicitamente para evitar que o
+rótulo da resposta vaze para as entradas.
+
+Registros antigos permanecem intactos no armazenamento e nos backups. Como o
+contador antigo podia acumular escolhas de frases sobrescritas, cada registro
+antigo recebe peso 1 na preparação dos dados, não seu contador bruto. Não é
+possível recuperar as alternativas antigas perdidas. O painel distingue novas
+escolhas de registros antigos com contagem não verificada. Atualizações não
+reiniciam nem apagam o histórico automaticamente.
+
+Random Forest e rede neural local MLP continuam em observação e não substituem
+as frases do motor contextual. Ambos executam offline; o RF funciona mesmo sem a
+MLP. Esta rede local de comparação é distinta do modelo de cinco cartões,
+exportado do PyTorch, e do serviço Neural API. Nenhum dado é enviado pelo treino
+local. A atualização não adiciona coleta remota ou treinamento da Neural API.
+
+Execute `node scripts/evaluate-random-forest.cjs` para uma avaliação fictícia
+controlada: 32 contextos de treino, 16 contextos de teste distintos, duas frases
+associadas artificialmente ao ambiente. Com a semente atual, o RF acertou 100%
+nesse teste e a regra de frase mais frequente 50%; a estimativa interna OOB foi
+21,875%. A discrepância e a simplicidade do cenário impedem concluir utilidade
+real. OOB é calculado sobre linhas agregadas de contexto/frase, não sobre eventos
+independentes de uso. Não comparar esses números com os da rede neural de
+cartões, pois os dados e a tarefa são diferentes. Esse teste não usa escolhas da
+Bia e não valida personalização.
+
+Os testes cobrem alternativas preservadas, contagens independentes, leitura de
+legados sem mutação, separação entre rótulos e entradas, assinatura de cache,
+repetibilidade do RF, contextos insuficientes e manutenção da frase do motor
+contextual enquanto os modelos observam.
