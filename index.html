@@ -59,6 +59,7 @@
     <nav class="nav-menu" aria-label="Navegação principal">
         <div class="nav-container">
             <button class="nav-item active" data-page="home">🏠 Início</button>
+            <button class="nav-item" data-page="cards">🔣 Meus cartões</button>
             <button class="nav-item" data-page="my-communication">💬 Minha Comunicação</button>
             <button class="nav-item" data-page="routine">📅 Minha Rotina</button>
             <button class="nav-item" data-page="activities">🎵 Música e Atividades</button>
@@ -75,7 +76,7 @@
         <button class="nav-item" data-page="my-communication" type="button"><span>💬</span><small>Comunicação</small></button>
         <button class="nav-item" data-page="routine" type="button"><span>📅</span><small>Rotina</small></button>
         <button class="nav-item" data-page="activities" type="button"><span>🎵</span><small>Atividades</small></button>
-        <button class="nav-item" data-page="assistant" type="button"><span>🦋</span><small>Assistente</small></button>
+        <button class="nav-item" data-page="cards" type="button"><span>🔣</span><small>Cartões</small></button>
         <button class="nav-item" data-page="settings" type="button"><span>⚙</span><small>Apoio</small></button>
     </nav>
 
@@ -112,14 +113,6 @@
                 </div>
             </section>
 
-<section id="homeModelCards" class="my-comm-panel" aria-labelledby="homeModelCardsTitle" hidden>
-    <h2 id="homeModelCardsTitle">Sugestões de comunicação</h2>
-    <p>Demonstração com dados fictícios. Você escolhe o que comunicar.</p>
-    <div id="homeModelCardsGrid" class="neural-card-grid" aria-label="Cartões sugeridos"></div>
-    <div id="homeModelCardsFixed" class="neural-card-grid" aria-label="Outras escolhas"></div>
-    <p id="homeModelCardsChoice" role="status" aria-live="polite"></p>
-    <button id="homeModelCardsHide" type="button" class="btn-secondary">Ocultar sugestões</button>
-</section>
 <section id="biaMaybeSection" class="bia-maybe" aria-label="Sugestões opcionais" hidden>
 <h2><img src="icons/butterfly-sakura.svg" alt="" aria-hidden="true"> Talvez você queira...</h2>
 <p class="bia-maybe-hint">Sugestões baseadas em escolhas anteriores. Você decide.</p>
@@ -139,16 +132,8 @@
             <section class="sakura-home-support" aria-label="Área de apoio"><button type="button" data-page="medical">🏥 Médico</button><button type="button" data-page="edit-symbols">🗂️ Categorias</button><button type="button" data-page="sensory-crisis">🌸 Modo Calmo</button><button type="button" data-page="settings">⚙️ Configurações</button></section>
 
 
-            <!-- Cartões rápidos da tela inicial: no máximo 15 símbolos -->
-            <section class="home-quick-symbols-section" id="homeQuickSymbolsSection" aria-label="Cartões de símbolos da tela inicial">
-                <button class="section-header-toggle home-quick-symbols-toggle" id="homeQuickSymbolsToggle" type="button" aria-expanded="false" aria-controls="homeQuickSymbolsContent">
-                    <h2>🔣 Meus cartões</h2>
-                    <span class="home-quick-symbols-count" id="homeQuickSymbolsCount">Até 15 cartões</span>
-                    <span class="collapse-indicator" aria-hidden="true">⌄</span>
-                </button>
-                <div id="homeQuickSymbolsContent" hidden>
-                    <div class="home-quick-symbols-grid" id="homeQuickSymbolsGrid" role="grid" aria-label="Cartões rápidos de símbolos"></div>
-                </div>
+            <section class="home-quick-symbols-section" aria-label="Abrir meus cartões">
+                <button class="section-header-toggle nav-item" type="button" data-page="cards"><h2>🔣 Meus cartões</h2><span aria-hidden="true">›</span></button>
             </section>
 
             <!-- Construtor de frase: fechado por padrão para reduzir estímulos -->
@@ -524,7 +509,7 @@
 
                 <div class="settings-group"><h3>♿ Acessibilidade e personalização</h3><p>Desbloqueie a administração para modificar estas opções. Preferências salvas apenas neste aparelho.</p><div id="biaExperiencePrefs" class="bia-prefs"></div><p id="biaExperienceStatus" role="status"></p></div>
                 <section class="settings-group" aria-labelledby="neuralApiTitle">
-                    <h3 id="neuralApiTitle">Conexão de demonstração dos cartões</h3>
+                    <h3 id="neuralApiTitle">Modelo experimental dos cartões</h3><p>O modelo usa dados fictícios; sua ordem não representa preferências reais. Ao abrir Meus cartões, a ordenação local é atualizada. Não há treinamento com os cliques.</p>
                     <p>Por padrão, as sugestões são calculadas neste aparelho, sem enviar contexto à API. Desbloqueie a administração para mudar. No modo API externa, ao solicitar sugestões, enviamos somente o período do dia e o último cartão deste painel escolhido nesta sessão. Sem nome ou histórico de frases.</p>
                     <form id="neuralApiForm">
                         <label for="neuralCardsMode">Onde calcular as sugestões</label>
@@ -918,22 +903,37 @@
 
     </main>
 
-    <!-- ===== PÁGINA: MINHA COMUNICAÇÃO ===== -->
-    <section class="page-section" id="page-my-communication" aria-labelledby="myCommunicationTitle">
-        <div class="page-header">
-            <h2 id="myCommunicationTitle">💬 Minha Comunicação</h2>
-            <p>Organize suas frases e categorias do seu jeito. Você e seu responsável podem personalizar este espaço.</p>
-        </div>
+    <section class="page-section" id="page-cards" aria-labelledby="cardsPageTitle">
+        <div class="page-header"><h2 id="cardsPageTitle">🔣 Meus cartões</h2><p>Escolha o que você quer comunicar.</p></div>
         <section class="my-comm-panel" aria-labelledby="neuralCardsTitle">
             <h3 id="neuralCardsTitle">O que quero fazer?</h3>
             <p>Escolha um cartão para falar. Todas as opções ficam disponíveis.</p>
             <div id="neuralCards" class="neural-card-grid" aria-label="Cartões de atividades"></div>
             <div id="neuralCardsFixed" class="neural-card-grid" aria-label="Outras escolhas"></div>
             <p id="neuralCardsChoice" role="status" aria-live="polite"></p>
-            <button id="neuralCardsSuggest" type="button" class="btn-secondary">Ordenar e enviar sugestões ao início</button>
-            <p id="neuralCardsStatus" role="status" aria-live="polite">Cartões em ordem padrão.</p>
-            <p>As sugestões usam dados fictícios e não representam suas preferências. A ordem só muda quando você solicita.</p>
+            <button id="neuralCardsSuggest" type="button" class="btn-secondary">Atualizar cartões</button>
+            <p id="neuralCardsStatus" role="status" aria-live="polite"></p>
         </section>
+            <!-- Cartões rápidos pessoais: no máximo 15 símbolos -->
+            <section class="home-quick-symbols-section" id="homeQuickSymbolsSection" aria-label="Cartões de símbolos pessoais">
+                <button class="section-header-toggle home-quick-symbols-toggle" id="homeQuickSymbolsToggle" type="button" aria-expanded="false" aria-controls="homeQuickSymbolsContent">
+                    <h2>🔣 Meus símbolos</h2>
+                    <span class="home-quick-symbols-count" id="homeQuickSymbolsCount">Até 15 cartões</span>
+                    <span class="collapse-indicator" aria-hidden="true">⌄</span>
+                </button>
+                <div id="homeQuickSymbolsContent" hidden>
+                    <div class="home-quick-symbols-grid" id="homeQuickSymbolsGrid" role="grid" aria-label="Cartões rápidos de símbolos"></div>
+                </div>
+            </section>
+
+    </section>
+
+    <!-- ===== PÁGINA: MINHA COMUNICAÇÃO ===== -->
+    <section class="page-section" id="page-my-communication" aria-labelledby="myCommunicationTitle">
+        <div class="page-header">
+            <h2 id="myCommunicationTitle">💬 Minha Comunicação</h2>
+            <p>Organize suas frases e categorias do seu jeito. Você e seu responsável podem personalizar este espaço.</p>
+        </div>
         <section class="my-comm-panel" aria-labelledby="myCommPhraseTitle">
             <div class="section-header"><div><h3 id="myCommPhraseTitle">Minhas frases</h3><p class="my-comm-helper">Escolha uma categoria para ver as frases ou visualize todas.</p></div><button class="btn-primary" id="myCommAddPhrase" type="button">＋ Nova frase</button></div>
             <form id="myCommPhraseForm" class="my-comm-form" hidden>
@@ -1014,11 +1014,6 @@
         </section>
     </section>
 
-    <aside id="cardSuggestionNotice" class="card-suggestion-notice" aria-label="Aviso de sugestões" hidden>
-        <p role="status" aria-live="polite">Há sugestões de comunicação disponíveis no início.</p>
-        <button type="button" data-page="home" id="cardSuggestionOpen">Ver no início</button>
-        <button type="button" id="cardSuggestionDismiss">Dispensar aviso</button>
-    </aside>
     <!-- ===== FOOTER ===== -->
     <footer role="contentinfo">
         <div class="footer-content">

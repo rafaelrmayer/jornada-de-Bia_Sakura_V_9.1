@@ -224,7 +224,7 @@ Cada cartão, cada frase e cada melhoria representam uma tentativa de diminuir a
 
 ## Cartões e Neural API (integração opcional)
 
-Minha Comunicação contém um painel com cinco cartões de atividades e duas opções
+Meus cartões contém um painel com cinco cartões de atividades e duas opções
 fixas. Os cartões funcionam e falam com o mecanismo de voz existente mesmo sem
 API. Não substituem frases personalizadas ou categorias.
 
@@ -236,17 +236,16 @@ incluir um serviço externo. O último cartão fica apenas na memória da sessã
 escolher uma opção fixa limpa esse ID.
 
 Em Configurações, desbloqueie a administração para selecionar “API externa” e
-informar um endereço base HTTPS. Somente nesse modo, ao clicar em “Ordenar
-sugestões de demonstração”, o navegador envia período do dia e ID do último
+informar um endereço base HTTPS. Somente nesse modo, ao clicar em “Atualizar cartões”, o navegador envia período do dia e ID do último
 cartão. Não envia perfil, nome ou histórico de frases. Selecione “Neste aparelho”
-para voltar ao cálculo local. Nenhuma consulta ou ordenação é automática.
+para voltar ao cálculo local. Consultas externas nunca são automáticas. A ordenação local ocorre ao entrar na página.
 
 A API deve permitir a origem https://rafaelrmayer.github.io via CORS e carregar o
 modelo cards-demo. Uma origem inclui protocolo e domínio, sem caminho do projeto.
 O Colab com TestClient não fornece um endereço público para este recurso.
 A publicação HTTPS da API é uma etapa separada.
 
-O botão ordena todos os cartões apenas mediante solicitação. Resposta inválida,
+O modo local ordena ao entrar na página ou ao atualizar. Resposta inválida,
 timeout de cinco segundos ou indisponibilidade preservam as opções. Os textos
 são locais; a resposta externa deve corresponder ao contrato exato. As duas
 opções fixas não são ordenadas. A demonstração usa dados sintéticos e não foi
@@ -273,17 +272,21 @@ Após o primeiro carregamento online, o service worker inclui os pesos e o motor
 local no cache para uso offline. Se algum recurso local falhar, os sete cartões
 continuam disponíveis. Publicação em GitHub Pages depende da integração do PR.
 
-### Sugestões no início e avisos dentro do aplicativo
+### Página Meus cartões
 
-Em Minha Comunicação, “Ordenar e enviar sugestões ao início” calcula a ordem e
-publica os cinco cartões e as duas opções fixas no início. O aviso interno oferece
-“Ver no início” e “Dispensar aviso”. Ver abre a página inicial e leva o foco ao
-primeiro cartão. Dispensar fecha apenas o aviso; “Ocultar sugestões” remove o
-painel. Nenhuma fala acontece sem escolha de cartão. As escolhas nos dois painéis
-compartilham o mesmo último ID durante a sessão.
+O início apresenta apenas um acesso a Meus cartões. A página própria reúne os
+cinco cartões da demonstração, as duas opções fixas e o acesso expansível aos
+símbolos cadastrados. Também está disponível no menu principal e na navegação
+inferior. Minha Comunicação mantém frases, categorias e favoritos.
 
-As sugestões continuam demonstrativas e sintéticas. O painel e o aviso não são
-persistidos, não são notificações do sistema e não aparecem com o aplicativo
-fechado. Não há agendamento, timer de lembrete ou permissão de notificações.
-A publicação depende de uma solicitação explícita; não executa inferência em
-segundo plano. Alterar o modo de conexão limpa o painel e aviso anteriores.
+Ao entrar em Meus cartões, o modo local calcula a ordem uma vez, com o período
+do dia e o último cartão escolhido na sessão. A ordem não muda durante a escolha;
+o botão Atualizar cartões permite recalcular explicitamente. No modo externo,
+a abertura da página não inicia pedidos: atualizar continua exigindo o botão.
+Não há painel de sugestões no início nem avisos flutuantes.
+
+A interface de comunicação apresenta cartões, sem anunciar sugestões. A natureza
+experimental/sintética do modelo está explicada em Configurações e nesta
+documentação. O modelo não aprendeu preferências reais nem classifica novos
+símbolos personalizados: o repertório neural continua com cinco classes. Os
+símbolos personalizados permanecem disponíveis, sem alteração de seus dados.

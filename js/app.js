@@ -1583,6 +1583,7 @@
         const PAGE_MAP = Object.freeze({
             'home': 'page-home',
             'my-communication': 'page-my-communication',
+            'cards': 'page-cards',
             'routine': 'page-routine',
             'activities': 'page-activities',
             'assistant': 'page-assistant',
@@ -1632,6 +1633,7 @@
                 const title = target.querySelector('h2, h1, h3');
                 target.setAttribute('aria-label', title ? title.textContent.trim() : 'Conteúdo da Jornada de Bia');
                 target.focus({ preventScroll: true });
+                document.dispatchEvent(new CustomEvent('bia:pagechange', {detail: {page: requestedPage}}));
             } else {
                 // Proteção adicional caso o HTML e o mapa de páginas saiam de sincronia.
                 currentPage = 'home';
