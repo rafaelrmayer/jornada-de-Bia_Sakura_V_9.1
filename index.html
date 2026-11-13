@@ -71,11 +71,12 @@
         </div>
     </nav>
 
-    <nav class="visual-bottom-nav" aria-label="Navegação principal no celular">
+    <nav class="visual-bottom-nav" aria-label="Navegação principal inferior">
         <button class="nav-item active" data-page="home" type="button"><span>⌂</span><small>Início</small></button>
         <button class="nav-item" data-page="my-communication" type="button"><span>💬</span><small>Comunicação</small></button>
         <button class="nav-item" data-page="routine" type="button"><span>📅</span><small>Rotina</small></button>
         <button class="nav-item" data-page="activities" type="button"><span>🎵</span><small>Atividades</small></button>
+        <button class="nav-item" data-page="assistant" type="button"><span>🦋</span><small>Assistente</small></button>
         <button class="nav-item" data-page="cards" type="button"><span>🔣</span><small>Cartões</small></button>
         <button class="nav-item" data-page="settings" type="button"><span>⚙</span><small>Apoio</small></button>
     </nav>
@@ -121,13 +122,6 @@
             <section id="biaHabitSuggestion" class="bia-habit-suggestion" hidden aria-label="Sugestão de atividade opcional">
               <h2>🌸 Talvez você queira...</h2><strong id="biaHabitTitle"></strong>
               <p id="biaHabitDescription"></p><div class="bia-habit-actions"><button type="button" id="biaHabitOpen">Abrir atividade</button><button type="button" id="biaHabitDismiss">Agora não</button></div>
-            </section>
-            <h2 class="bia-explore-heading">Outras atividades</h2>
-            <section class="integrated-modules" aria-label="Módulos principais">
-                <button type="button" data-page="my-communication"><img class="sakura-doodle" src="icons/chat.svg" alt="" aria-hidden="true"><strong>Minha Comunicação</strong></button>
-                <button type="button" data-page="routine"><img class="sakura-doodle" src="icons/routine.svg" alt="" aria-hidden="true"><strong>Minha Rotina</strong></button>
-                <button type="button" data-page="activities"><img class="sakura-doodle" src="icons/activities.svg" alt="" aria-hidden="true"><strong>Música e Atividades</strong></button>
-                <button type="button" data-page="assistant"><img class="sakura-doodle" src="icons/butterfly-sakura.svg" alt="" aria-hidden="true"><strong>Assistente Inteligente</strong></button>
             </section>
             <section class="sakura-home-support" aria-label="Área de apoio"><button type="button" data-page="medical">🏥 Médico</button><button type="button" data-page="edit-symbols">🗂️ Categorias</button><button type="button" data-page="sensory-crisis">🌸 Modo Calmo</button><button type="button" data-page="settings">⚙️ Configurações</button></section>
 
@@ -1047,6 +1041,7 @@
     <script src="js/sakura-habits-v9-2.js"></script>
     <script src="js/accessibility-v9-2-8.js"></script>
     <script src="js/accessibility-v9-2-9.js"></script>
+    <script src="js/navigation-layout.js"></script>
 
 <!-- Service Worker registrado centralmente por js/app.js -->
 </body>

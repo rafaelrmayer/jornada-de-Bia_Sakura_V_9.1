@@ -290,3 +290,15 @@ experimental/sintética do modelo está explicada em Configurações e nesta
 documentação. O modelo não aprendeu preferências reais nem classifica novos
 símbolos personalizados: o repertório neural continua com cinco classes. Os
 símbolos personalizados permanecem disponíveis, sem alteração de seus dados.
+
+### Navegação inferior
+
+A barra inferior permanece visível também na página inicial, com Início,
+Comunicação, Rotina, Atividades, Assistente, Cartões e Apoio. Os quatro atalhos
+duplicados em “Outras atividades” foram removidos do início; os acessos de apoio
+(Médico, Categorias, Modo Calmo e Configurações) continuam disponíveis.
+
+Em celular, a barra usa duas linhas para preservar alvos de toque e rótulos;
+em telas largas, uma linha. navigation-layout.js mede a altura real da barra e
+do aviso de instalação, reservando espaço no documento e posicionando o aviso
+acima da navegação. O cache PWA inclui o novo controlador de layout.

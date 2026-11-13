@@ -1,8 +1,9 @@
-const CACHE = 'jornada-bia-sakura-v9-6-15';
+const CACHE = 'jornada-bia-sakura-v9-6-16';
 const CORE = [
   './',
   './index.html',
   './js/card-suggestions.js',
+  './js/navigation-layout.js',
   './js/card-model-data.js',
   './js/card-model.js',
   './css/card-suggestions.css',
