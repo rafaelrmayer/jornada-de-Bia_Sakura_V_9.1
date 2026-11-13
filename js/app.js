@@ -772,11 +772,12 @@
         // ============================================
         
         // Sakura V5: uma paleta por vez, botão independente para modo escuro.
-        const themeColors = ['pink','green'];
+        const themeColors = ['pink','blue'];
         const headerColorTheme = document.getElementById('headerColorTheme');
         let currentThemeColor = 'pink';
         let currentThemeDark = false;
         function getThemeConfig(themeValue) {
+            themeValue = themeValue.replace('green', 'blue');
             const dark = themeValue === 'dark' || themeValue.startsWith('dark-');
             const color = themeValue === 'light' || themeValue === 'dark' ? 'pink' : themeValue.replace(/^dark-/, '');
             return { color:themeColors.includes(color)?color:'pink', dark };
@@ -796,11 +797,12 @@
             setTheme(currentThemeDark ? (currentThemeColor==='pink'?'light':currentThemeColor) : (currentThemeColor==='pink'?'dark':'dark-'+currentThemeColor));
         }
         function loadTheme() {
-            let saved = StorageService.getItem('theme') || 'light';
+            const stored = StorageService.getItem('theme') || 'light';
+            let saved = stored.replace('green', 'blue');
             if(saved==='pink')saved='light';
             const allowed=['light','dark',...themeColors.filter(x=>x!=='pink'),...themeColors.filter(x=>x!=='pink').map(x=>'dark-'+x)];
             if(!allowed.includes(saved)){ const wasDark=saved==='dark'||saved.startsWith('dark-'); saved=wasDark?'dark':'light'; }
-            setTheme(saved,false);
+            setTheme(saved, saved !== stored);
         }
         function updateThemeMeta() {
             const meta=document.querySelector('meta[name="theme-color"]');

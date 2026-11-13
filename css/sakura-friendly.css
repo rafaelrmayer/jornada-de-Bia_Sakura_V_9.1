@@ -1,6 +1,6 @@
 /* Sakura: áreas de comunicação claras, calmas e com escolhas bem visíveis. */
 :root {--friendly-paper:#fffdfd;--friendly-soft:#fff4f7;--friendly-ink:#533b4a;--friendly-muted:#705a68;--friendly-line:#d8b9c7;--friendly-petal:#f5dce6;--friendly-selected:#f8e3ed;}
-html[data-theme="green"] {--friendly-paper:#fbfdf9;--friendly-soft:#f1f7ed;--friendly-ink:#334c3e;--friendly-muted:#526b5b;--friendly-line:#b6cdbb;--friendly-petal:#dfeddb;--friendly-selected:#e0efdd;}
+html[data-theme="blue"] {--friendly-paper:#fcfdff;--friendly-soft:#f0f6fc;--friendly-ink:#304c67;--friendly-muted:#506a83;--friendly-line:#b4cce1;--friendly-petal:#deebf7;--friendly-selected:#dfedfa;}
 html[data-theme^="dark"] {--friendly-paper:#243039;--friendly-soft:#1c272f;--friendly-ink:#f5eee9;--friendly-muted:#ddd0d6;--friendly-line:#839b96;--friendly-petal:#344952;--friendly-selected:#3b535b;}
 html.bia-a11y-contrast {--friendly-paper:#000;--friendly-soft:#000;--friendly-ink:#fff;--friendly-muted:#fff;--friendly-line:#fff;--friendly-petal:#000;--friendly-selected:#222;}
 html body #page-home {max-width:900px!important;margin-inline:auto!important;gap:24px!important;}
@@ -74,3 +74,25 @@ html body .sakura-petal-overlay {z-index:0!important;opacity:.18!important;}
 html body::before {opacity:.23!important;}
 html #page-home #intentGrid .intent-btn :is(span:not(.intent-icon),small) {width:100%!important;text-align:center!important;align-self:center!important;justify-self:center!important;-webkit-text-fill-color:currentColor!important;}
 html body #page-cards :is(.friendly-card-label,.neural-card) {-webkit-text-fill-color:currentColor!important;}
+
+/* Fundos suaves e estáticos: rosa chá/pêssego ou azul céu. */
+:root {--friendly-background:linear-gradient(145deg,#f9e1e9 0%,#fcebe2 52%,#fff8ed 100%);--friendly-header:linear-gradient(115deg,#a34c70,#87405f);}
+html[data-theme="blue"] {--friendly-background:linear-gradient(145deg,#dceafa 0%,#e8f1fc 50%,#f5f8ff 100%);--friendly-header:linear-gradient(115deg,#406e91,#345c83);--calm-bg:#e8f1fc;--calm-panel:#fcfdff;--calm-ink:#304c67;--calm-muted:#506a83;--calm-stroke:#b4cce1;--calm-accent:#3d6587;--sakura-panel:#fcfdff;--sakura-ink:#304c67;--sakura-muted:#506a83;--sakura-control:#e3effb;--sakura-nav:#fcfdff;--ui-surface-soft:#e3effb;--ui-border:#b4cce1;}
+html[data-theme="dark"] {--friendly-background:linear-gradient(145deg,#28212c,#352734 55%,#29242e);--friendly-header:linear-gradient(115deg,#63354e,#482c40);}
+html[data-theme="dark-blue"] {--friendly-background:linear-gradient(145deg,#192736,#20354a 55%,#1b2939);--friendly-header:linear-gradient(115deg,#294965,#203b55);--calm-bg:#192736;--calm-panel:#243649;--calm-ink:#edf4ff;--calm-muted:#d1dfef;--calm-stroke:#6988a3;--calm-accent:#b8d7f4;--sakura-panel:#243649;--sakura-ink:#edf4ff;--sakura-muted:#d1dfef;--sakura-control:#304a63;--sakura-nav:#243649;--ui-surface-soft:#304a63;--ui-border:#6988a3;}
+html body {background:var(--friendly-background)!important;background-attachment:fixed!important;}
+html body::before, html body::after, html body .sakura-petal-overlay {content:none!important;display:none!important;background-image:none!important;}
+html body > header {background:var(--friendly-header)!important;}
+html body > header .header-left .header-brand-title,
+html body > header .header-left .header-brand-title :is(strong,small) {color:#fff!important;-webkit-text-fill-color:#fff!important;}
+html body > header .header-left .header-brand-title small {opacity:1!important;}
+html body > header .header-left .logo-container {background:#fff1!important;border-radius:18px!important;}
+html #page-settings .calm-appearance-settings button.sakura-color-dot[data-sakura-color="blue"] {background:#abcdea!important;background-color:#abcdea!important;}
+html.bia-a11y-contrast body {background:#000!important;}
+html.bia-a11y-contrast body > header {background:#000!important;border-bottom:1px solid #fff!important;}
+/* Supera as regras legadas de tema sem alterar os painéis de comunicação. */
+html:root body {background:var(--friendly-background)!important;background-attachment:fixed!important;}
+html:root body > header[role="banner"] {background:var(--friendly-header)!important;}
+html:root body > header[role="banner"] .header-container {background:transparent!important;}
+html:root.bia-a11y-contrast body {background:#000!important;}
+html:root.bia-a11y-contrast body > header[role="banner"] {background:#000!important;}
