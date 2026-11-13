@@ -369,3 +369,19 @@ Os testes cobrem alternativas preservadas, contagens independentes, leitura de
 legados sem mutação, separação entre rótulos e entradas, assinatura de cache,
 repetibilidade do RF, contextos insuficientes e manutenção da frase do motor
 contextual enquanto os modelos observam.
+
+### Frases personalizadas e aprendizado contextual
+
+Salvar ou editar em Minha Comunicação → Nova frase só modifica o repertório.
+Tocar no botão de falar de uma frase personalizada registra uma escolha no
+histórico contextual, além do contador geral de uso. O registro acompanha a ação
+explícita, não confirma que a reprodução de áudio terminou. O caminho usa intenção
+frase-personalizada e sequência none, sem associar símbolos/intenção deixados no
+construtor. Usa ambiente selecionado (auto permanece auto, sem inferir a partir de
+símbolos antigos) e período atual. Alternativas mantêm contagens separadas.
+
+O painel do Assistente é atualizado ao abrir e após essa escolha. Repetir uma
+frase aumenta seu contador, mas não cria novos pares contexto/frase para atingir
+artificialmente o mínimo de linhas de treinamento. Não há aprendizado ao cadastrar,
+editar ou visualizar a lista. Falha no aprendizado não bloqueia a fala. Os dados
+continuam locais e os modelos permanecem em observação.
