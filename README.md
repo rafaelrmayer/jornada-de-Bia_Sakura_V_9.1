@@ -395,3 +395,34 @@ confirmação com a quantidade total. Cancelar não modifica dados. Categorias,
 símbolos, favoritos, configurações e todo o aprendizado/modelos são preservados.
 A exclusão não remove frases já aprendidas: elas podem continuar no diagnóstico
 dos modelos. O botão fica desativado quando não há frases cadastradas.
+
+### Avaliação manual do Random Forest (sem aprender com a resposta)
+
+Em Apoio → Assistente, o painel de avaliação exige administração desbloqueada.
+Escolha ambiente e período e clique em Iniciar teste. O RF de 21 árvores/semente
+731 e a regra de frase mais frequente recebem o mesmo retrato do histórico local,
+com tratamento conservador dos legados. O contexto de consulta é frase
+personalizada/sem símbolos. As previsões são congeladas antes da escolha e
+ocultas até a conclusão; o resumo de comparação anterior também é ocultado
+enquanto há teste pendente.
+
+Abra Minha Comunicação e toque no botão de falar de uma frase. Somente esse
+caminho conclui o teste. O clique continua falando conforme a voz configurada,
+mas não incrementa aprendizado nem uso geral. Não reordena a lista. Uma escolha
+conclui um teste; as seguintes voltam ao uso normal. Há aviso e cancelamento na
+Comunicação. Recarregar cancela a pendência; bloquear administração também
+invalida a escolha de teste, sem inseri-la no treino.
+
+Resultados ficam separados em rfEvaluationData (prefixo jornadaBia), limitados
+aos últimos 200, sem envio de contexto a servidores. A síntese de voz pode usar
+o serviço externo já escolhido no app. É possível exportar JSON ou apagar só os
+resultados; isso não altera frases ou aprendizado. O teste registra contexto,
+configuração, número de linhas de treino, previsões e escolha de referência,
+sem salvar uma cópia de todo o histórico de treino.
+
+A comparação de acertos usa apenas os testes em que ambos os métodos estavam
+disponíveis, com o mesmo denominador; os demais são mostrados separadamente.
+Coincidir com a próxima escolha não confirma necessidade, personalização ou
+benefício de comunicação. Testes manuais não são amostras independentes de uso
+real, e a escolha de contexto pode influenciar os resultados. A avaliação não
+altera a participação dos modelos, que continua em observação.

@@ -5,7 +5,7 @@ const vm=require('node:vm');
 const path=require('node:path');
 const source=fs.readFileSync(path.join(__dirname,'../js/app.js'),'utf8');
 function setup(fail=false){
- const calls=[];const ctx=vm.createContext({speakText:t=>calls.push(['speak',t]),recordPhraseUse:t=>calls.push(['usage',t]),contextBrain:{learn:(t,opts)=>{calls.push(['learn',t,opts.standalone]);if(fail)throw Error('storage');},render:()=>calls.push(['render'])}});
+ const calls=[];const ctx=vm.createContext({window:{},speakText:t=>calls.push(['speak',t]),recordPhraseUse:t=>calls.push(['usage',t]),contextBrain:{learn:(t,opts)=>{calls.push(['learn',t,opts.standalone]);if(fail)throw Error('storage');},render:()=>calls.push(['render'])}});
  vm.runInContext(source.slice(source.indexOf('        function communicatePersonalPhrase('),source.indexOf('        function speakNaturalMessage(')),ctx);return {calls,ctx};
 }
 test('escolher frase personalizada fala e registra uma vez em contexto independente',()=>{
