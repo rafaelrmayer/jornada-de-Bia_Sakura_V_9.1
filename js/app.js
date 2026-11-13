@@ -1978,25 +1978,8 @@
                 showToast('⚠️ Não foi possível limpar todos os dados. Verifique as permissões do navegador.');
                 return;
             }
-            symbolsData = JSON.parse(JSON.stringify(defaultSymbols));
-            guardians = JSON.parse(JSON.stringify(defaultGuardians));
-            medicalData = JSON.parse(JSON.stringify(defaultMedical));
-            history = [];
-            selectedSymbols = [];
-            predictor.sequences = [];
-            predictor.frequency = {};
-            predictiveEngine.reset();
-            renderCategories();
-            renderSymbols();
-            renderGuardians();
-            renderMedical();
-            updateHistory();
-            updateSuggestions();
-            updateFeedback();
-            predictor.updateStats();
-            document.getElementById('totalMessages').textContent = 0;
-            playErrorSound();
-            showToast('🗑️ Todos os dados foram limpos!');
+            // Recarrega para esvaziar também estados em memória de rotina, emoções e avaliação.
+            location.reload();
         }
 
         // ============================================
@@ -2189,7 +2172,7 @@
             }
         });
 
-        document.querySelectorAll('.integrated-modules [data-page], .sakura-home-support [data-page], .sakura-home-link[data-page], .support-links [data-page], .integrated-placeholder [data-page]').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
+        document.querySelectorAll('.integrated-modules [data-page], .sakura-home-support [data-page], .sakura-home-link[data-page], .support-links [data-page], .integrated-placeholder [data-page], .bia-feature > button[data-page]').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
         navItems.forEach(btn => {
             btn.addEventListener('click', () => {
                 showPage(btn.dataset.page);
@@ -2458,18 +2441,22 @@
             if(primary?.phone && confirm('Deseja abrir o contato do responsável principal?')) openWhatsApp(primary.phone,`🆘 ${msg}`);
         }
         function rateAI(kind){ aiFeedback[kind]=(aiFeedback[kind]||0)+1; StorageService.setItem('aiFeedback',JSON.stringify(aiFeedback)); showToast(kind==='like'?'👍 Obrigado! Vou valorizar esse tipo de sugestão.':'👎 Obrigado! Vou evitar esse tipo de sugestão.'); }
-        async function exportBackup(options = {}) {
-            if (!requireAdminAccess()) return;
-            try {
-                const payload = {
+        function collectBackupData() {
+            return {
                     symbolsData, guardians, medicalData, history, favoriteIds, symbolUsage, childProfile, aiFeedback,
                     voiceRate, voicePitch, autoSpeak, theme: StorageService.getItem('theme'),
                     predictorData: JSON.parse(StorageService.getItem('predictorData') || '{\"sequences\":[],\"frequency\":{}}'),
                     predictivePhraseData: JSON.parse(StorageService.getItem('predictivePhraseData') || '{}'),
                     myCommunicationData: JSON.parse(StorageService.getItem('myCommunicationData') || '{"phrases":[],"categories":["Geral","Necessidades","Alimentação","Rotina","Sentimentos","Pessoas","Atividades"],"favoriteSymbols":[]}'),
                     contextBrainData: JSON.parse(StorageService.getItem('contextBrainData') || '{}'),
-                    environmentContext: StorageService.getItem('environmentContext') || 'auto'
+                    environmentContext: StorageService.getItem('environmentContext') || 'auto',
+                    moduleData: JornadaModuleData.snapshot(localStorage)
                 };
+        }
+        async function exportBackup(options = {}) {
+            if (!requireAdminAccess()) return;
+            try {
+                const payload = collectBackupData();
                 const password = prompt('Crie uma senha para proteger este backup (mínimo 8 caracteres):');
                 if(password === null) return;
                 await BackupService.export(payload, { configurationOnly: !!options.configurationOnly, password });
@@ -2485,7 +2472,7 @@
                 const preImportPassword = prompt('Crie uma senha para o backup de segurança antes da importação (mínimo 8 caracteres):');
                 if (preImportPassword === null) { showToast('Importação cancelada'); return; }
                 if (preImportPassword.length < 8) { showToast('A senha deve ter pelo menos 8 caracteres'); return; }
-                await BackupService.export({ symbolsData, guardians, medicalData, history, favoriteIds, symbolUsage, childProfile, aiFeedback, myCommunicationData: JSON.parse(StorageService.getItem('myCommunicationData') || '{}') }, { preImport: true, password: preImportPassword });
+                await BackupService.export(collectBackupData(), { preImport: true, password: preImportPassword });
                 const d=p.data;
                 if(!Array.isArray(d.symbolsData)) throw new Error('Backup inválido');
                 StorageService.setItem('symbolsData',JSON.stringify(d.symbolsData));
@@ -2508,6 +2495,7 @@
                 if(typeof d.voiceRate==='number')StorageService.setItem('voiceRate',String(d.voiceRate));
                 if(typeof d.voicePitch==='number')StorageService.setItem('voicePitch',String(d.voicePitch));
                 if(typeof d.autoSpeak==='boolean')StorageService.setItem('autoSpeak',String(d.autoSpeak));
+                if(p.type!=='configuration'&&d.moduleData)JornadaModuleData.restore(localStorage,d.moduleData);
                 showToast('⬆️ Backup validado e importado. Recarregando...');
                 setTimeout(()=>location.reload(),700);
             } catch(err) { console.error(err); showToast('❌ Backup inválido ou corrompido'); }

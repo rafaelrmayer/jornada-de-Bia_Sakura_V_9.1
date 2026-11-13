@@ -447,3 +447,26 @@ continua usando suas configurações existentes e disponibilidade no dispositivo
 O uso offline completo da página exige carregamento e instalação do cache PWA
 antes da desconexão. Suspensão/cold start da hospedagem pode ultrapassar os cinco
 segundos e resultar em cálculo local mesmo que o servidor esteja iniciando.
+
+### Revisão de integração e cobertura de dados
+
+O backup completo (versão 4) inclui também rotina, emoções, preferências de
+acessibilidade/atividades, histórico de atividades, conexão dos cartões,
+resultados de avaliação e voz selecionada. module-data.js define uma lista
+explícita de chaves adicionais; PIN, credenciais biométricas e sessão de
+administração não são exportados por ela. Backups anteriores permanecem legíveis;
+campos ausentes não são inventados. Backups de configuração restauram apenas
+seus campos permitidos. O backup de segurança pré-importação usa a mesma coleta
+completa da exportação normal.
+
+Limpar todos os dados alcança as chaves adicionais e recarrega o aplicativo para
+esvaziar os estados em memória, preservando chaves de outros aplicativos da mesma
+origem. Isso não modifica o botão Apagar todas as frases, que preserva aprendizado.
+O cache inicial inclui todos os scripts/folhas locais do HTML, incluindo emoções
+e acessibilidade. O retorno do Assistente para Minha Comunicação foi conectado
+à navegação.
+
+Esta revisão verificou os fluxos locais com dados fictícios e backup criptografado.
+Não é certificação de segurança ou compatibilidade universal: biometria,
+notificações e disponibilidade das vozes dependem do aparelho. O PostgreSQL/
+backend separado não faz parte deste repositório e não foi auditado nesta rodada.
