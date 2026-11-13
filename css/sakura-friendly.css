@@ -40,7 +40,7 @@ html body #page-cards #neuralCardsFixed button {min-height:64px!important;backgr
 html body #page-cards :is(#neuralCards,#neuralCardsFixed) button[aria-pressed="true"] {background:var(--friendly-selected)!important;border:3px solid var(--friendly-ink)!important;}
 #neuralCardsChoice:not(:empty) {padding:14px 18px;border-radius:16px;background:var(--friendly-selected);font-weight:700;}
 html body #page-cards #neuralCardsSuggest {background:var(--friendly-paper)!important;color:var(--friendly-muted)!important;border:1px solid var(--friendly-line)!important;min-height:48px;border-radius:16px;padding:10px 16px;}
-html body .visual-bottom-nav {grid-template-columns:repeat(5,minmax(0,1fr))!important;}
+html body .visual-bottom-nav {grid-template-columns:repeat(6,minmax(0,1fr))!important;}
 html body .visual-bottom-nav .nav-item {min-height:62px!important;gap:5px!important;}
 html body .visual-bottom-nav .nav-item small {font-size:.8rem!important;line-height:1.25!important;}
 html body :is(#page-home,#page-cards) button:focus-visible {outline:3px solid var(--friendly-ink)!important;outline-offset:4px!important;}
@@ -96,3 +96,5 @@ html:root body > header[role="banner"] {background:var(--friendly-header)!import
 html:root body > header[role="banner"] .header-container {background:transparent!important;}
 html:root.bia-a11y-contrast body {background:#000!important;}
 html:root.bia-a11y-contrast body > header[role="banner"] {background:#000!important;}
+
+@media(max-width:620px){html body .visual-bottom-nav{grid-template-columns:repeat(3,minmax(0,1fr))!important;}}
