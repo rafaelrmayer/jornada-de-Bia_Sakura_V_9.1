@@ -2441,6 +2441,7 @@
             const phrase=String(text||'').trim();
             if(!phrase)return;
             speakText(phrase);
+            if(window.JornadaRFEvaluationUI?.consume(phrase))return;
             // O registro acompanha a escolha explícita; não depende de a voz terminar.
             try { recordPhraseUse(phrase); } catch(e) { /* A fala continua disponível. */ }
             try { contextBrain.learn(phrase,{standalone:true}); contextBrain.render(); } catch(e) { /* Falha de aprendizado não impede comunicação. */ }

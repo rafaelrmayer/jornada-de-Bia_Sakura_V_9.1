@@ -105,3 +105,18 @@ html:root.bia-a11y-contrast body > header[role="banner"] {background:#000!import
 .my-comm-bulk-clear p {margin:10px 0;line-height:1.5;}
 #myCommClearAll {min-height:48px;padding:12px 18px;}
 #myCommClearAll:disabled {opacity:.55;cursor:not-allowed;}
+
+.rf-evaluation-panel {margin:24px 0;padding:24px;border:1px solid var(--friendly-line);border-radius:22px;background:var(--friendly-paper);color:var(--friendly-ink);}
+.rf-evaluation-panel p {margin:14px 0;line-height:1.55;}
+.rf-test-context {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.rf-test-context label {display:grid;gap:8px;}
+.rf-test-context select {width:100%;font:inherit;min-height:48px;background:var(--friendly-soft);color:var(--friendly-ink);padding:10px;border:1px solid var(--friendly-line);border-radius:12px;}
+.rf-test-actions {display:flex;flex-wrap:wrap;gap:12px;}
+.rf-test-actions button {min-height:48px;padding:10px 14px;}
+.rf-test-actions button:disabled {opacity:.55;cursor:not-allowed;}
+#rfTestMetrics,#rfTestLast {overflow-wrap:anywhere;}
+@media(max-width:620px){.rf-evaluation-panel{padding:18px}.rf-test-context{grid-template-columns:1fr}}
+
+.rf-test-pending {padding:16px;margin:16px 0;border:2px solid var(--friendly-line);border-radius:16px;}
+.rf-test-pending[hidden],#biaAssistantSummary[hidden] {display:none!important;}
+.rf-test-pending button {min-height:48px;}

@@ -472,7 +472,19 @@
 </div></section>
 <div id="biaGarden" class="bia-activity-panel" hidden><h3>🌸 Jardim Musical Sakura</h3><p>Toque em uma flor, borboleta ou estrela para ouvir uma nota suave. Nenhum som começa sozinho.</p><div class="bia-garden-grid" role="group" aria-label="Instrumentos do jardim"><button type="button" data-garden-note="261.63" aria-label="Flor rosa, nota dó">🌸<span>Flor rosa</span></button><button type="button" data-garden-note="293.66" aria-label="Borboleta, nota ré">🦋<span>Borboleta</span></button><button type="button" data-garden-note="329.63" aria-label="Flor amarela, nota mi">🌼<span>Flor amarela</span></button><button type="button" data-garden-note="349.23" aria-label="Folha, nota fá">🍃<span>Folha</span></button><button type="button" data-garden-note="392.00" aria-label="Estrela, nota sol">⭐<span>Estrela</span></button><button type="button" data-garden-note="440.00" aria-label="Flor branca, nota lá">🌷<span>Flor delicada</span></button></div><div class="bia-garden-controls"><label>Volume do jardim <input type="range" id="biaGardenVolume" min="0" max="30" value="10"></label><button type="button" id="biaGardenStop">⏹ Silenciar</button></div><p id="biaGardenStatus" role="status" aria-live="polite">Jardim silencioso.</p></div>
 <div id="biaColors" class="bia-activity-panel" hidden><h3>🔶 Formas e Cores</h3><p>Observe a figura e escolha a opção igual. Sem tempo limite ou penalização.</p><div class="bia-colors-target" id="biaColorsTarget" aria-live="polite"></div><div class="bia-colors-grid" id="biaColorsChoices" role="group" aria-label="Escolha a figura igual"></div><p id="biaColorsStatus" role="status" aria-live="polite"></p><button type="button" id="biaColorsNext">Outra figura</button></div>
-        <section class="page-section" id="page-assistant"><div class="bia-feature"><h2>🦋 Assistente Inteligente</h2><p>Random Forest + rede neural experimental. Sugestões não representam necessidades confirmadas. Você sempre escolhe o que comunicar.</p><div class="bia-assistant-summary" id="biaAssistantSummary" role="status" aria-live="polite">Aguardando interações de comunicação.</div><div class="bia-ai-controls"><p>Random Forest e rede neural local estão em observação: calculam resultados para comparação, sem substituir as frases apresentadas. A Neural API dos cartões é um componente separado.</p><p id="biaAiStats" role="status">Aguardando dados locais suficientes.</p><button type="button" id="biaAiClear">🔐 Apagar aprendizado local da IA</button><p id="biaAiClearFeedback" role="status"></p></div><button type="button" data-page="my-communication">💬 Ir para Minha Comunicação</button><p class="bia-hint">Os modelos funcionam localmente, sem enviar histórico a serviços externos. A comunicação continua disponível sem IA.</p></div></section>
+        <section class="page-section" id="page-assistant"><div class="bia-feature"><h2>🦋 Assistente Inteligente</h2><p>Random Forest + rede neural experimental. Sugestões não representam necessidades confirmadas. Você sempre escolhe o que comunicar.</p><div class="bia-assistant-summary" id="biaAssistantSummary" role="status" aria-live="polite">Aguardando interações de comunicação.</div><div class="bia-ai-controls"><p>Random Forest e rede neural local estão em observação: calculam resultados para comparação, sem substituir as frases apresentadas. A Neural API dos cartões é um componente separado.</p><p id="biaAiStats" role="status">Aguardando dados locais suficientes.</p><button type="button" id="biaAiClear">🔐 Apagar aprendizado local da IA</button><p id="biaAiClearFeedback" role="status"></p></div><section class="rf-evaluation-panel" aria-labelledby="rfTestTitle">
+<h3 id="rfTestTitle">Avaliação manual do Random Forest</h3>
+<p>Para testes feitos por você, separados do uso da Bia. As previsões são calculadas antes da escolha e reveladas depois. O teste não treina os modelos nem muda a ordem das frases.</p>
+<div class="rf-test-context"><label for="rfTestEnvironment">Ambiente do teste<select id="rfTestEnvironment"><option value="auto">Sem ambiente definido</option><option value="casa">Casa</option><option value="escola">Escola</option><option value="passeio">Passeio</option><option value="medico">Médico</option><option value="carro">Carro</option></select></label>
+<label for="rfTestTime">Período do teste<select id="rfTestTime"><option value="manhã">Manhã</option><option value="almoco">Almoço</option><option value="tarde">Tarde</option><option value="noite">Noite</option></select></label></div>
+<p>Tipo de comunicação: frase personalizada, sem sequência de símbolos.</p>
+<div class="rf-test-actions"><button type="button" id="rfTestStart">Iniciar teste</button><button type="button" id="rfTestOpen">Abrir Minha Comunicação</button><button type="button" id="rfTestCancel">Cancelar teste</button></div>
+<p id="rfTestStatus" role="status" aria-live="polite">Desbloqueie a administração, escolha um contexto e inicie. Depois, toque no botão de falar de uma frase personalizada.</p>
+<p id="rfTestLast"></p><p id="rfTestMetrics" role="status" aria-live="polite"></p>
+<p>Acerto significa apenas coincidir com a escolha seguinte, não confirmar uma necessidade. A comparação usa os mesmos testes para ambos os métodos; falta de dados é mostrada separadamente. Até 200 resultados ficam guardados só neste navegador. Recarregar cancela um teste pendente.</p>
+<div class="rf-test-actions"><button id="rfTestExport" type="button">Exportar testes</button><button id="rfTestClear" type="button">Apagar resultados de teste</button></div>
+</section>
+<button type="button" data-page="my-communication">💬 Ir para Minha Comunicação</button><p class="bia-hint">Os modelos funcionam localmente, sem enviar histórico a serviços externos. A comunicação continua disponível sem IA.</p></div></section>
         <!-- ===== PÁGINA: CONFIGURAÇÕES ===== -->
         <div class="page-section" id="page-settings">
             <section class="settings-container">
@@ -931,6 +943,7 @@
                 <label for="myCommPhraseCategory">Categoria</label><select id="myCommPhraseCategory"><option value="Geral">Geral</option><option value="Necessidades">Necessidades</option><option value="Alimentação">Alimentação</option><option value="Rotina">Rotina</option><option value="Sentimentos">Sentimentos</option><option value="Pessoas">Pessoas</option><option value="Atividades">Atividades</option></select>
                 <div class="my-comm-form-actions"><button class="btn-save" type="submit">Salvar frase</button><button class="btn-secondary" id="myCommCancelPhrase" type="button">Cancelar</button></div>
             </form>
+            <div id="rfTestPendingNotice" class="rf-test-pending" hidden><p role="status">Teste manual ativo: o próximo clique no botão de falar será avaliado, sem entrar no aprendizado normal.</p><button type="button" id="rfTestCancelFromCommunication">Cancelar teste e voltar ao uso normal</button></div>
             <div id="myCommPhraseList" class="my-comm-list" aria-live="polite"></div>
             <div class="my-comm-bulk-clear">
                 <p>Esta ação abrange todas as frases, inclusive de outras categorias. Desbloqueie a administração para apagar. O aprendizado dos modelos, categorias, símbolos, favoritos e configurações são preservados.</p>
@@ -1031,7 +1044,9 @@
     <script src="js/context-records.js"></script>
     <script src="js/random-forest.js"></script>
     <script src="js/neural-assistant.js"></script>
+    <script src="js/rf-evaluation.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/rf-evaluation-ui.js"></script>
     <script src="js/card-model-data.js"></script>
     <script src="js/card-model.js"></script>
     <script src="js/card-suggestions.js"></script>
