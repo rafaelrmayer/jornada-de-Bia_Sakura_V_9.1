@@ -20,16 +20,32 @@
   const host=$('wgRoot');host.replaceChildren();
   if(!allowed()){host.append(make('p','Bem-vinda ao Jardim da Bia! Para acompanhar expressões e registrar observações, desbloqueie a administração em Apoio.'),button('Ir para Apoio',()=>document.querySelector('.visual-bottom-nav [data-page="settings"]').click()));return;}
   const gardenLabel=make('label',undefined,'wg-garden-switch'),garden=document.createElement('input');garden.type='checkbox';garden.checked=state.garden;garden.addEventListener('change',()=>{save(next=>next.garden=garden.checked);});gardenLabel.append(garden,document.createTextNode(' Mostrar o jardim de expressões (opcional)'));host.append(gardenLabel);
-  if(state.garden){const box=make('section',undefined,'wg-garden');box.append(make('h3','Jardim da Bia'),make('p','Cada flor representa uma expressão em acompanhamento, sem prêmio ou classificação por tipo de apoio.'));const flowers=make('div',undefined,'wg-flowers');state.goals.filter(g=>g.active).forEach(g=>{const flower=make('span','🌷 '+g.word,'wg-flower');flowers.append(flower);});box.append(flowers);host.append(box);}
+  if(state.garden){
+   const box=make('section',undefined,'wg-garden');box.append(make('h3','Jardim da Bia'),make('p','Cinco espaços para expressões. A flor se abre quando a fono marca “Consolidada”. Essa avaliação é manual, sem pontuação.'));
+   const flowers=make('div',undefined,'wg-flowers');const current=state.goals.filter(g=>g.active);
+   for(let i=0;i<5;i++){const goal=current[i],flower=make('div',undefined,'wg-flower'+(!goal?' wg-flower-empty':''));const icon=make('span',goal?.review==='consolidated'?'🌸':'🌷','wg-flower-icon');icon.setAttribute('aria-hidden','true');flower.append(icon,make('strong',goal?.word||'Espaço livre'),make('small',goal?(goal.review==='consolidated'?'Consolidada pela fono':goal.review==='review'?'Revisar com a fono':'Em acompanhamento'):'Sem expressão'));flowers.append(flower);}
+   box.append(flowers);host.append(box);
+  }
   const active=state.goals.filter(g=>g.active);host.append(make('p',active.length+' expressões em acompanhamento. Você pode manter até cinco por vez.','wg-hint'));
   if(!active.length)host.append(make('p','Ainda não há expressões em prática. Adicione uma palavra ou frase escolhida com a Bia e a fono.'));
   for(const goal of active){
-   const card=make('article',undefined,'wg-card');card.append(make('h3',goal.word));
+   const card=make('article',undefined,'wg-card'+(goal.review==='review'?' wg-review-needed':''));card.append(make('h3',goal.word));
+   if(goal.review==='review')card.append(make('p','Revisar com a fono','wg-review-badge'));
+   if(goal.review==='consolidated')card.append(make('p','Consolidada — avaliação manual da fono','wg-review-badge'));
+   const days=lib.recentDays(goal),timeline=make('div',undefined,'wg-days');timeline.setAttribute('role','list');timeline.setAttribute('aria-label','Observações nos últimos cinco dias');
+   for(const day of days){const item=make('div',undefined,'wg-day');item.setAttribute('role','listitem');const description=day.date+': '+(day.support.length?day.support.map(k=>lib.SUPPORT[k]).join(', '):'Sem registro');item.setAttribute('aria-label',description);const dot=make('span',undefined,'wg-day-dot');dot.setAttribute('aria-hidden','true');for(const support of day.support)dot.append(make('span',undefined,'wg-day-mark wg-support-'+support));item.append(dot,make('small',day.date.slice(8)+'/'+day.date.slice(5,7)));item.title=description;timeline.append(item);}card.append(timeline);
+   const dayDetails=make('details');dayDetails.append(make('summary','Ver apoio registrado por dia'));for(const day of days)dayDetails.append(make('p',day.date+': '+(day.support.length?day.support.map(k=>lib.SUPPORT[k]).join(', '):'Sem registro')));card.append(dayDetails);
+   card.append(make('p','Bolinhas: registros por dia, com todos os tipos de apoio. Vazio significa sem registro. Abra “Ver apoio registrado por dia” para consultar os detalhes.','wg-hint'));
+   const tags=make('div',undefined,'wg-tags');for(const key of Object.keys(lib.CONTEXT).filter(k=>days.some(d=>d.contexts.includes(k))))tags.append(make('span',lib.CONTEXT[key],'wg-tag'));card.append(tags);
+   const review=select('Avaliação da fono (manual)',{tracking:'Em acompanhamento',review:'Revisar com a fono',consolidated:'Consolidada pela fono'},goal.review||'tracking');review.input.addEventListener('change',()=>{if(save(next=>next.goals.find(g=>g.id===goal.id).review=review.input.value))status('Avaliação manual salva. Nenhum critério automático foi aplicado.');});card.append(review.wrap);
    const summary=lib.aggregate(state,lib.week(lib.day(Date.now()))).words.find(w=>w.id===goal.id);card.append(make('p',(summary?.days||0)+' dias com registros nesta semana · '+(summary?.total||0)+' observações.','wg-hint'));
    const form=make('form',undefined,'wg-log-form');form.dataset.goalId=goal.id;
    const support=select('Apoio observado',lib.SUPPORT,'unspecified'),context=select('Contexto informado',lib.CONTEXT,'unspecified'),purpose=select('Função comunicativa informada',lib.PURPOSE,'unspecified');
    const dateLabel=make('label','Quando ocorreu'),date=document.createElement('input');date.type='datetime-local';const now=new Date();date.value=lib.day(now.getTime())+'T'+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');date.required=true;dateLabel.append(date);form.append(support.wrap,context.wrap,purpose.wrap,dateLabel);
    const submit=make('button','Registrar observação','wg-btn');submit.type='submit';form.append(submit);form.addEventListener('submit',event=>{event.preventDefault();if(save(next=>lib.record(next,goal.id,{ts:new Date(date.value).getTime(),support:support.input.value,context:context.input.value,purpose:purpose.input.value,logId:id()})))status('Observação registrada neste aparelho. Não foi enviada aos modelos de IA.');});card.append(form);
+   const quick=make('div',undefined,'wg-actions wg-quick');
+   for(const [value,label] of Object.entries(lib.SUPPORT))quick.append(button(label,()=>{support.input.value=value;form.requestSubmit();}));
+   card.append(make('p','Registro rápido: usa a data, o contexto e a função preenchidos acima.','wg-hint'),quick);
    const actions=make('div',undefined,'wg-actions');const undo=button('Desfazer último registro',()=>{if(confirm('Excluir o registro mais recente desta expressão?'))if(save(next=>{next.goals.find(g=>g.id===goal.id).logs.pop();}))status('Último registro removido.');});undo.disabled=!goal.logs.length;
    actions.append(undo,button('Pausar acompanhamento',()=>{if(save(next=>next.goals.find(g=>g.id===goal.id).active=false))status('Expressão pausada. Os registros continuam no resumo; os cartões de comunicação não foram alterados.');}));card.append(actions);host.append(card);
   }

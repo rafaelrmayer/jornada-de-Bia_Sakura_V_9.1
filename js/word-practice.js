@@ -5,13 +5,13 @@
  const CONTEXT={home:'Casa',school:'Escola',outing:'Passeio',unspecified:'Não informado'};
  const PURPOSE={request:'Pedir',refuse:'Recusar',comment:'Comentar',attention:'Chamar atenção',other:'Outra função',unspecified:'Não informado'};
  const has=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
- function empty(){return {version:2,goals:[],notes:{},garden:false};}
+ function empty(){return {version:2,goals:[],notes:{},garden:true};}
  function normalize(value){
   if(!value||typeof value!=='object'||!Array.isArray(value.goals))throw Error('Formato do acompanhamento inválido.');
-  const state=empty();state.garden=value.garden===true;
+  const state=empty();state.garden=value.garden!==false;
   state.goals=value.goals.map((g,i)=>{
    if(typeof g.word!=='string'||!g.word.trim()||!Array.isArray(g.logs))throw Error('Expressão ou registros inválidos.');
-   return {id:typeof g.id==='string'?g.id:'legacy-'+i,word:g.word.trim().slice(0,80),active:g.active!==false&&!g.conquered,logs:g.logs.map((l,j)=>{
+   return {id:typeof g.id==='string'?g.id:'legacy-'+i,word:g.word.trim().slice(0,80),active:g.active!==false&&!g.conquered,review:['review','consolidated'].includes(g.review)?g.review:'tracking',logs:g.logs.map((l,j)=>{
     if((!Number.isFinite(l.ts)||!Number.isFinite(new Date(l.ts).getTime())))throw Error('Data de registro inválida.');
     return {id:typeof l.id==='string'?l.id:'legacy-'+i+'-'+j,ts:l.ts,support:has(SUPPORT,l.support)?l.support:'unspecified',context:has(CONTEXT,l.context||l.ctx)?(l.context||l.ctx):'unspecified',purpose:has(PURPOSE,l.purpose)?l.purpose:'unspecified'};
    })};
@@ -41,12 +41,20 @@
   if(goal.logs.length>=500)throw Error('Limite de 500 registros nesta expressão. Exporte os dados antes de revisar o acompanhamento.');
   goal.logs.push({id:logId,ts,support,context,purpose});goal.logs.sort((a,b)=>a.ts-b.ts);
  }
+ function recentDays(goal,now=Date.now()){
+  const today=new Date(now);today.setHours(0,0,0,0);
+  return Array.from({length:5},(_,i)=>{
+   const start=new Date(today);start.setDate(start.getDate()-4+i);const end=new Date(start);end.setDate(end.getDate()+1);
+   const logs=goal.logs.filter(l=>l.ts>=start.getTime()&&l.ts<end.getTime()&&l.ts<=now);
+   return {date:day(start.getTime()),support:Object.keys(SUPPORT).filter(k=>logs.some(l=>l.support===k)),contexts:Object.keys(CONTEXT).filter(k=>logs.some(l=>l.context===k))};
+  });
+ }
  function aggregate(state,range,now=Date.now()){
   const counts=labels=>Object.fromEntries(Object.keys(labels).map(k=>[k,0]));
   const out={total:0,support:counts(SUPPORT),contexts:counts(CONTEXT),purposes:counts(PURPOSE),words:[]};
   for(const g of state.goals){const logs=g.logs.filter(l=>l.ts>=range.start&&l.ts<range.end&&l.ts<=now);const supports=counts(SUPPORT);logs.forEach(l=>{supports[l.support]++;out.support[l.support]++;out.contexts[l.context]++;out.purposes[l.purpose]++;});out.total+=logs.length;if(g.active||logs.length)out.words.push({id:g.id,word:g.word,active:g.active,total:logs.length,days:new Set(logs.map(l=>day(l.ts))).size,support:supports});}
   return out;
  }
- const api={SUPPORT,CONTEXT,PURPOSE,empty,normalize,day,week,add,record,aggregate};
+ const api={SUPPORT,CONTEXT,PURPOSE,empty,normalize,day,week,add,record,recentDays,aggregate};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.JBWordPractice=api;
 })(typeof window==='undefined'?globalThis:window);
