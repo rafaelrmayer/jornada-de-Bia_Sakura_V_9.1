@@ -27,3 +27,20 @@
 #wgPrintReport{display:none}
 @media(max-width:540px){.wg-log-form{grid-template-columns:minmax(0,1fr)}#page-word-goals .wg-card,#wgSummary{padding:16px}.wg-actions .wg-btn{width:100%}}
 @media print{body.wg-printing>*{display:none!important}body.wg-printing>#wgPrintReport{display:block!important;white-space:pre-wrap;font:12pt/1.6 sans-serif;color:#000!important;background:#fff!important;margin:0}body.wg-printing{background:#fff!important;padding:0!important}}
+
+/* Flores e observações: nenhuma cor representa maior mérito. */
+#page-word-goals .wg-flowers{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+#page-word-goals .wg-flower{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;overflow-wrap:anywhere;font-size:.85rem;padding:10px 4px}
+.wg-flower-icon{font-size:2.2rem}
+.wg-flower-empty{border:1px dashed var(--wg-line);background:transparent}
+.wg-days{display:flex;gap:14px;margin:16px 0}
+.wg-day{display:flex;flex-direction:column;align-items:center;gap:6px}
+.wg-day-dot{width:26px;height:26px;border:2px solid var(--wg-ink);border-radius:50%;display:flex;overflow:hidden}
+.wg-day-mark{flex:1;background:var(--wg-ink)}
+.wg-support-prompted{background:var(--wg-line)}
+.wg-support-supported{background:var(--friendly-petal,#e7afc7)}
+.wg-support-unspecified{background:repeating-linear-gradient(45deg,var(--wg-ink) 0 2px,var(--wg-bg) 2px 5px)}
+#page-word-goals .wg-review-needed{border:3px solid #b33d70}
+.wg-review-badge{display:inline-block;padding:8px 12px;border-radius:14px;background:var(--wg-soft);font-weight:700}
+.wg-quick .wg-btn{flex:1 1 42%}
+@media(max-width:540px){#page-word-goals .wg-flowers{grid-template-columns:repeat(3,minmax(0,1fr))}.wg-days{gap:10px}}
