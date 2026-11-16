@@ -120,3 +120,6 @@ html:root.bia-a11y-contrast body > header[role="banner"] {background:#000!import
 .rf-test-pending {padding:16px;margin:16px 0;border:2px solid var(--friendly-line);border-radius:16px;}
 .rf-test-pending[hidden],#biaAssistantSummary[hidden] {display:none!important;}
 .rf-test-pending button {min-height:48px;}
+
+/* Aviso de voz não cobre a navegação, inclusive quando ela ocupa duas linhas. */
+html body .bia-voice-notice:not([hidden]){bottom:calc(var(--bia-bottom-nav-height,80px) + var(--bia-install-banner-height,0px) + 28px);pointer-events:none}

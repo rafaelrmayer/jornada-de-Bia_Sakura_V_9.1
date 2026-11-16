@@ -44,3 +44,5 @@
 .wg-review-badge{display:inline-block;padding:8px 12px;border-radius:14px;background:var(--wg-soft);font-weight:700}
 .wg-quick .wg-btn{flex:1 1 42%}
 @media(max-width:540px){#page-word-goals .wg-flowers{grid-template-columns:repeat(3,minmax(0,1fr))}.wg-days{gap:10px}}
+
+.wg-pending{padding:14px;border:1px dashed var(--wg-line);border-radius:16px;margin:18px 0}.wg-pending-row{padding:10px 0;border-bottom:1px solid var(--wg-line)}.wg-pending-row button{margin:4px}.wg-flower-collection{grid-template-columns:repeat(auto-fit,minmax(90px,1fr))!important}

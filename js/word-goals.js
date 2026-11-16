@@ -8,8 +8,8 @@
  function status(text){$('wgStatus').textContent=text;}
  const allowed=()=>!!root.SecurityService?.isUnlocked?.();
  const id=()=>root.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
- function save(change){
-  if(!allowed()){status('Desbloqueie a administração em Apoio para registrar ou alterar o acompanhamento.');return false;}
+ function save(change,automatic=false){
+  if(!automatic&&!allowed()){status('Desbloqueie a administração em Apoio para registrar ou alterar o acompanhamento.');return false;}
   if(readFailed){status('Os dados existentes não puderam ser lidos. Eles foram preservados; exporte um backup antes de tentar corrigir o arquivo.');return false;}
   try{const next=JSON.parse(JSON.stringify(state));change(next);const serialized=JSON.stringify(next);if(serialized.length>200000)throw Error('O acompanhamento atingiu o limite local. Exporte um backup e revise os registros antes de continuar.');localStorage.setItem(KEY,serialized);state=next;render();listeners.forEach(fn=>fn());return true;}catch(error){status(error.message||'Não foi possível salvar neste aparelho.');return false;}
  }
@@ -20,11 +20,15 @@
   const host=$('wgRoot');host.replaceChildren();
   if(!allowed()){host.append(make('p','Bem-vinda ao Jardim da Bia! Para acompanhar expressões e registrar observações, desbloqueie a administração em Apoio.'),button('Ir para Apoio',()=>document.querySelector('.visual-bottom-nav [data-page="settings"]').click()));return;}
   const gardenLabel=make('label',undefined,'wg-garden-switch'),garden=document.createElement('input');garden.type='checkbox';garden.checked=state.garden;garden.addEventListener('change',()=>{save(next=>next.garden=garden.checked);});gardenLabel.append(garden,document.createTextNode(' Mostrar o jardim de expressões (opcional)'));host.append(gardenLabel);
+  const captureLabel=make('label',undefined,'wg-garden-switch'),capture=document.createElement('input');capture.type='checkbox';capture.checked=state.capture;capture.addEventListener('change',()=>save(next=>next.capture=capture.checked));captureLabel.append(capture,document.createTextNode(' Registrar acionamentos de fala das expressões em prática neste aparelho'));host.append(captureLabel,make('p','Opcional. Só identifica a expressão exata acionada no app; não identifica quem tocou, se o áudio foi ouvido, o contexto ou o apoio recebido. O adulto revisa cada acionamento no Jardim.','wg-hint'));
   if(state.garden){
    const box=make('section',undefined,'wg-garden');box.append(make('h3','Jardim da Bia'),make('p','Cinco espaços para expressões. A flor se abre quando a fono marca “Consolidada”. Essa avaliação é manual, sem pontuação.'));
    const flowers=make('div',undefined,'wg-flowers');const current=state.goals.filter(g=>g.active);
    for(let i=0;i<5;i++){const goal=current[i],flower=make('div',undefined,'wg-flower'+(!goal?' wg-flower-empty':''));const icon=make('span',goal?.review==='consolidated'?'🌸':'🌷','wg-flower-icon');icon.setAttribute('aria-hidden','true');flower.append(icon,make('strong',goal?.word||'Espaço livre'),make('small',goal?(goal.review==='consolidated'?'Consolidada pela fono':goal.review==='review'?'Revisar com a fono':'Em acompanhamento'):'Sem expressão'));flowers.append(flower);}
-   box.append(flowers);host.append(box);
+   box.append(flowers);
+   const completed=state.goals.filter(g=>!g.active&&g.review==='consolidated');
+   if(completed.length){box.append(make('h4','Flores que permanecem no Jardim'));const collection=make('div',undefined,'wg-flowers wg-flower-collection');for(const goal of completed)collection.append(make('div','🌸 '+goal.word,'wg-flower'));box.append(collection);}
+   host.append(box);
   }
   const active=state.goals.filter(g=>g.active);host.append(make('p',active.length+' expressões em acompanhamento. Você pode manter até cinco por vez.','wg-hint'));
   if(!active.length)host.append(make('p','Ainda não há expressões em prática. Adicione uma palavra ou frase escolhida com a Bia e a fono.'));
@@ -45,14 +49,28 @@
    const submit=make('button','Registrar observação','wg-btn');submit.type='submit';form.append(submit);form.addEventListener('submit',event=>{event.preventDefault();if(save(next=>lib.record(next,goal.id,{ts:new Date(date.value).getTime(),support:support.input.value,context:context.input.value,purpose:purpose.input.value,logId:id()})))status('Observação registrada neste aparelho. Não foi enviada aos modelos de IA.');});card.append(form);
    const quick=make('div',undefined,'wg-actions wg-quick');
    for(const [value,label] of Object.entries(lib.SUPPORT))quick.append(button(label,()=>{support.input.value=value;form.requestSubmit();}));
+   if(goal.taps?.length){
+    const pending=make('section',undefined,'wg-pending');pending.append(make('h4','Acionamentos no aplicativo para revisar'),make('p','Eles não entram nas observações até a revisão. Use o apoio, o contexto e a função preenchidos acima.'));
+    for(const tap of goal.taps){const row=make('div',undefined,'wg-pending-row');row.append(make('p',new Date(tap.ts).toLocaleString('pt-BR')),button('Confirmar este acionamento',()=>{if(save(next=>lib.confirmTap(next,goal.id,tap.id,{support:support.input.value,context:context.input.value,purpose:purpose.input.value,logId:id()})))status('Acionamento revisado. Foi criada uma única observação, com o apoio informado pelo adulto.');}),button('Descartar acionamento',()=>save(next=>{const g=next.goals.find(g=>g.id===goal.id);g.taps=g.taps.filter(t=>t.id!==tap.id);})));pending.append(row);}card.append(pending);
+   }
    card.append(make('p','Registro rápido: usa a data, o contexto e a função preenchidos acima.','wg-hint'),quick);
    const actions=make('div',undefined,'wg-actions');const undo=button('Desfazer último registro',()=>{if(confirm('Excluir o registro mais recente desta expressão?'))if(save(next=>{next.goals.find(g=>g.id===goal.id).logs.pop();}))status('Último registro removido.');});undo.disabled=!goal.logs.length;
-   actions.append(undo,button('Pausar acompanhamento',()=>{if(save(next=>next.goals.find(g=>g.id===goal.id).active=false))status('Expressão pausada. Os registros continuam no resumo; os cartões de comunicação não foram alterados.');}));card.append(actions);host.append(card);
+   actions.append(button('Concluir com a fono e manter no vocabulário',()=>{
+    if(!allowed())return;
+    if(goal.taps?.length){status('Revise ou descarte os acionamentos pendentes antes de concluir.');return;}
+    if(!confirm('A fono confirmou a consolidação desta expressão? Ela ficará em Minha Comunicação, a flor permanecerá no Jardim e um espaço será liberado.'))return;
+    if(!root.JBCommunication?.addGardenWord(goal.word)){status('Não foi possível salvar no vocabulário. O acompanhamento foi preservado.');return;}
+    if(save(next=>{const g=next.goals.find(g=>g.id===goal.id);g.review='consolidated';g.active=false;}))status('Flor aberta e preservada no Jardim! Expressão disponível em Minha Comunicação. Você pode acompanhar uma nova expressão.');
+   }),undo,button('Pausar acompanhamento',()=>{if(save(next=>next.goals.find(g=>g.id===goal.id).active=false))status('Expressão pausada. Os registros continuam no resumo; os cartões de comunicação não foram alterados.');}));card.append(actions);host.append(card);
   }
   const add=make('form',undefined,'wg-add');add.id='wgAddForm';const label=make('label','Nova palavra ou expressão'),input=document.createElement('input');input.id='wgNewWord';input.maxLength=80;input.required=true;label.htmlFor=input.id;add.append(label,input);const submit=make('button','Adicionar expressão','wg-btn');submit.type='submit';add.append(submit);add.addEventListener('submit',event=>{event.preventDefault();if(save(next=>lib.add(next,input.value,id())))status('Expressão adicionada. Nenhum cartão foi movido ou alterado.');});host.append(add);
   const paused=state.goals.filter(g=>!g.active);if(paused.length){const details=document.createElement('details');details.append(make('summary','Expressões pausadas ('+paused.length+')'));for(const goal of paused){const row=make('div',undefined,'wg-paused');row.append(make('strong',goal.word),button('Retomar',()=>{if(save(next=>{if(next.goals.filter(g=>g.active).length>=5)throw Error('Pause uma expressão antes de retomar outra.');next.goals.find(g=>g.id===goal.id).active=true;}))status('Acompanhamento retomado.');}),button('Excluir expressão e registros',()=>{if(confirm('Apagar esta expressão e todos os seus registros de acompanhamento? Os cartões de comunicação não serão alterados.'))save(next=>next.goals=next.goals.filter(g=>g.id!==goal.id));}));details.append(row);}host.append(details);}
  }
  root.JBWordGoals={getState:()=>JSON.parse(JSON.stringify(state)),onChange:fn=>listeners.push(fn),saveNotes:(key,text)=>save(next=>next.notes[key]=String(text).slice(0,1000)),allowed};
+ document.addEventListener('bia:communication-activated',event=>{
+  if(readFailed||!state.capture||!state.goals.some(g=>g.active&&lib.phraseKey(g.word)===lib.phraseKey(event.detail?.text)))return;
+  save(next=>{lib.capture(next,event.detail.text,id());},true);
+ });
  document.addEventListener('bia:pagechange',event=>{if(event.detail?.page==='word-goals'){render();listeners.forEach(fn=>fn());}});
  document.addEventListener('jornadaBia:sessionExpired',render);render();if(readFailed)status('Dados anteriores não puderam ser lidos; o arquivo local foi preservado.');
 })(window);

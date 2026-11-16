@@ -1485,6 +1485,7 @@
         function speakText(text, preview = false) {
             const phrase = String(text || '').trim();
             if (!phrase) return;
+            if (!preview) document.dispatchEvent(new CustomEvent('bia:communication-activated', {detail:{text:phrase}}));
             if (voiceSelect.value === 'edge-francisca') {
                 speakWithEdgeTTS(phrase, preview);
                 return;
@@ -2870,5 +2871,18 @@
         if(b.dataset.delete){const p=data.phrases.find(x=>x.id===b.dataset.delete);if(p&&confirm(`Excluir a frase “${p.text}”?`)){data.phrases=data.phrases.filter(x=>x.id!==p.id);save();render();}}
         if(b.dataset.favoriteSymbol){const id=String(b.dataset.favoriteSymbol);data.favoriteSymbols=data.favoriteSymbols.includes(id)?data.favoriteSymbols.filter(x=>x!==id):[...data.favoriteSymbols,id];save();render();}
     });
+    window.JBCommunication={
+        addGardenWord(text){
+            if(!window.SecurityService?.isUnlocked?.())return false;
+            const word=String(text||'').trim();if(!word||word.length>80)return false;
+            const key=s=>String(s).normalize('NFC').trim().toLocaleLowerCase('pt-BR').replace(/[.!?]+$/,'').trim();
+            if(data.phrases.some(p=>key(p.text)===key(word)))return true;
+            const category='Vocabulário do Jardim',next={...data,categories:[...data.categories],phrases:[...data.phrases]};
+            if(!next.categories.includes(category))next.categories.push(category);
+            next.phrases.push({id:'garden-'+crypto.randomUUID(),text:word,category});
+            if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false)return false;
+            data=next;render();return true;
+        }
+    };
     render();
 })();
