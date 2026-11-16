@@ -18,7 +18,7 @@
  function select(label,labels,defaultValue){const wrap=make('label',label),input=document.createElement('select');for(const [value,text] of Object.entries(labels)){const option=make('option',text);option.value=value;input.append(option);}input.value=defaultValue;wrap.append(input);return {wrap,input};}
  function render(){
   const host=$('wgRoot');host.replaceChildren();
-  if(!allowed()){host.append(make('p','Desbloqueie a administração em Apoio. Esta área registra observações do adulto, separadas da comunicação da Bia.'));return;}
+  if(!allowed()){host.append(make('p','Bem-vinda ao Jardim da Bia! Para acompanhar expressões e registrar observações, desbloqueie a administração em Apoio.'),button('Ir para Apoio',()=>document.querySelector('.visual-bottom-nav [data-page="settings"]').click()));return;}
   const gardenLabel=make('label',undefined,'wg-garden-switch'),garden=document.createElement('input');garden.type='checkbox';garden.checked=state.garden;garden.addEventListener('change',()=>{save(next=>next.garden=garden.checked);});gardenLabel.append(garden,document.createTextNode(' Mostrar o jardim de expressões (opcional)'));host.append(gardenLabel);
   if(state.garden){const box=make('section',undefined,'wg-garden');box.append(make('h3','Jardim da Bia'),make('p','Cada flor representa uma expressão em acompanhamento, sem prêmio ou classificação por tipo de apoio.'));const flowers=make('div',undefined,'wg-flowers');state.goals.filter(g=>g.active).forEach(g=>{const flower=make('span','🌷 '+g.word,'wg-flower');flowers.append(flower);});box.append(flowers);host.append(box);}
   const active=state.goals.filter(g=>g.active);host.append(make('p',active.length+' expressões em acompanhamento. Você pode manter até cinco por vez.','wg-hint'));

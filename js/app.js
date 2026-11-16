@@ -1611,7 +1611,7 @@
 
             // Configurações e Modo Calmo permanecem acessíveis. Dados pessoais
             // e gerenciamento só aparecem após desbloqueio administrativo.
-            if (['edit-symbols', 'medical', 'word-goals'].includes(requestedPage) && !guardianUnlocked) {
+            if (['edit-symbols', 'medical'].includes(requestedPage) && !guardianUnlocked) {
                 showToast('🔐 Desbloqueie a administração nas Configurações');
                 requestedPage = 'settings';
             }
