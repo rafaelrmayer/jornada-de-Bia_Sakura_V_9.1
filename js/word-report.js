@@ -28,7 +28,7 @@
    const stack=el('div',undefined,'wr-stack');stack.setAttribute('aria-hidden','true');
    for(const key of Object.keys(lib.SUPPORT)){const part=el('span',undefined,'wr-color-'+key);part.style.width=(w.total?w.support[key]/w.total*100:0)+'%';stack.append(part);}card.append(stack);
    const counts=el('div',undefined,'wr-word-counts');for(const [key,label] of Object.entries(lib.SUPPORT))counts.append(el('span',label+': '+w.support[key]));card.append(counts);
-   card.append(el('p',w.days+(days===1?' dia com registros':' dias com registros')+(!w.active?' · acompanhamento pausado':''),'wr-caption'));words.append(card);
+   card.append(el('p',w.days+(w.days===1?' dia com registros':' dias com registros')+(!w.active?' · acompanhamento pausado':''),'wr-caption'));words.append(card);
   }report.append(words);
   const contexts=el('section',undefined,'wr-section');contexts.append(el('h2','Onde foi observado'));
   const tags=el('div',undefined,'wr-contexts');
