@@ -32,11 +32,7 @@
   const range=lib.week(chosen),state=goals.getState(),data=lib.aggregate(state,range);
   host.append(el('h3','Resumo semanal de comunicação'));
   const label=el('label','Escolha uma data da semana','ws-noprint'),date=el('input');date.type='date';date.value=chosen;date.onchange=()=>{try{lib.week(date.value);chosen=date.value;render();}catch{date.value=chosen;}};label.append(date);host.append(label);
-  host.append(el('p',new Date(range.start).toLocaleDateString('pt-BR')+' a '+new Date(range.end-1).toLocaleDateString('pt-BR')));
-  host.append(el('p',data.total+' observações registradas manualmente. Ausência de registro não significa ausência de comunicação.','wg-hint'));
-  const nums=el('div',undefined,'ws-nums');for(const [k,l] of Object.entries(lib.SUPPORT)){const box=el('div',undefined,'ws-num');box.append(el('strong',String(data.support[k])),el('span',l));nums.append(box);}host.append(nums);
-  host.append(el('h4','Por expressão'));for(const w of data.words){const row=el('div',undefined,'ws-row');row.append(el('strong',w.word+(!w.active?' (pausada)':'')),el('p',w.total+' observações · '+w.days+' dias com registros'),el('p',Object.entries(lib.SUPPORT).map(([k,l])=>l+': '+w.support[k]).join(' · ')));host.append(row);}
-  for(const [title,labels,counts] of [['Onde foi observado',lib.CONTEXT,data.contexts],['Funções comunicativas informadas',lib.PURPOSE,data.purposes]]){host.append(el('h4',title));const tags=el('div',undefined,'wg-tags');for(const [k,l] of Object.entries(labels))tags.append(el('span',l+' · '+counts[k],'wg-tag'));host.append(tags);}
+  const visual=window.JBWordReport.build(range,data,state);visual.classList.add('wr-inline-preview');host.append(visual);
   const note=el('label','Observações para a fono'),ta=el('textarea');ta.maxLength=1000;ta.rows=4;ta.value=state.notes[range.key]||'';note.append(ta);host.append(note,button('Salvar observações da semana',()=>{if(goals.saveNotes(range.key,ta.value))document.getElementById('wgStatus').textContent='Observações da semana salvas neste aparelho.';}));
   host.append(el('p','Salve as observações antes de gerar o resumo. Os dados permanecem neste navegador até você escolher compartilhar.','wg-hint'),
    button('Revisar resumo para PDF ou WhatsApp',()=>{const snapshot=goals.getState(),counts=lib.aggregate(snapshot,range);review(report(range,counts,snapshot),range,counts,snapshot);}));
