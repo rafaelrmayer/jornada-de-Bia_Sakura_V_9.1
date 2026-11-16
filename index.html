@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="css/app-v9-6-8.css">
     <link rel="stylesheet" href="css/card-suggestions.css">
     <link rel="stylesheet" href="css/sakura-friendly.css">
+    <link rel="stylesheet" href="css/word-goals.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
 </head>
@@ -62,6 +63,7 @@
             <button class="nav-item" data-page="cards">🔣 Meus cartões</button>
             <button class="nav-item" data-page="my-communication">💬 Minha Comunicação</button>
             <button class="nav-item" data-page="routine">📅 Minha Rotina</button>
+            <button class="nav-item" data-page="word-goals">🌱 Metas de palavras</button>
             <button class="nav-item" data-page="activities">🎵 Música e Atividades</button>
             <button class="nav-item" data-page="assistant">🦋 Assistente Inteligente</button>
             <button class="nav-item" data-page="emotions">🌷 Emoções</button>
@@ -456,6 +458,13 @@
             </section>
         </div>
 
+        <section class="page-section" id="page-word-goals" aria-labelledby="wgTitle"><div class="bia-feature">
+<header><h2 id="wgTitle">🌱 Metas de palavras</h2><p>Uma flor a cada palavra nova. Sem pressa, sem nota.</p></header>
+<p id="wgStatus" class="bia-hint" role="status" aria-live="polite"></p>
+<div id="wgRoot"></div>
+<button type="button" class="wg-btn" id="wgSummaryToggle" aria-expanded="false" aria-controls="wgSummary">📋 Resumo para a fono</button>
+<section id="wgSummary" hidden aria-label="Resumo semanal para a fono"></section>
+</div></section>
         <section class="page-section" id="page-routine"><div class="bia-feature">
 <header><h2>📅 Minha Rotina</h2><p>Um passo de cada vez, no meu tempo.</p></header>
 <div class="bia-periods" id="biaRoutinePeriods" role="group" aria-label="Período da rotina"></div>
@@ -1059,6 +1068,8 @@
     <script src="js/sakura-habits-v9-2.js"></script>
     <script src="js/accessibility-v9-2-8.js"></script>
     <script src="js/accessibility-v9-2-9.js"></script>
+    <script src="js/word-goals.js"></script>
+    <script src="js/word-summary.js"></script>
     <script src="js/navigation-layout.js"></script>
 
 <!-- Service Worker registrado centralmente por js/app.js -->
