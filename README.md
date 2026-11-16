@@ -470,3 +470,10 @@ Esta revisão verificou os fluxos locais com dados fictícios e backup criptogra
 Não é certificação de segurança ou compatibilidade universal: biometria,
 notificações e disponibilidade das vozes dependem do aparelho. O PostgreSQL/
 backend separado não faz parte deste repositório e não foi auditado nesta rodada.
+
+### Palavras em prática
+Em **Apoio → Palavras em prática**, desbloqueie a administração para acompanhar até cinco expressões escolhidas com a Bia e a fono. O adulto registra data, contexto, função comunicativa e apoio observado; o padrão é “Não informado”. O aplicativo não infere espontaneidade nem declara uma palavra conquistada. Pausar mantém o histórico e não altera os cartões.
+
+O resumo usa semanas de segunda a domingo, inclui todos os tipos de apoio e permite salvar observações por semana. Revise o texto antes de abrir o WhatsApp ou usar **Salvar PDF / Imprimir** (escolha “Salvar como PDF” no navegador). Nenhuma mensagem é enviada automaticamente. O jardim é opcional e representa expressões, sem pontuação. Ausência de registro não significa ausência de comunicação.
+
+Os registros ficam neste navegador, separados dos modelos de IA, e entram no backup completo existente. A limpeza geral dos dados também os remove. A proteção administrativa é local, não autenticação de servidor. O módulo funciona offline após o primeiro carregamento completo; não é uma avaliação clínica.

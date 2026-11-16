@@ -1584,6 +1584,7 @@
 
         const PAGE_MAP = Object.freeze({
             'home': 'page-home',
+            'word-goals': 'page-word-goals',
             'my-communication': 'page-my-communication',
             'cards': 'page-cards',
             'routine': 'page-routine',
@@ -1610,7 +1611,7 @@
 
             // Configurações e Modo Calmo permanecem acessíveis. Dados pessoais
             // e gerenciamento só aparecem após desbloqueio administrativo.
-            if (['edit-symbols', 'medical'].includes(requestedPage) && !guardianUnlocked) {
+            if (['edit-symbols', 'medical', 'word-goals'].includes(requestedPage) && !guardianUnlocked) {
                 showToast('🔐 Desbloqueie a administração nas Configurações');
                 requestedPage = 'settings';
             }
@@ -2552,7 +2553,7 @@
         // Ponte explícita para o módulo de expiração por inatividade.
         window.setGuardianMode = setGuardianMode;
         document.addEventListener('jornadaBia:sessionExpired', () => {
-            if (['medical', 'edit-symbols'].includes(currentPage)) showPage('settings');
+            if (['medical', 'edit-symbols', 'word-goals'].includes(currentPage)) showPage('settings');
             document.getElementById('guardianModal')?.classList.remove('active');
             document.getElementById('symbolModal')?.classList.remove('active');
             showToast('🔒 Acesso administrativo expirado');
