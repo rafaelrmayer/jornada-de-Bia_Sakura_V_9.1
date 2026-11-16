@@ -16,12 +16,14 @@
   lines.push('Observações do adulto: '+(state.notes[range.key]||'Não informadas.'));
   return lines.join('\n');
  }
- function review(text){
+ function review(text,range,data,state){
   if(!goals.allowed())return;
   if(dialog)dialog.remove();dialog=el('dialog',undefined,'wg-review');
   dialog.append(el('h2','Revise antes de compartilhar'),el('p','O texto pode conter informações pessoais. Escolha com quem compartilhar.'));
-  const preview=el('textarea');preview.readOnly=true;preview.value=text;preview.rows=18;preview.setAttribute('aria-label','Prévia do resumo');dialog.append(preview);
-  dialog.append(button('Salvar PDF / Imprimir',()=>{if(!goals.allowed())return;dialog.close();const paper=el('pre',text);paper.id='wgPrintReport';document.body.append(paper);document.body.classList.add('wg-printing');const clean=()=>{paper.remove();document.body.classList.remove('wg-printing');window.removeEventListener('afterprint',clean);};window.addEventListener('afterprint',clean);try{window.print();}catch{clean();}}),
+  const visual=window.JBWordReport.build(range,data,state);dialog.append(visual);
+  const textDetails=el('details');textDetails.append(el('summary','Ver texto para WhatsApp'));
+  const preview=el('textarea');preview.readOnly=true;preview.value=text;preview.rows=18;preview.setAttribute('aria-label','Prévia do resumo');textDetails.append(preview);dialog.append(textDetails);
+  dialog.append(button('Salvar PDF / Imprimir',()=>{if(!goals.allowed())return;dialog.close();const paper=visual.cloneNode(true);paper.id='wgPrintReport';document.body.append(paper);document.body.classList.add('wg-printing');const clean=()=>{paper.remove();document.body.classList.remove('wg-printing');window.removeEventListener('afterprint',clean);};window.addEventListener('afterprint',clean);try{window.print();}catch{clean();}}),
    button('Abrir WhatsApp',()=>{if(goals.allowed())window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener,noreferrer');}),
    button('Voltar',()=>dialog.close()));document.body.append(dialog);dialog.showModal();
  }
@@ -37,7 +39,7 @@
   for(const [title,labels,counts] of [['Onde foi observado',lib.CONTEXT,data.contexts],['Funções comunicativas informadas',lib.PURPOSE,data.purposes]]){host.append(el('h4',title));const tags=el('div',undefined,'wg-tags');for(const [k,l] of Object.entries(labels))tags.append(el('span',l+' · '+counts[k],'wg-tag'));host.append(tags);}
   const note=el('label','Observações para a fono'),ta=el('textarea');ta.maxLength=1000;ta.rows=4;ta.value=state.notes[range.key]||'';note.append(ta);host.append(note,button('Salvar observações da semana',()=>{if(goals.saveNotes(range.key,ta.value))document.getElementById('wgStatus').textContent='Observações da semana salvas neste aparelho.';}));
   host.append(el('p','Salve as observações antes de gerar o resumo. Os dados permanecem neste navegador até você escolher compartilhar.','wg-hint'),
-   button('Revisar resumo para PDF ou WhatsApp',()=>review(report(range,lib.aggregate(goals.getState(),range),goals.getState()))));
+   button('Revisar resumo para PDF ou WhatsApp',()=>{const snapshot=goals.getState(),counts=lib.aggregate(snapshot,range);review(report(range,counts,snapshot),range,counts,snapshot);}));
  }
  toggle.onclick=()=>{if(!goals.allowed())return;host.hidden=!host.hidden;toggle.setAttribute('aria-expanded',String(!host.hidden));if(!host.hidden)render();};
  goals.onChange(()=>{if(!host.hidden)render();});document.addEventListener('jornadaBia:sessionExpired',render);
