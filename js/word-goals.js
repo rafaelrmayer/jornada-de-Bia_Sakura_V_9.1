@@ -18,7 +18,18 @@
  function select(label,labels,defaultValue){const wrap=make('label',label),input=document.createElement('select');for(const [value,text] of Object.entries(labels)){const option=make('option',text);option.value=value;input.append(option);}input.value=defaultValue;wrap.append(input);return {wrap,input};}
  function render(){
   const host=$('wgRoot');host.replaceChildren();
-  if(!allowed()){host.append(make('p','Bem-vinda ao Jardim da Bia! Para acompanhar expressões e registrar observações, desbloqueie a administração em Apoio.'),button('Ir para Apoio',()=>document.querySelector('.visual-bottom-nav [data-page="settings"]').click()));return;}
+  if(!allowed()){
+   const unlock=button('🔓 Desbloquear Jardim',async()=>{
+    unlock.disabled=true;
+    try {
+     if(typeof root.requestGuardianUnlock!=='function')throw Error('O desbloqueio ainda não está disponível. Atualize a página.');
+     if(await root.requestGuardianUnlock()){status('Jardim desbloqueado. Você pode registrar e revisar as expressões.');host.querySelector('input,button')?.focus();}
+     else status('O Jardim continua bloqueado. Você pode tentar novamente aqui.');
+    }catch(error){status(error.message||'Não foi possível desbloquear o Jardim.');}
+    finally{unlock.disabled=false;}
+   });
+   host.append(make('p','Bem-vinda ao Jardim da Bia! Desbloqueie aqui para acompanhar expressões e registrar observações, usando o mesmo PIN administrativo do aplicativo.'),unlock);return;
+  }
   const gardenLabel=make('label',undefined,'wg-garden-switch'),garden=document.createElement('input');garden.type='checkbox';garden.checked=state.garden;garden.addEventListener('change',()=>{save(next=>next.garden=garden.checked);});gardenLabel.append(garden,document.createTextNode(' Mostrar o jardim de expressões (opcional)'));host.append(gardenLabel);
   const captureLabel=make('label',undefined,'wg-garden-switch'),capture=document.createElement('input');capture.type='checkbox';capture.checked=state.capture;capture.addEventListener('change',()=>save(next=>next.capture=capture.checked));captureLabel.append(capture,document.createTextNode(' Registrar acionamentos de fala das expressões em prática neste aparelho'));host.append(captureLabel,make('p','Opcional. Só identifica a expressão exata acionada no app; não identifica quem tocou, se o áudio foi ouvido, o contexto ou o apoio recebido. O adulto revisa cada acionamento no Jardim.','wg-hint'));
   if(state.garden){
@@ -72,5 +83,6 @@
   save(next=>{lib.capture(next,event.detail.text,id());},true);
  });
  document.addEventListener('bia:pagechange',event=>{if(event.detail?.page==='word-goals'){render();listeners.forEach(fn=>fn());}});
+ document.addEventListener('bia:admin-access-changed',()=>{render();listeners.forEach(fn=>fn());});
  document.addEventListener('jornadaBia:sessionExpired',render);render();if(readFailed)status('Dados anteriores não puderam ser lidos; o arquivo local foi preservado.');
 })(window);

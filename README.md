@@ -472,7 +472,7 @@ notificações e disponibilidade das vozes dependem do aparelho. O PostgreSQL/
 backend separado não faz parte deste repositório e não foi auditado nesta rodada.
 
 ### Palavras em prática
-No menu inferior **Jardim da Bia**, desbloqueie a administração para acompanhar até cinco expressões escolhidas com a Bia e a fono. O adulto registra data, contexto, função comunicativa e apoio observado; o padrão é “Não informado”. O aplicativo não infere espontaneidade nem declara uma palavra conquistada. Pausar mantém o histórico e não altera os cartões.
+No menu inferior **Jardim da Bia**, use **Desbloquear Jardim** para abrir o mesmo fluxo administrativo de PIN/biometria, sem sair da tela. Desbloqueie a administração para acompanhar até cinco expressões escolhidas com a Bia e a fono. O adulto registra data, contexto, função comunicativa e apoio observado; o padrão é “Não informado”. O aplicativo não infere espontaneidade nem declara uma palavra conquistada. Pausar mantém o histórico e não altera os cartões.
 
 O resumo usa semanas de segunda a domingo, inclui todos os tipos de apoio e permite salvar observações por semana. Revise o texto antes de abrir o WhatsApp ou usar **Salvar PDF / Imprimir** (escolha “Salvar como PDF” no navegador). Nenhuma mensagem é enviada automaticamente. O jardim é opcional e representa expressões, sem pontuação. Ausência de registro não significa ausência de comunicação.
 
@@ -486,3 +486,5 @@ O registro de acionamentos de fala é opcional e vem desligado. Ao ativá-lo na 
 No Jardim, o adulto escolhe apoio, contexto e função e confirma o acionamento original, criando uma única observação. Também pode descartá-lo. Pendências não contam como observações no resumo. O botão de nova observação registra uma ocorrência separada; para revisar um acionamento, use o botão específico de confirmação.
 
 “Concluir com a fono e manter no vocabulário” exige administração desbloqueada, revisão das pendências e confirmação do adulto. Adiciona a expressão em Minha Comunicação (categoria Vocabulário do Jardim, sem duplicar expressão já existente), preserva a flor aberta e os registros, e libera uma das cinco vagas. Essa é uma confirmação manual de consolidação, nunca uma conclusão automática da frequência. A expressão permanece pausada no acompanhamento e pode ser retomada.
+
+Se a sessão administrativa expirar enquanto o Jardim está aberto, os registros ficam ocultos e o botão de desbloqueio reaparece no próprio Jardim. Cancelamento, erro de PIN e limite de tentativas mantêm a proteção existente.
