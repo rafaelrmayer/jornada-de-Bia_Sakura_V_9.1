@@ -2550,11 +2550,12 @@
             if (status) status.textContent = unlocked ? '🔓 Administração desbloqueada' : '🔒 Administração bloqueada';
             document.querySelectorAll('.admin-protected').forEach(el => { el.hidden = !unlocked; });
             document.querySelectorAll('#page-edit-symbols input,#page-edit-symbols button.add-symbol-btn').forEach(el => el.disabled = !unlocked);
+            document.dispatchEvent(new CustomEvent('bia:admin-access-changed'));
         }
         // Ponte explícita para o módulo de expiração por inatividade.
         window.setGuardianMode = setGuardianMode;
         document.addEventListener('jornadaBia:sessionExpired', () => {
-            if (['medical', 'edit-symbols', 'word-goals'].includes(currentPage)) showPage('settings');
+            if (['medical', 'edit-symbols'].includes(currentPage)) showPage('settings');
             document.getElementById('guardianModal')?.classList.remove('active');
             document.getElementById('symbolModal')?.classList.remove('active');
             showToast('🔒 Acesso administrativo expirado');
@@ -2600,6 +2601,18 @@
                 window.alert('Não foi possível verificar o PIN. Confira as permissões do navegador. Detalhes: ' + (error?.message || String(error))); 
             }
         }
+
+        // O Jardim reutiliza o fluxo administrativo existente, sem outra senha ou sessão.
+        let guardianUnlockRequest = null;
+        window.requestGuardianUnlock = function () {
+            if (SecurityService.isUnlocked()) return Promise.resolve(true);
+            if (!guardianUnlockRequest) {
+                guardianUnlockRequest = toggleGuardianMode()
+                    .then(() => SecurityService.isUnlocked())
+                    .finally(() => { guardianUnlockRequest = null; });
+            }
+            return guardianUnlockRequest;
+        };
 
         // ============================================
         // V15: FLUXOS DE COMUNICAÇÃO E CONTEXTO
