@@ -492,3 +492,17 @@ Se a sessão administrativa expirar enquanto o Jardim está aberto, os registros
 O PDF para a fono agora usa um relatório visual A4 com resumo em números, variedade de funções informadas, gráficos de contexto e apoio, cartões por expressão e observações da semana. A prévia mostra o mesmo conteúdo que será impresso; valores e legendas permanecem legíveis sem depender de cores. Os gráficos contam observações revisadas, não acionamentos pendentes, e não representam uma avaliação clínica. O WhatsApp continua usando texto. Para exportar, abra o resumo, revise e escolha **Salvar PDF / Imprimir → Salvar como PDF** no navegador.
 
 O resumo na tela e o PDF compartilham a apresentação com fundo verde suave, cartões brancos, barras empilhadas por expressão, etiquetas de contexto e barras rosas por função comunicativa. Os três cartões principais mostram total, sem incentivo observado e com apoio; após incentivo e apoio não informado aparecem logo abaixo, separadamente, completando o total. Os gráficos de funções usam a maior contagem da semana como escala visual, com números explícitos. Nenhuma categoria de apoio é agrupada ou reclassificada.
+
+### Conta online e cópias de frases
+Em **Apoio → Conta e cartões**, desbloqueie a administração e crie uma conta de família ou entre com e-mail e senha. A conta online é diferente do PIN local. A conexão usa https://jornada-de-bia-data-api.onrender.com e exige a API com descoberta de famílias e identificador de envio (veja PR correspondente do backend). Uma API anterior é recusada antes de cadastro ou transferência.
+
+Esta primeira integração copia frases de **Minha Comunicação** por ação explícita:
+- **Enviar novas frases deste aparelho** consulta o catálogo e os cartões, pede confirmação da família e envia apenas cópias novas. Frases em categorias ausentes no catálogo ou fora do limite não são enviadas; a mensagem informa a quantidade preservada localmente.
+- **Importar novos cartões da conta** adiciona frases após confirmação, preservando as existentes, suas categorias, favoritos e os dados de aprendizado. Cartões já importados não são duplicados nem sobrescritos.
+- Edições e exclusões **não são propagadas**. A integração não faz espelhamento nem resolução automática de conflitos. Cartões com alterações permanecem preservados, para revisão em etapa futura.
+- Não há envio automático de frases, histórico, Jardim ou treino. Imagens e símbolos pré-instalados não são transferidos.
+- O token fica somente em memória por até 15 minutos, sem senha/token em armazenamento persistente ou backup. Recarregar, sair da conta, bloquear a administração ou expirar a sessão encerra a conexão.
+- Referências de envio/importação ficam junto das frases e entram no backup completo protegido. Uma resposta perdida pode ser conferida ao tentar novamente, sem duplicar o cartão. Alterações do armazenamento por outra aba interrompem a operação antes de sobrescrever os dados locais.
+- Sem internet, as frases já guardadas continuam disponíveis. Envio e importação exigem rede; não existe fila automática de sincronização neste primeiro fluxo.
+
+Para testar entre dispositivos, crie uma frase numa categoria do catálogo (ex.: Geral), envie para a família selecionada, entre na mesma conta no segundo dispositivo e importe. O backend precisa ser atualizado/publicado antes de fazer o merge da interface. Nenhuma credencial PostgreSQL ou chave JWT de servidor pertence ao frontend.

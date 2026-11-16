@@ -2834,7 +2834,11 @@
     let data=read(), editingId=null, activeCategory='*';
     // Recupera categorias associadas a frases antigas, evitando que fiquem invisíveis.
     data.phrases.forEach(p=>{const name=String(p.category||'Geral').trim()||'Geral';p.category=name;if(!data.categories.includes(name))data.categories.push(name);});
-    const save=()=>StorageService.setItem(STORE_KEY,JSON.stringify(data));
+    let lastSavedRaw=StorageService.getItem(STORE_KEY);
+    const save=()=>{const raw=JSON.stringify(data),ok=StorageService.setItem(STORE_KEY,raw);if(ok!==false)lastSavedRaw=raw;return ok;};
+    function assertCloudState(){
+        if(StorageService.getItem(STORE_KEY)!==lastSavedRaw)throw Error('As frases foram alteradas em outra aba. Recarregue antes de transferir para preservar essas mudanças.');
+    }
     const el=id=>document.getElementById(id);
     const safe=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const categoryEmoji={'Geral':'💬','Necessidades':'🤲','Alimentação':'🍎','Rotina':'🌤️','Sentimentos':'💗','Pessoas':'👨‍👩‍👧','Atividades':'🎨'};
@@ -2869,7 +2873,7 @@
         if(!confirm(message))return;
         const next={...data,phrases:[]};
         if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false){feedback.textContent='Não foi possível apagar as frases neste navegador.';return;}
-        data=next;editingId=null;activeCategory='*';el('myCommPhraseForm').hidden=true;
+        data=next;lastSavedRaw=JSON.stringify(next);editingId=null;activeCategory='*';el('myCommPhraseForm').hidden=true;
         render();
         feedback.textContent='Todas as frases foram apagadas. O aprendizado, categorias e favoritos foram preservados.';
         el('myCommAddPhrase').focus();
@@ -2885,6 +2889,45 @@
         if(b.dataset.favoriteSymbol){const id=String(b.dataset.favoriteSymbol);data.favoriteSymbols=data.favoriteSymbols.includes(id)?data.favoriteSymbols.filter(x=>x!==id):[...data.favoriteSymbols,id];save();render();}
     });
     window.JBCommunication={
+        snapshot(){assertCloudState();return JSON.parse(JSON.stringify(data));},
+        prepareCloudUpload(phraseId,familyId){
+            assertCloudState();
+            if(!window.SecurityService?.isUnlocked?.())throw Error('Desbloqueie a administração.');
+            const next=JSON.parse(JSON.stringify(data)),phrase=next.phrases.find(p=>p.id===phraseId);
+            if(!phrase)throw Error('A frase foi removida. Atualize a lista antes de enviar.');
+            phrase.cloudIds=phrase.cloudIds||{};
+            if(!phrase.cloudIds[familyId])phrase.cloudIds[familyId]=crypto.randomUUID();
+            if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false)throw Error('Não foi possível guardar a referência de envio neste aparelho.');
+            data=next;lastSavedRaw=JSON.stringify(next);return JSON.parse(JSON.stringify(phrase));
+        },
+        markCloudUpload(phraseId,familyId,cardId){
+            assertCloudState();
+            if(!window.SecurityService?.isUnlocked?.())throw Error('Desbloqueie a administração.');
+            const next=JSON.parse(JSON.stringify(data)),phrase=next.phrases.find(p=>p.id===phraseId);
+            if(!phrase)return;
+            if(!(phrase.cloudSources||[]).some(s=>s.family===familyId&&s.id===cardId))phrase.cloudSources=[...(phrase.cloudSources||[]),{family:familyId,id:cardId}];
+            if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false)throw Error('A frase foi enviada, mas a confirmação local não pôde ser salva. Tente novamente para conferir.');
+            data=next;lastSavedRaw=JSON.stringify(next);
+        },
+        importCloudCards(cards,catalog,familyId){
+            assertCloudState();
+            if(!window.SecurityService?.isUnlocked?.())throw Error('Desbloqueie a administração.');
+            const next=JSON.parse(JSON.stringify(data));let added=0,existing=0;
+            for(const card of cards){
+                const category=catalog.find(c=>c.id===card.category_id)?.name;
+                if(!category)throw Error('Categoria desconhecida. Nada foi importado.');
+                if(next.phrases.some(p=>(p.cloudSources||[]).some(s=>s.family===familyId&&s.id===card.id))){existing++;continue;}
+                const same=next.phrases.find(p=>p.text===card.text&&(p.category||'Geral')===category);
+                const source={family:familyId,id:card.id};
+                if(same){same.cloudSources=[...(same.cloudSources||[]),source];existing++;continue;}
+                if(!next.categories.includes(category))next.categories.push(category);
+                next.phrases.push({id:'cloud-'+crypto.randomUUID(),text:card.text,category,cloudSources:[source],
+                    ...(card.client_id?{cloudIds:{[familyId]:card.client_id}}:{})});added++;
+            }
+            if(JSON.stringify(next).length>1000000)throw Error('Limite local atingido. Exporte um backup antes de importar mais cartões.');
+            if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false)throw Error('Não foi possível salvar a importação. As frases anteriores foram preservadas.');
+            data=next;lastSavedRaw=JSON.stringify(next);render();return {added,existing};
+        },
         addGardenWord(text){
             if(!window.SecurityService?.isUnlocked?.())return false;
             const word=String(text||'').trim();if(!word||word.length>80)return false;
@@ -2894,7 +2937,7 @@
             if(!next.categories.includes(category))next.categories.push(category);
             next.phrases.push({id:'garden-'+crypto.randomUUID(),text:word,category});
             if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false)return false;
-            data=next;render();return true;
+            data=next;lastSavedRaw=JSON.stringify(next);render();return true;
         }
     };
     render();
