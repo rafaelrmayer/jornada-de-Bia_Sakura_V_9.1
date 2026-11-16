@@ -46,3 +46,52 @@
 @media(max-width:540px){#page-word-goals .wg-flowers{grid-template-columns:repeat(3,minmax(0,1fr))}.wg-days{gap:10px}}
 
 .wg-pending{padding:14px;border:1px dashed var(--wg-line);border-radius:16px;margin:18px 0}.wg-pending-row{padding:10px 0;border-bottom:1px solid var(--wg-line)}.wg-pending-row button{margin:4px}.wg-flower-collection{grid-template-columns:repeat(auto-fit,minmax(90px,1fr))!important}
+
+/* Prévia e PDF usam o mesmo relatório, independente do tema escuro do aplicativo. */
+.wg-review:has(.wg-report){width:min(900px,90vw)}
+.wg-report{background:#fff;color:#302c35;font:14px/1.5 Arial,sans-serif;padding:28px;border-radius:16px;overflow-wrap:anywhere;text-align:left}
+.wg-report *{box-sizing:border-box}
+.wg-report h1{font-size:26px;line-height:1.2;color:#65364f;margin:8px 0}
+.wg-report h2{font-size:17px;line-height:1.3;color:#65364f;margin:0 0 12px}
+.wg-report h3{font-size:16px;color:#302c35;margin:0 0 6px}
+.wg-report p{margin:6px 0}
+.wr-header{border-bottom:2px solid #ba5b83;padding-bottom:18px;margin-bottom:20px}
+.wr-eyebrow{font-size:10px;font-weight:700;letter-spacing:1.5px;color:#79435d}
+.wr-period{font-weight:600;color:#615563}
+.wr-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.wr-metric{background:#f8edf2;border:1px solid #e6c9d6;border-radius:12px;padding:14px 10px}
+.wr-metric strong{display:block;font-size:28px;color:#793d59;line-height:1.2}
+.wr-metric span{font-size:11px}
+.wr-intro{font-size:12px;padding:12px 0;color:#615563}
+.wr-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.wr-section,.wr-word{border:1px solid #dbcdd5;padding:16px;border-radius:12px;margin:14px 0;break-inside:avoid}
+.wr-chart-grid .wr-section{margin:0}
+.wr-caption{font-size:11px;color:#615563}
+.wr-chart-row{display:grid;grid-template-columns:1fr auto;gap:4px 8px;margin:10px 0;font-size:12px}
+.wr-track{grid-column:1/-1;height:9px;background:#f1e9ed;border-radius:5px;overflow:hidden}
+.wr-fill{display:block;height:100%;background:#ad537a;border-radius:5px;min-width:0}
+.wr-legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:10px;margin:10px 0}
+.wr-legend-item{display:inline-flex;align-items:center;gap:5px}
+.wr-legend-item i{display:inline-block;width:12px;height:12px;border:1px solid #6c5c68;border-radius:2px}
+.wr-stack{display:flex;background:#f1e9ed;height:12px;border-radius:5px;overflow:hidden;margin:10px 0}
+.wr-color-independent{background:#734b7e}
+.wr-color-prompted{background:#ac5378}
+.wr-color-supported{background:#648598}
+.wr-color-unspecified{background:#b7adb5}
+.wr-word-counts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 12px;font-size:11px}
+.wr-notes p{white-space:pre-wrap}
+.wr-footer{border-top:1px solid #dbcdd5;margin-top:20px;padding-top:10px;font-size:10px;color:#615563}
+@media(max-width:540px){.wg-report{padding:16px}.wr-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.wr-chart-grid{grid-template-columns:1fr}.wg-report h1{font-size:22px}}
+@media print{
+ @page{size:A4;margin:14mm}
+ html body.wg-printing > :not(#wgPrintReport){display:none!important}
+ body.wg-printing>#wgPrintReport{white-space:normal;font:10pt/1.45 Arial,sans-serif;border-radius:0;padding:0;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ #wgPrintReport .wr-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
+ #wgPrintReport .wr-chart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #wgPrintReport h1{font-size:22pt}
+ #wgPrintReport h2{break-after:avoid}
+ #wgPrintReport .wr-section,#wgPrintReport .wr-word,#wgPrintReport .wr-metrics,#wgPrintReport .wr-header{break-inside:avoid}
+}
+/* Neutraliza o cabeçalho fixo legado dentro do documento exportado. */
+html body .wg-report .wr-header{position:static!important;inset:auto!important;transform:none!important;display:block!important;width:auto!important;height:auto!important;min-height:0!important;z-index:auto!important;background:#fff!important;color:#302c35!important;padding:0 0 18px!important;margin:0 0 20px!important;box-shadow:none!important;border:0!important;border-bottom:2px solid #ba5b83!important}
+@media print{#wgPrintReport .wr-legend{break-after:avoid}}
