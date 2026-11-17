@@ -75,3 +75,16 @@ test('recusa servidor sem suporte à lixeira',async()=>{
  const client=m.createClient(async()=>({ok:true,json:async()=>({paths:{}})}));
  await assert.rejects(client.compatibleTrash(),/atualização/);
 });
+test('troca de senha usa token sem família e não expõe senha em erros',async()=>{
+ let captured;
+ const client=m.createClient(async(url,init)=>{captured={url,init};return {ok:false,status:400,json:async()=>({detail:'segredo'})};});
+ await assert.rejects(client.changePassword('segredo-atual','segredo-novo','token'),e=>e.status===400&&e.message.includes('senha atual')&&!e.message.includes('segredo'));
+ assert.equal(captured.url,m.BASE+'/v1/auth/change-password');
+ assert.equal(captured.init.headers['X-Family-ID'],undefined);
+ assert.equal(captured.init.headers.Authorization,'Bearer token');
+ assert.deepEqual(JSON.parse(captured.init.body),{current_password:'segredo-atual',new_password:'segredo-novo'});
+});
+test('troca de senha recusa backend sem contrato correspondente',async()=>{
+ const client=m.createClient(async()=>({ok:true,json:async()=>({paths:{}})}));
+ await assert.rejects(client.compatiblePassword(),/atualização/);
+});

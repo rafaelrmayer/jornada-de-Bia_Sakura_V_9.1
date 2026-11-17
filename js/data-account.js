@@ -8,12 +8,12 @@
  function update(){
   const unlocked=allowed();$('dataAccountUnlock').hidden=unlocked;$('dataAccountControls').hidden=!unlocked;
   $('dataAccountForm').hidden=!!session;$('dataAccountConnected').hidden=!session;
-  $('dataAuthFields').disabled=!!job;
+  $('dataAuthFields').disabled=!!job;$('dataPasswordFields').disabled=!!job;
   for(const id of ['dataAccountUpload','dataAccountImport','dataAccountCategories','dataAccountReview','dataAccountTrash','dataAccountFamily'])$(id).disabled=!!job;
  }
  function logout(message='Conta desconectada. As frases deste aparelho foram preservadas.'){
   $('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
-  $('dataAccountPassword').value='';$('dataAccountEmail').value='';$('dataFamilyName').value='';$('dataAccountFamily').replaceChildren();
+  clearPasswords();$('dataAccountPassword').value='';$('dataAccountEmail').value='';$('dataFamilyName').value='';$('dataAccountFamily').replaceChildren();
   update();status(message);
  }
  function active(){
@@ -59,6 +59,26 @@
    clearTimeout(expiry);expiry=setTimeout(()=>logout('Sua sessão online expirou. Entre novamente.'),Math.min(auth.expires_in,900)*1000);
    $('dataAccountPassword').value='';status('Conta conectada. Escolha enviar novas frases ou importar cartões. Nenhuma frase foi transferida automaticamente.');
   }).finally(()=>{$('dataAccountPassword').value='';});
+ };
+ function clearPasswords(){for(const id of ['dataCurrentPassword','dataNewPassword','dataConfirmPassword'])$(id).value='';}
+ $('dataAccountPasswordForm').onsubmit=event=>{
+  event.preventDefault();
+  const current=$('dataCurrentPassword').value,next=$('dataNewPassword').value,confirmation=$('dataConfirmPassword').value;
+  if(next!==confirmation){status('A confirmação da nova senha não confere.');clearPasswords();return;}
+  if(next===current){status('A nova senha precisa ser diferente da atual.');clearPasswords();return;}
+  run(async(signal,guard)=>{
+   active();clearReview();
+   await api.compatiblePassword(signal);guard();
+   if(!root.confirm('Alterar a senha e encerrar as sessões online em todos os aparelhos? As frases e os dados serão preservados.'))return;
+   status('Alterando a senha da conta…');
+   try{await api.changePassword(current,next,session.token,signal);guard();}
+   catch(error){
+    if(error.status===400||error.status===422)throw error;
+    guard();logout('Não foi possível confirmar a alteração. Entre novamente; se a senha anterior não funcionar, use a nova senha informada.');
+    return;
+   }
+   logout('Senha alterada. Entre novamente com a nova senha. As sessões antigas foram encerradas.');
+  }).finally(clearPasswords);
  };
  $('dataAccountUpload').onclick=()=>run(async(signal,guard)=>{
   clearReview();const family=active(),token=session.token;status('Conferindo categorias e cartões da família…');
