@@ -44,3 +44,18 @@ test('edição envia versão consultada e não aceita sobrescrita concorrente',a
  assert.deepEqual(sent,{text:'Nova',expected_updated_at:'2026-11-17T12:00:00Z'});
  await assert.rejects(client.edit({id:cardId},{text:'Nova'},'token',family),/Versão/);
 });
+test('envio de categorias elimina repetidas, vazias e equivalentes do catálogo',()=>{
+ assert.deepEqual(m.missingCategories(['Geral',' Escola ','escola','', '   ', 'x'.repeat(121), 'Terapia'],[category]),['Escola','Terapia']);
+});
+test('frases com categoria equivalente usam identificador do catálogo',()=>{
+ const plan=m.planUpload([{id:'1',text:'Mochila',category:' geral '}],[category],[],family);
+ assert.equal(plan.planned[0].category_id,category.id);
+});
+test('categorias são criadas na família selecionada, sem envio de frase',async()=>{
+ let captured;
+ const client=m.createClient(async(url,init)=>{captured={url,init};return {ok:true,json:async()=>({...category,name:'Escola',family_id:family})};});
+ await client.createCategory('Escola','token',family);
+ assert.equal(captured.url,m.BASE+'/v1/family-categories');
+ assert.equal(captured.init.headers['X-Family-ID'],family);
+ assert.deepEqual(JSON.parse(captured.init.body),{name:'Escola'});
+});

@@ -521,7 +521,7 @@
                 <section class="settings-group data-account" aria-labelledby="dataAccountTitle">
                   <h3 id="dataAccountTitle">☁️ Conta e cartões</h3>
                   <p>Envie uma cópia das frases de Minha Comunicação para sua conta ou importe cartões de outro aparelho. A comunicação continua disponível offline.</p>
-                  <p>Edições podem ser comparadas e escolhidas uma a uma. Exclusões continuam locais. Frases de categorias ausentes na conta, imagens, Jardim e aprendizado continuam locais.</p>
+                  <p>Edições podem ser comparadas e escolhidas uma a uma. Exclusões continuam locais. Envie suas categorias antes das frases. Imagens, Jardim e aprendizado continuam locais.</p>
                   <p id="dataAccountStatus" role="status" aria-live="polite"></p>
                   <button type="button" id="dataAccountUnlock">🔓 Desbloquear conexão</button>
                   <div id="dataAccountControls" hidden>
@@ -539,8 +539,9 @@
                     <label>Família da conta<select id="dataAccountFamily"></select></label>
                     <p>Somente os botões abaixo enviam ou trazem frases. A sessão online dura até 15 minutos e não é salva no backup. Ao recarregar ou bloquear a administração, entre novamente.</p>
                     <div class="data-account-actions">
+                     <button type="button" id="dataAccountCategories">Enviar categorias deste aparelho</button>
                      <button type="button" id="dataAccountUpload">Enviar novas frases deste aparelho</button>
-                     <button type="button" id="dataAccountImport">Importar novos cartões da conta</button>
+                     <button type="button" id="dataAccountImport">Importar categorias e novos cartões da conta</button>
                      <button type="button" id="dataAccountReview">Comparar edições das frases</button>
                      <button type="button" id="dataAccountLogout">Sair da conta</button>
                     </div>
