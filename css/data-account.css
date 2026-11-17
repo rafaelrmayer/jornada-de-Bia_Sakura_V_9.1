@@ -9,5 +9,5 @@
 .data-account :focus-visible{outline:3px solid currentColor;outline-offset:3px}
 @media(max-width:540px){.data-account-actions button{width:100%}}
 
-#dataAccountDifferences section { margin-block: 1rem; padding: 1rem; border: 1px solid currentColor; border-radius: 1rem; overflow-wrap: anywhere; }
-#dataAccountDifferences button { margin: .25rem; }
+#dataAccountDifferences section, #dataAccessList section { margin-block: 1rem; padding: 1rem; border: 1px solid currentColor; border-radius: 1rem; overflow-wrap: anywhere; }
+#dataAccountDifferences button, #dataAccessList button { margin: .25rem; }

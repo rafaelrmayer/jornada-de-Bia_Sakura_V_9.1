@@ -6,13 +6,20 @@
  const allowed=()=>!!root.SecurityService?.isUnlocked?.();
  const status=text=>$('dataAccountStatus').textContent=text;
  function update(){
-  const unlocked=allowed();$('dataAccountUnlock').hidden=unlocked;$('dataAccountControls').hidden=!unlocked;
+  const unlocked=allowed(),family=session?.families.find(f=>f.id===$('dataAccountFamily').value);
+  const writer=root.JBDataAPI.canWrite(family);
+  $('dataAccessOwner').hidden=family?.role!=='owner';
+  $('dataAccountIdentity').textContent=session?.email?'Conta: '+session.email:'';
+  $('dataAccountRole').textContent=family?('Acesso: '+({owner:'responsável da família',member:'consulta e edição dos cartões da conta',viewer:'somente consulta dos cartões da conta'}[family.role]||'consulte suas permissões')):'';
+  for(const id of ['dataInviteFields','dataInviteAcceptFields','dataAccessLoad','dataInviteCopy','dataAccountRefresh'])$(id).disabled=!!job;
+  $('dataAccountUnlock').hidden=unlocked;$('dataAccountControls').hidden=!unlocked;
   $('dataAccountForm').hidden=!!session||recoveryOpen;$('dataRecoveryOpen').hidden=!!session||recoveryOpen;$('dataRecoveryForm').hidden=!!session||!recoveryOpen;$('dataAccountConnected').hidden=!session;
   $('dataAuthFields').disabled=!!job;$('dataPasswordFields').disabled=!!job;$('dataRecoveryFields').disabled=!!job;$('dataRecoveryCodeFields').disabled=$('dataRecoveryCodeFields').hidden||!!job;$('dataRecoveryOpen').disabled=!!job;
-  for(const id of ['dataAccountUpload','dataAccountImport','dataAccountCategories','dataAccountReview','dataAccountTrash','dataAccountFamily'])$(id).disabled=!!job;
+  for(const id of ['dataAccountImport','dataAccountReview','dataAccountTrash','dataAccountFamily'])$(id).disabled=!!job;
+  for(const id of ['dataAccountUpload','dataAccountCategories'])$(id).disabled=!!job||!writer;
  }
  function logout(message='Conta desconectada. As frases deste aparelho foram preservadas.'){
-  $('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
+  clearAccess();$('dataInviteAcceptCode').value='';$('dataInviteEmail').value='';$('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
   recoveryOpen=false;$('dataRecoveryEmail').value='';$('dataRecoveryCodeFields').hidden=true;clearPasswords();$('dataAccountPassword').value='';$('dataAccountEmail').value='';$('dataFamilyName').value='';$('dataAccountFamily').replaceChildren();
   update();status(message);
  }
@@ -54,7 +61,7 @@
    try{auth=await api.login(email,password,signal);}catch(error){if(error.status===401)throw Error('E-mail ou senha não conferem. A senha da conta é diferente do PIN administrativo.');throw error;}guard();
    const families=await api.families(auth.access_token,signal);guard();
    if(!families.length)throw Error('Esta conta ainda não possui uma família disponível.');
-   session={token:auth.access_token,families,expiresAt:Date.now()+Math.min(auth.expires_in,900)*1000};
+   session={email:email.toLowerCase(),token:auth.access_token,families,expiresAt:Date.now()+Math.min(auth.expires_in,900)*1000};
    $('dataAccountFamily').replaceChildren();for(const f of families){const option=document.createElement('option');option.value=f.id;option.textContent=f.name;$('dataAccountFamily').append(option);}
    clearTimeout(expiry);expiry=setTimeout(()=>logout('Sua sessão online expirou. Entre novamente.'),Math.min(auth.expires_in,900)*1000);
    $('dataAccountPassword').value='';status('Conta conectada. Escolha enviar novas frases ou importar cartões. Nenhuma frase foi transferida automaticamente.');
@@ -163,7 +170,7 @@
    for(const card of rows){
     const panel=document.createElement('section'),description=document.createElement('p'),button=document.createElement('button');
     description.textContent=card.text+' — '+(catalog.find(c=>c.id===card.category_id)?.name||'Categoria');
-    button.type='button';button.textContent=restore?'Restaurar cartão na conta':'Mover para lixeira da conta';
+    button.type='button';button.textContent=restore?'Restaurar cartão na conta':'Mover para lixeira da conta';button.disabled=!root.JBDataAPI.canWrite(family);
     button.onclick=()=>run(async(signal,guard)=>{
      if(active().id!==family.id)throw Error('A família mudou. Consulte novamente.');
      if(!root.confirm((restore?'Restaurar':'Mover para a lixeira')+' o cartão “'+card.text+'” na conta da família “'+family.name+'”? As frases salvas neste aparelho serão preservadas.'))return;
@@ -174,8 +181,76 @@
    }
   }
  });
+ function clearAccess(){$('dataAccessList').replaceChildren();$('dataInviteCode').value='';$('dataInviteCreated').hidden=true;}
+ async function refreshFamilies(signal,guard,preferred){
+  const token=session.token,previous=preferred||$('dataAccountFamily').value;
+  const families=await api.families(token,signal);guard();
+  if(!families.length){logout('Esta conta não tem mais famílias disponíveis.');return;}
+  session.families=families;$('dataAccountFamily').replaceChildren();
+  for(const family of families){const option=document.createElement('option');option.value=family.id;option.textContent=family.name;$('dataAccountFamily').append(option);}
+  if(families.some(f=>f.id===previous))$('dataAccountFamily').value=previous;
+  clearReview();clearAccess();update();
+ }
+ $('dataAccountRefresh').onclick=()=>run(async(signal,guard)=>{active();status('Atualizando famílias e permissões…');await refreshFamilies(signal,guard);guard();status('Famílias e permissões atualizadas. Nenhum cartão foi transferido.');});
+ $('dataInviteAcceptForm').onsubmit=event=>{
+  event.preventDefault();const code=$('dataInviteAcceptCode').value.trim();
+  run(async(signal,guard)=>{
+   active();await api.compatibleAccess(signal);guard();
+   if(!root.confirm('Aceitar o convite na conta conectada? Use a conta com o e-mail para o qual o convite foi criado.'))return;
+   status('Aceitando convite…');const family=await api.inviteAccept(code,session.token,signal);guard();
+   await refreshFamilies(signal,guard,family.id);guard();
+   status('Convite aceito. Família selecionada: '+family.name+'. Os cartões só serão trazidos quando você escolher Importar.');
+  }).finally(()=>{$('dataInviteAcceptCode').value='';});
+ };
+ $('dataInviteForm').onsubmit=event=>{
+  event.preventDefault();const email=$('dataInviteEmail').value.trim(),role=$('dataInviteRole').value;
+  run(async(signal,guard)=>{
+   const family=active();if(family.role!=='owner')throw Error('Somente o responsável pode gerar convites.');
+   await api.compatibleAccess(signal);guard();
+   if(!root.confirm('Convidar '+email+' para a família “'+family.name+'” com permissão de '+(role==='viewer'?'consulta':'edição dos cartões')+'?'))return;
+   status('Gerando convite…');clearAccess();const created=await api.inviteCreate(email,role,session.token,family.id,signal);guard();
+   $('dataInviteCode').value=created.code;$('dataInviteCreated').hidden=false;
+   status('Convite criado por 48 horas. Copie o código antes de sair ou trocar de família e compartilhe diretamente com a pessoa. Nenhum e-mail foi enviado.');
+  });
+ };
+ $('dataInviteCopy').onclick=async()=>{
+  try{if(!allowed()||active().role!=='owner'||!$('dataInviteCode').value)return;await root.navigator.clipboard.writeText($('dataInviteCode').value);status('Código copiado. Compartilhe diretamente com a pessoa convidada.');}
+  catch{status('Selecione o código no campo e copie manualmente.');}
+ };
+ $('dataAccessLoad').onclick=()=>run(async(signal,guard)=>{
+  const family=active(),token=session.token;if(family.role!=='owner')throw Error('Somente o responsável pode consultar acessos e convites.');
+  status('Consultando acessos e convites…');clearAccess();await api.compatibleAccess(signal);guard();
+  const members=await api.members(token,family.id,signal);guard();
+  const invites=await api.invitations(token,family.id,signal);guard();
+  const addAction=(panel,label,operation)=>{
+   const button=document.createElement('button');button.type='button';button.textContent=label;
+   button.onclick=()=>run(async(signal,guard)=>{
+    if(active().id!==family.id||active().role!=='owner')throw Error('A família ou permissão mudou. Consulte novamente.');
+    if(!root.confirm(label+' na família “'+family.name+'”?'))return;
+    await operation(signal);guard();clearAccess();status('Acesso ou convite atualizado. Consulte a lista novamente para conferir. As cópias já salvas nos aparelhos permanecem locais.');
+   });panel.append(button);
+  };
+  for(const member of members){
+   const panel=document.createElement('section'),description=document.createElement('p');
+   description.textContent=member.email+' — '+({owner:'Responsável',member:'Consulta e edição',viewer:'Consulta'}[member.role]);panel.append(description);
+   if(member.role!=='owner'){
+    const role=member.role==='viewer'?'member':'viewer';
+    addAction(panel,(role==='member'?'Permitir edição para ':'Permitir somente consulta para ')+member.email,signal=>api.memberRole(member.id,role,token,family.id,signal));
+    addAction(panel,'Revogar acesso de '+member.email,signal=>api.memberRevoke(member.id,token,family.id,signal));
+   }
+   $('dataAccessList').append(panel);
+  }
+  for(const invite of invites){
+   const panel=document.createElement('section'),description=document.createElement('p');
+   const pending=!invite.used_at&&!invite.revoked_at&&Date.parse(invite.expires_at)>Date.now();
+   description.textContent=invite.email+' — convite '+(invite.used_at?'aceito':invite.revoked_at?'cancelado':pending?'pendente':'expirado');panel.append(description);
+   if(pending)addAction(panel,'Cancelar convite para '+invite.email,signal=>api.inviteRevoke(invite.id,token,family.id,signal));
+   $('dataAccessList').append(panel);
+  }
+  status('Acessos e convites consultados. Códigos anteriores não são exibidos novamente.');
+ });
  function clearReview(){$('dataAccountDifferences').replaceChildren();}
- $('dataAccountFamily').addEventListener('change',clearReview);
+ $('dataAccountFamily').addEventListener('change',()=>{clearReview();clearAccess();update();});
  $('dataAccountReview').onclick=()=>run(async(signal,guard)=>{
   clearReview();const family=active(),token=session.token;
   status('Comparando frases vinculadas à família…');
@@ -209,7 +284,7 @@
      }
      panel.remove();status('Edição aplicada. As frases continuam disponíveis offline. Compare novamente para conferir as demais diferenças.');
     });
-    if(useLocal&&!item.localCategory)button.disabled=true;
+    if(useLocal&&(!item.localCategory||!root.JBDataAPI.canWrite(family)))button.disabled=true;
     panel.append(button);
    };
    choose('Usar versão deste aparelho',true);choose('Usar versão da conta',false);

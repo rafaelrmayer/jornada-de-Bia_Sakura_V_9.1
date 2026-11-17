@@ -5,7 +5,7 @@
  const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
  function error(message,status=0){const e=new Error(message);e.status=status;return e;}
  function validateFamilies(rows){
-  if(!Array.isArray(rows)||rows.some(r=>!uuid(r.id)||typeof r.name!=='string'||r.name.length>120))throw error('A API retornou famílias incompatíveis.');
+  if(!Array.isArray(rows)||rows.some(r=>!uuid(r.id)||typeof r.name!=='string'||r.name.length>120||!['owner','member','viewer'].includes(r.role)))throw error('A API retornou famílias incompatíveis.');
   return rows;
  }
  function validateCatalog(rows){
@@ -29,13 +29,21 @@
     const response=await fetcher(BASE+path,{method,credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:controller.signal,
      headers:{Accept:'application/json',...(body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:'Bearer '+token}:{}),...(family?{'X-Family-ID':family}:{})},
      ...(body?{body:JSON.stringify(body)}:{})});
-    if(!response.ok){const messages={401:'Sessão inválida ou expirada. Entre novamente.',403:'Esta conta não tem acesso à família selecionada.',409:'O registro já existe com outros dados. Nenhuma alteração foi sobrescrita.',422:'Confira os campos informados.',404:'A API ainda precisa ser atualizada para conectar o aplicativo.'};throw error(messages[response.status]||'O servidor está indisponível. Seus dados continuam neste aparelho.',response.status);}
-    return await response.json();
+    if(!response.ok){const messages={401:'Sessão inválida ou expirada. Entre novamente.',403:'Sua permissão não permite esta ação. Atualize as famílias e permissões para conferir o acesso.',409:'O registro já existe com outros dados. Nenhuma alteração foi sobrescrita.',422:'Confira os campos informados.',404:'A API ainda precisa ser atualizada para conectar o aplicativo.'};throw error(messages[response.status]||'O servidor está indisponível. Seus dados continuam neste aparelho.',response.status);}
+    return response.status===204?null:await response.json();
    }catch(e){if(e.status)throw e;if(controller.signal.aborted)throw error('Operação interrompida ou sem resposta. Os dados locais foram preservados.');throw error('Não foi possível conectar. Confira a internet e tente novamente.');}
    finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
   }
   async function compatible(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/auth/families']||!schema.components?.schemas?.CardCreate?.properties?.client_id)throw error('Aguarde a atualização da Data API antes de conectar esta versão do aplicativo.');}
   return {request,compatible,
+   async compatibleAccess(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/family-invitations/accept']||!schema.paths?.['/v1/family-members'])throw error('Aguarde a atualização da API para usar convites e permissões.');},
+   async members(token,family,signal){const rows=await request('/v1/family-members',{token,family,signal});if(!Array.isArray(rows)||rows.some(r=>!uuid(r.id)||!uuid(r.user_id)||typeof r.email!=='string'||!['owner','member','viewer'].includes(r.role)))throw error('Lista de acessos incompatível.');return rows;},
+   async invitations(token,family,signal){const rows=await request('/v1/family-invitations',{token,family,signal});if(!Array.isArray(rows)||rows.some(r=>!uuid(r.id)||typeof r.email!=='string'||!['member','viewer'].includes(r.role)))throw error('Lista de convites incompatível.');return rows;},
+   async inviteCreate(email,role,token,family,signal){const row=await request('/v1/family-invitations',{method:'POST',body:{email,role},token,family,signal});if(!uuid(row.id)||typeof row.code!=='string'||!(/^[A-Za-z0-9_-]{43}$/).test(row.code))throw error('Resposta de convite incompatível. Consulte os convites antes de tentar novamente.');return row;},
+   async inviteAccept(code,token,signal){try{const row=await request('/v1/family-invitations/accept',{method:'POST',body:{code},token,signal});validateFamilies([row]);return row;}catch(e){if(e.status===400)throw error('Convite inválido, expirado, cancelado ou destinado a outra conta.',400);if(!e.status)throw error('Não foi possível confirmar a aceitação. Use Atualizar famílias e permissões para conferir antes de tentar novamente.');throw e;}},
+   inviteRevoke:(id,token,family,signal)=>request('/v1/family-invitations/'+id,{method:'DELETE',token,family,signal}),
+   memberRole:(id,role,token,family,signal)=>request('/v1/family-members/'+id,{method:'PATCH',body:{role},token,family,signal}),
+   memberRevoke:(id,token,family,signal)=>request('/v1/family-members/'+id,{method:'DELETE',token,family,signal}),
    async recoveryStatus(signal){const result=await request('/v1/auth/password-recovery/status',{signal});return result?.enabled===true;},
    async recoveryRequest(email,signal){
     try{return await request('/v1/auth/password-recovery/request',{method:'POST',body:{email},signal});}
@@ -97,6 +105,7 @@
   }
   return differences;
  }
- const api={BASE,uuid,createClient,validateFamilies,validateCatalog,validateCards,planUpload,planEdits,missingCategories};
+ const canWrite=family=>!!family&&['owner','member'].includes(family.role);
+ const api={BASE,canWrite,uuid,createClient,validateFamilies,validateCatalog,validateCards,planUpload,planEdits,missingCategories};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.JBDataAPI=api;
 })(typeof window==='undefined'?globalThis:window);
