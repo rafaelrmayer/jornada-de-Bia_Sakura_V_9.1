@@ -2924,9 +2924,14 @@
         importCloudCards(cards,catalog,familyId){
             assertCloudState();
             if(!window.SecurityService?.isUnlocked?.())throw Error('Desbloqueie a administração.');
-            const next=JSON.parse(JSON.stringify(data));let added=0,existing=0;
+            const next=JSON.parse(JSON.stringify(data));let added=0,existing=0,categoriesAdded=0;
+            for(const row of catalog){
+                if(typeof row.name!=='string'||!row.name.trim()||row.name.length>120)throw Error('Categoria incompatível. Nada foi importado.');
+                if(!next.categories.some(name=>name.normalize('NFC').trim().toLowerCase()===row.name.normalize('NFC').trim().toLowerCase())){next.categories.push(row.name);categoriesAdded++;}
+            }
             for(const card of cards){
-                const category=catalog.find(c=>c.id===card.category_id)?.name;
+                const remoteCategory=catalog.find(c=>c.id===card.category_id)?.name;
+                const category=next.categories.find(name=>name.normalize('NFC').trim().toLowerCase()===remoteCategory?.normalize('NFC').trim().toLowerCase());
                 if(!category)throw Error('Categoria desconhecida. Nada foi importado.');
                 if(next.phrases.some(p=>(p.cloudSources||[]).some(s=>s.family===familyId&&s.id===card.id))){existing++;continue;}
                 const same=next.phrases.find(p=>p.text===card.text&&(p.category||'Geral')===category);
@@ -2938,7 +2943,7 @@
             }
             if(JSON.stringify(next).length>1000000)throw Error('Limite local atingido. Exporte um backup antes de importar mais cartões.');
             if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false)throw Error('Não foi possível salvar a importação. As frases anteriores foram preservadas.');
-            data=next;lastSavedRaw=JSON.stringify(next);render();return {added,existing};
+            data=next;lastSavedRaw=JSON.stringify(next);render();return {added,existing,categoriesAdded};
         },
         addGardenWord(text){
             if(!window.SecurityService?.isUnlocked?.())return false;

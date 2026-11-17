@@ -520,3 +520,19 @@ A Data API precisa expor `CardUpdate.expected_updated_at` antes de usar esta
 função. Se outro aparelho editar o cartão após a consulta, o envio é recusado
 e a comparação precisa ser refeita. Se a conexão cair depois de salvar, consulte
 novamente antes de decidir: a operação pode ter sido concluída no servidor.
+
+### Categorias personalizadas na conta
+
+Em **Apoio → Conta e cartões → Enviar categorias deste aparelho**, confira e
+confirme os nomes a enviar para a família selecionada. Esse botão envia apenas
+categorias. Depois use **Enviar novas frases deste aparelho** para enviar as
+frases com suas categorias personalizadas. Repetir o envio não duplica nomes.
+
+**Importar categorias e novos cartões da conta** traz também as categorias sem
+frases. Categorias locais e frases existentes são preservadas, e os dados
+importados ficam disponíveis offline. Os nomes equivalentes com diferenças
+de maiúsculas ou espaços não geram uma segunda categoria. Renomeações e
+exclusões locais não são propagadas.
+
+Publicar primeiro a Data API com o endpoint `/v1/family-categories` e a migração
+de categorias por família. Nenhum envio acontece automaticamente.

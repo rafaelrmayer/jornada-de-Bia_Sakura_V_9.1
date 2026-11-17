@@ -9,7 +9,7 @@
   const unlocked=allowed();$('dataAccountUnlock').hidden=unlocked;$('dataAccountControls').hidden=!unlocked;
   $('dataAccountForm').hidden=!!session;$('dataAccountConnected').hidden=!session;
   $('dataAuthFields').disabled=!!job;
-  for(const id of ['dataAccountUpload','dataAccountImport','dataAccountReview','dataAccountFamily'])$(id).disabled=!!job;
+  for(const id of ['dataAccountUpload','dataAccountImport','dataAccountCategories','dataAccountReview','dataAccountFamily'])$(id).disabled=!!job;
  }
  function logout(message='Conta desconectada. As frases deste aparelho foram preservadas.'){
   $('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
@@ -76,13 +76,25 @@
   }
   status(sent+' frase(s) enviada(s). '+counts.existing+' já presente(s); '+counts.changed+' com alterações preservadas; '+counts.unsupported+' fora do catálogo/limite, mantida(s) neste aparelho. Edições e exclusões não foram sincronizadas.');
  });
+ $('dataAccountCategories').onclick=()=>run(async(signal,guard)=>{
+  clearReview();const family=active(),token=session.token;
+  status('Conferindo categorias da família…');await api.compatibleCategories(signal);guard();
+  const catalog=await api.catalog(token,family.id,signal);guard();
+  const snapshot=root.JBCommunication.snapshot();
+  const names=[...snapshot.categories,...snapshot.phrases.map(p=>p.category||'Geral')];
+  const missing=root.JBDataAPI.missingCategories(names,catalog);
+  if(!missing.length){status('Todas as categorias válidas deste aparelho já estão disponíveis na conta.');return;}
+  if(!root.confirm('Enviar '+missing.length+' categoria(s) para a família “'+family.name+'”?\n'+missing.join(', ')+'\nNenhuma frase será enviada por este botão.')){status('Envio de categorias cancelado.');return;}
+  let sent=0;
+  for(const name of missing){guard();active();await api.createCategory(name,token,family.id,signal);guard();sent++;}
+  status(sent+' categoria(s) disponível(is) na conta. Agora você pode enviar as frases dessas categorias. Categorias locais e de outras famílias foram preservadas.');
+ });
  $('dataAccountImport').onclick=()=>run(async(signal,guard)=>{
   clearReview();const family=active(),token=session.token;status('Consultando cartões da família…');
   const catalog=await api.catalog(token,family.id,signal);guard();const cards=await api.cards(token,family.id,signal);guard();
-  if(!cards.length){status('Ainda não há cartões nessa família. As frases locais foram preservadas.');return;}
-  if(!root.confirm('Importar novos cartões da família “'+family.name+'” para Minha Comunicação? As frases existentes serão preservadas.')){status('Importação cancelada.');return;}
+  if(!root.confirm('Importar categorias e novos cartões da família “'+family.name+'” para Minha Comunicação? As frases existentes serão preservadas.')){status('Importação cancelada.');return;}
   guard();active();const result=root.JBCommunication.importCloudCards(cards,catalog,family.id);
-  status(result.added+' novo(s) cartão(ões) importado(s). '+result.existing+' já presente(s), preservado(s) sem sobrescrita. Você pode usá-los offline em Minha Comunicação.');
+  status(result.categoriesAdded+' categoria(s) adicionada(s). '+result.added+' novo(s) cartão(ões) importado(s). '+result.existing+' já presente(s), preservado(s) sem sobrescrita. Você pode usá-los offline em Minha Comunicação.');
  });
  function clearReview(){$('dataAccountDifferences').replaceChildren();}
  $('dataAccountFamily').addEventListener('change',clearReview);
