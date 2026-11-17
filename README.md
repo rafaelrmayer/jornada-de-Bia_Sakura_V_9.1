@@ -536,3 +536,21 @@ exclusões locais não são propagadas.
 
 Publicar primeiro a Data API com o endpoint `/v1/family-categories` e a migração
 de categorias por família. Nenhum envio acontece automaticamente.
+
+### Cartões e lixeira da conta
+
+Em **Apoio → Conta e cartões → Cartões e lixeira da conta**, consulte as frases
+ativas e arquivadas da família selecionada. Cada ação pede confirmação.
+**Mover para lixeira da conta** oculta o cartão da conta sem remover a frase
+salva no aparelho. **Restaurar cartão na conta** recupera o mesmo cartão; use
+Importar se também quiser trazê-lo para um aparelho onde ele não está salvo.
+
+Excluir uma frase em Minha Comunicação continua sendo uma ação local. Não
+há propagação automática de exclusões nem importação de cartões arquivados.
+Se a versão mudar desde a consulta, confira a lista novamente antes de agir.
+A sessão e o desbloqueio administrativo continuam obrigatórios, e a lista é
+limpa ao bloquear ou trocar de família.
+
+Publicar primeiro a Data API com a migração de lixeira e os endpoints de
+arquivamento/restauração. O aplicativo verifica esse suporte antes de abrir a
+lista.
