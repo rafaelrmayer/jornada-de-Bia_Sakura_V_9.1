@@ -627,3 +627,15 @@ não entra no armazenamento/backup local. Não altera as frases do aparelho.
 Colaboradores não podem consultar a trilha no servidor.
 
 Publicar primeiro a API com a migração card_history_events e GET /v1/card-history.
+
+### Voz guiada opcional
+
+Em **Apoio → Voz guiada — explorar e confirmar**, ative a exploração dos
+cartões/frases com confirmação separada. A prévia usa vozes locais identificadas
+pelo navegador, com velocidade e volume próprios. O anúncio ao focar é
+desligado por padrão; mantenha-o desligado com TalkBack/VoiceOver.
+
+Veja [VOZ_GUIADA_E_TESTES.md](VOZ_GUIADA_E_TESTES.md) para uso, limites e testes
+de celular pendentes. A fala confirmada mantém a configuração de voz do app.
+A exploração não registra comunicação ou aprendizado. Não depende do backend
+nem da ativação do Brevo.

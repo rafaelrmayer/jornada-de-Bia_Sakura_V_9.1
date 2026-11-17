@@ -39,6 +39,7 @@
     <link rel="stylesheet" href="css/data-account.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
+    <link rel="stylesheet" href="css/guided-voice.css">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -640,6 +641,20 @@
                   <button type="button" id="biaA11yReset">Restaurar estas preferências</button>
                   <p id="biaA11yMessage" role="status" aria-live="polite"></p>
                 </section>
+                <section class="settings-group guided-voice-settings" aria-labelledby="guidedVoiceTitle">
+                 <h3 id="guidedVoiceTitle">Voz guiada — explorar e confirmar</h3>
+                 <p>Modo opcional para cartões, frases e símbolos de comunicação. Primeiro escolha para explorar; depois confirme para realizar a ação. O botão Falar continua comunicando a mensagem montada.</p>
+                 <label><input id="guidedVoiceEnabled" type="checkbox"> Ativar exploração com confirmação</label>
+                 <label><input id="guidedVoiceFocus" type="checkbox"> Anunciar cartões e navegação inferior ao receber foco</label>
+                 <p>Se usa TalkBack ou VoiceOver, mantenha o anúncio automático desligado para evitar duas vozes. Não há detecção automática do leitor de tela. Você pode pedir a prévia pelo botão Ouvir nome.</p>
+                 <label>Voz local para a prévia<select id="guidedVoiceVoice"></select></label>
+                 <label>Velocidade da voz guiada <output id="guidedVoiceRateValue">0.9×</output><input id="guidedVoiceRate" type="range" min="0.5" max="1.5" step="0.1" value="0.9"></label>
+                 <label>Volume da voz guiada <output id="guidedVoiceVolumeValue">80%</output><input id="guidedVoiceVolume" type="range" min="0" max="100" step="5" value="80"></label>
+                 <p id="guidedVoiceAvailability"></p>
+                 <p>A prévia usa vozes locais disponibilizadas pelo navegador, sem enviar a frase à API. A fala confirmada mantém a voz escolhida na seção Voz; para uso offline, escolha uma voz do aparelho também nessa seção.</p>
+                 <button id="guidedVoiceReset" type="button">Restaurar preferências da voz guiada</button>
+                 <p id="guidedVoiceStatus" role="status"></p>
+                </section>
                 <!-- Voz -->
                 <div class="settings-group">
                     <div class="group-title">🔊 Voz</div>
@@ -1142,6 +1157,19 @@
     </footer>
 
     
+    <section id="guidedVoicePanel" class="guided-voice-panel" role="region" aria-label="Voz guiada: explorar e confirmar" hidden>
+     <p><strong>Voz guiada</strong></p>
+     <p id="guidedVoiceSelection" role="status" aria-live="polite">Escolha um cartão ou frase para explorar.</p>
+     <p id="guidedVoicePanelAvailability" hidden></p>
+     <p id="guidedVoicePanelStatus" role="status"></p>
+     <div id="guidedVoiceActions" class="guided-voice-controls" hidden>
+      <button id="guidedVoiceListen" type="button" aria-describedby="guidedVoiceSelection">Ouvir nome</button>
+      <button id="guidedVoiceConfirm" type="button" aria-describedby="guidedVoiceSelection">Confirmar escolha</button>
+      <button id="guidedVoiceCancel" type="button">Cancelar escolha</button>
+      <button id="guidedVoiceStop" type="button">Parar prévia</button>
+     </div>
+     <button id="guidedVoiceDisable" type="button">Desativar voz guiada</button>
+    </section>
     <script src="js/module-data.js"></script>
     <script src="js/security.js"></script>
     <script src="js/storage.js"></script>
@@ -1172,6 +1200,7 @@
     <script src="js/data-api-client.js"></script>
     <script src="js/data-account.js"></script>
     <script src="js/navigation-layout.js"></script>
+    <script src="js/guided-voice.js"></script>
 
 <!-- Service Worker registrado centralmente por js/app.js -->
 </body>
