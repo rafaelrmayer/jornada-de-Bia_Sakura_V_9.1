@@ -2,18 +2,18 @@
 (function(root){
  'use strict';
  const $=id=>document.getElementById(id),api=root.JBDataAPI.createClient();if(!$('dataAccountForm'))return;
- let session=null,job=null,generation=0,expiry=null;
+ let session=null,job=null,generation=0,expiry=null,recoveryOpen=false;
  const allowed=()=>!!root.SecurityService?.isUnlocked?.();
  const status=text=>$('dataAccountStatus').textContent=text;
  function update(){
   const unlocked=allowed();$('dataAccountUnlock').hidden=unlocked;$('dataAccountControls').hidden=!unlocked;
-  $('dataAccountForm').hidden=!!session;$('dataAccountConnected').hidden=!session;
-  $('dataAuthFields').disabled=!!job;$('dataPasswordFields').disabled=!!job;
+  $('dataAccountForm').hidden=!!session||recoveryOpen;$('dataRecoveryOpen').hidden=!!session||recoveryOpen;$('dataRecoveryForm').hidden=!!session||!recoveryOpen;$('dataAccountConnected').hidden=!session;
+  $('dataAuthFields').disabled=!!job;$('dataPasswordFields').disabled=!!job;$('dataRecoveryFields').disabled=!!job;$('dataRecoveryCodeFields').disabled=$('dataRecoveryCodeFields').hidden||!!job;$('dataRecoveryOpen').disabled=!!job;
   for(const id of ['dataAccountUpload','dataAccountImport','dataAccountCategories','dataAccountReview','dataAccountTrash','dataAccountFamily'])$(id).disabled=!!job;
  }
  function logout(message='Conta desconectada. As frases deste aparelho foram preservadas.'){
   $('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
-  clearPasswords();$('dataAccountPassword').value='';$('dataAccountEmail').value='';$('dataFamilyName').value='';$('dataAccountFamily').replaceChildren();
+  recoveryOpen=false;$('dataRecoveryEmail').value='';$('dataRecoveryCodeFields').hidden=true;clearPasswords();$('dataAccountPassword').value='';$('dataAccountEmail').value='';$('dataFamilyName').value='';$('dataAccountFamily').replaceChildren();
   update();status(message);
  }
  function active(){
@@ -60,7 +60,42 @@
    $('dataAccountPassword').value='';status('Conta conectada. Escolha enviar novas frases ou importar cartões. Nenhuma frase foi transferida automaticamente.');
   }).finally(()=>{$('dataAccountPassword').value='';});
  };
- function clearPasswords(){for(const id of ['dataCurrentPassword','dataNewPassword','dataConfirmPassword'])$(id).value='';}
+ function clearPasswords(){for(const id of ['dataCurrentPassword','dataNewPassword','dataConfirmPassword','dataRecoveryCode','dataRecoveryPassword','dataRecoveryConfirm'])$(id).value='';}
+ $('dataRecoveryOpen').onclick=()=>run(async(signal,guard)=>{
+  status('Verificando disponibilidade da recuperação…');
+  const enabled=await api.recoveryStatus(signal);guard();
+  if(!enabled){status('Recuperação por e-mail ainda não disponível. Você pode continuar usando as frases neste aparelho.');return;}
+  recoveryOpen=true;$('dataRecoveryCodeFields').hidden=true;clearPasswords();
+  $('dataRecoveryEmail').value=$('dataAccountEmail').value.trim();
+  status('Informe o e-mail da conta para solicitar um código. O PIN deste aparelho não será alterado.');
+ });
+ $('dataRecoveryCancel').onclick=()=>logout('Recuperação fechada. Entre na conta quando desejar.');
+ $('dataRecoveryEmail').addEventListener('input',()=>{$('dataRecoveryCodeFields').hidden=true;clearPasswords();update();});
+ $('dataRecoverySend').onclick=()=>{
+  if(!$('dataRecoveryEmail').reportValidity())return;
+  const email=$('dataRecoveryEmail').value.trim();clearPasswords();
+  run(async(signal,guard)=>{
+   status('Solicitando código de recuperação…');
+   await api.recoveryRequest(email,signal);guard();clearPasswords();$('dataRecoveryCodeFields').hidden=false;
+   status('Se a conta existir e o envio estiver disponível, você receberá um código. Confira o e-mail e o spam. Aguarde ao menos 60 segundos antes de solicitar novamente.');
+  });
+ };
+ $('dataRecoveryForm').onsubmit=event=>{
+  event.preventDefault();
+  if($('dataRecoveryCodeFields').hidden)return;
+  const email=$('dataRecoveryEmail').value.trim(),code=$('dataRecoveryCode').value.trim(),password=$('dataRecoveryPassword').value,confirmation=$('dataRecoveryConfirm').value;
+  if(password!==confirmation){status('A confirmação da nova senha não confere.');clearPasswords();return;}
+  run(async(signal,guard)=>{
+   if(!root.confirm('Redefinir a senha da conta e encerrar as sessões antigas? As frases deste aparelho serão preservadas.'))return;
+   status('Redefinindo a senha…');
+   try{await api.recoveryConfirm(email,code,password,signal);guard();}
+   catch(error){
+    if(error.status){throw error;}
+    guard();logout('Não foi possível confirmar a redefinição. Tente entrar com a nova senha; se necessário, solicite outro código.');return;
+   }
+   logout('Senha redefinida. Entre novamente com a nova senha. As frases locais foram preservadas.');
+  }).finally(clearPasswords);
+ };
  $('dataAccountPasswordForm').onsubmit=event=>{
   event.preventDefault();
   const current=$('dataCurrentPassword').value,next=$('dataNewPassword').value,confirmation=$('dataConfirmPassword').value;

@@ -571,3 +571,19 @@ automática da troca.
 Publicar primeiro a API com auth_version e /v1/auth/change-password.
 A função **Esqueci minha senha** ainda depende do serviço de e-mail; a troca
 implementada aqui exige conhecer a senha atual.
+
+### Recuperar senha por código (ativação pendente)
+
+O botão **Esqueci a senha da conta** consulta se a recuperação está disponível.
+Sem ativação/configuração, informa indisponibilidade e mantém o login e as
+frases locais. Quando o backend estiver configurado, o adulto solicita um código
+pelo e-mail da conta, cola o código completo e informa/confirma a nova senha.
+A redefinição pede novo login e encerra as sessões antigas; não recupera o PIN.
+
+O app não guarda código ou senha no armazenamento/backup. Erros de código são
+genéricos, e as frases são preservadas. O envio real permanece desativado até
+aprovar o remetente e configurar as variáveis somente no backend.
+
+Publicar primeiro a Data API com a migração password_resets e as rotas
+/v1/auth/password-recovery/*; depois este aplicativo. Nenhuma credencial do
+Brevo deve ser colocada no JavaScript.

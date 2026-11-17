@@ -88,3 +88,15 @@ test('troca de senha recusa backend sem contrato correspondente',async()=>{
  const client=m.createClient(async()=>({ok:true,json:async()=>({paths:{}})}));
  await assert.rejects(client.compatiblePassword(),/atualização/);
 });
+test('recuperação usa POST sem token ou segredo na URL e mantém erros genéricos',async()=>{
+ let captured;
+ const client=m.createClient(async(url,init)=>{captured={url,init};return {ok:false,status:400,json:async()=>({detail:'sensitive-code'})};});
+ await assert.rejects(client.recoveryConfirm('test@example.com','sensitive-code','sensitive-password'),e=>e.status===400&&!e.message.includes('sensitive'));
+ assert.equal(captured.url,m.BASE+'/v1/auth/password-recovery/confirm');
+ assert.equal(captured.init.headers.Authorization,undefined);
+ assert.deepEqual(JSON.parse(captured.init.body),{email:'test@example.com',code:'sensitive-code',new_password:'sensitive-password'});
+});
+test('recuperação indisponível não informa uma ativação inexistente',async()=>{
+ const client=m.createClient(async()=>({ok:true,json:async()=>({enabled:false})}));
+ assert.equal(await client.recoveryStatus(),false);
+});
