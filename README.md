@@ -613,3 +613,17 @@ relatórios e modelos permanecem locais.
 
 Publicar primeiro a Data API com viewer e family_invitations. Esta entrega não
 depende de ativar o Brevo.
+
+### Histórico dos cartões da conta
+
+Somente o responsável da família encontra **Histórico dos cartões da conta**
+em Apoio → Conta e cartões. A consulta manual mostra criação, edição,
+arquivamento e restauração, autor e horário do navegador. A identificação usa
+o texto atual; o histórico não guarda textos anteriores e começa nesta versão.
+
+Carregar registros anteriores pagina a lista. A lista fica na memória da sessão,
+é limpa ao bloquear/sair, mudar de família ou atualizar famílias/permissões e
+não entra no armazenamento/backup local. Não altera as frases do aparelho.
+Colaboradores não podem consultar a trilha no servidor.
+
+Publicar primeiro a API com a migração card_history_events e GET /v1/card-history.

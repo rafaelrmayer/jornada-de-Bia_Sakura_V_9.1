@@ -2,7 +2,7 @@
 (function(root){
  'use strict';
  const $=id=>document.getElementById(id),api=root.JBDataAPI.createClient();if(!$('dataAccountForm'))return;
- let session=null,job=null,generation=0,expiry=null,recoveryOpen=false;
+ let session=null,job=null,generation=0,expiry=null,recoveryOpen=false,historyBefore=null,historyFamily=null;
  const allowed=()=>!!root.SecurityService?.isUnlocked?.();
  const status=text=>$('dataAccountStatus').textContent=text;
  function update(){
@@ -11,7 +11,8 @@
   $('dataAccessOwner').hidden=family?.role!=='owner';
   $('dataAccountIdentity').textContent=session?.email?'Conta: '+session.email:'';
   $('dataAccountRole').textContent=family?('Acesso: '+({owner:'responsável da família',member:'consulta e edição dos cartões da conta',viewer:'somente consulta dos cartões da conta'}[family.role]||'consulte suas permissões')):'';
-  for(const id of ['dataInviteFields','dataInviteAcceptFields','dataAccessLoad','dataInviteCopy','dataAccountRefresh'])$(id).disabled=!!job;
+  for(const id of ['dataInviteFields','dataInviteAcceptFields','dataAccessLoad','dataInviteCopy','dataAccountRefresh','dataHistoryLoad'])$(id).disabled=!!job;
+  $('dataHistoryMore').disabled=!!job||historyBefore===null;
   $('dataAccountUnlock').hidden=unlocked;$('dataAccountControls').hidden=!unlocked;
   $('dataAccountForm').hidden=!!session||recoveryOpen;$('dataRecoveryOpen').hidden=!!session||recoveryOpen;$('dataRecoveryForm').hidden=!!session||!recoveryOpen;$('dataAccountConnected').hidden=!session;
   $('dataAuthFields').disabled=!!job;$('dataPasswordFields').disabled=!!job;$('dataRecoveryFields').disabled=!!job;$('dataRecoveryCodeFields').disabled=$('dataRecoveryCodeFields').hidden||!!job;$('dataRecoveryOpen').disabled=!!job;
@@ -19,7 +20,7 @@
   for(const id of ['dataAccountUpload','dataAccountCategories'])$(id).disabled=!!job||!writer;
  }
  function logout(message='Conta desconectada. As frases deste aparelho foram preservadas.'){
-  clearAccess();$('dataInviteAcceptCode').value='';$('dataInviteEmail').value='';$('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
+  clearHistory();clearAccess();$('dataInviteAcceptCode').value='';$('dataInviteEmail').value='';$('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
   recoveryOpen=false;$('dataRecoveryEmail').value='';$('dataRecoveryCodeFields').hidden=true;clearPasswords();$('dataAccountPassword').value='';$('dataAccountEmail').value='';$('dataFamilyName').value='';$('dataAccountFamily').replaceChildren();
   update();status(message);
  }
@@ -181,6 +182,31 @@
    }
   }
  });
+ function clearHistory(){
+  historyBefore=null;historyFamily=null;$('dataHistoryList').replaceChildren();$('dataHistoryStatus').textContent='';$('dataHistoryMore').hidden=true;
+ }
+ async function loadHistory(signal,guard,append){
+  const family=active();if(family.role!=='owner')throw Error('Somente o responsável pode consultar este histórico.');
+  if(append&&historyFamily!==family.id)throw Error('A família mudou. Consulte o histórico novamente.');
+  status(append?'Carregando registros anteriores…':'Consultando histórico dos cartões…');
+  if(!append){clearHistory();await api.compatibleHistory(signal);guard();}
+  const page=await api.history(session.token,family.id,append?historyBefore:null,signal);guard();active();
+  const labels={'card.created':'Cartão criado','card.updated':'Cartão editado','card.archived':'Cartão movido para a lixeira','card.restored':'Cartão restaurado'};
+  for(const event of page.events){
+   const panel=document.createElement('section'),heading=document.createElement('p'),actor=document.createElement('p'),card=document.createElement('p'),time=document.createElement('time');
+   panel.dataset.eventId=String(event.id);time.dateTime=event.recorded_at;time.textContent=new Date(event.recorded_at).toLocaleString('pt-BR');
+   const title=document.createElement('strong');title.textContent=labels[event.action];heading.append(title,document.createTextNode(' — '),time);
+   actor.textContent='Por: '+(event.actor_email||'Conta não disponível');
+   card.textContent=event.card_label?'Identificação atual: '+event.card_label:'O cartão já não está disponível.';
+   panel.append(heading,actor,card);$('dataHistoryList').append(panel);
+  }
+  historyFamily=family.id;historyBefore=page.next_before_id;$('dataHistoryMore').hidden=historyBefore===null;
+  const count=$('dataHistoryList').children.length;
+  $('dataHistoryStatus').textContent=count?(count+' registro(s) exibido(s). Horários do navegador.'):'Ainda não há alterações registradas desde a ativação do histórico.';
+  status('Histórico consultado. Nenhum cartão foi alterado.');
+ }
+ $('dataHistoryLoad').onclick=()=>run((signal,guard)=>loadHistory(signal,guard,false));
+ $('dataHistoryMore').onclick=()=>run((signal,guard)=>loadHistory(signal,guard,true));
  function clearAccess(){$('dataAccessList').replaceChildren();$('dataInviteCode').value='';$('dataInviteCreated').hidden=true;}
  async function refreshFamilies(signal,guard,preferred){
   const token=session.token,previous=preferred||$('dataAccountFamily').value;
@@ -189,7 +215,7 @@
   session.families=families;$('dataAccountFamily').replaceChildren();
   for(const family of families){const option=document.createElement('option');option.value=family.id;option.textContent=family.name;$('dataAccountFamily').append(option);}
   if(families.some(f=>f.id===previous))$('dataAccountFamily').value=previous;
-  clearReview();clearAccess();update();
+  clearReview();clearAccess();clearHistory();update();
  }
  $('dataAccountRefresh').onclick=()=>run(async(signal,guard)=>{active();status('Atualizando famílias e permissões…');await refreshFamilies(signal,guard);guard();status('Famílias e permissões atualizadas. Nenhum cartão foi transferido.');});
  $('dataInviteAcceptForm').onsubmit=event=>{
@@ -250,7 +276,7 @@
   status('Acessos e convites consultados. Códigos anteriores não são exibidos novamente.');
  });
  function clearReview(){$('dataAccountDifferences').replaceChildren();}
- $('dataAccountFamily').addEventListener('change',()=>{clearReview();clearAccess();update();});
+ $('dataAccountFamily').addEventListener('change',()=>{clearReview();clearAccess();clearHistory();update();});
  $('dataAccountReview').onclick=()=>run(async(signal,guard)=>{
   clearReview();const family=active(),token=session.token;
   status('Comparando frases vinculadas à família…');

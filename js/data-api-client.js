@@ -21,6 +21,17 @@
   return [...new Set(names.filter(n=>typeof n==='string'&&n.trim()&&n.trim().length<=120).map(n=>n.normalize('NFC').trim()))]
    .filter((n,i,rows)=>rows.findIndex(x=>categoryKey(x)===categoryKey(n))===i&&!catalog.some(c=>categoryKey(c.name)===categoryKey(n)));
  }
+ function validateHistory(page){
+  const actions=['card.created','card.updated','card.archived','card.restored'];
+  if(!page||!Array.isArray(page.events)||page.events.length>100||page.events.some((e,i,rows)=>
+   !Number.isSafeInteger(e.id)||e.id<1||(i>0&&e.id>=rows[i-1].id)||!uuid(e.card_id)||
+   (e.actor_id!==null&&!uuid(e.actor_id))||(e.actor_email!==null&&typeof e.actor_email!=='string')||
+   !actions.includes(e.action)||typeof e.recorded_at!=='string'||!Number.isFinite(Date.parse(e.recorded_at))||
+   (e.card_label!==null&&(typeof e.card_label!=='string'||e.card_label.length>500)))||
+   (page.next_before_id!==null&&(!Number.isSafeInteger(page.next_before_id)||page.next_before_id<1||
+    !page.events.length||page.next_before_id!==page.events[page.events.length-1].id)))throw error('Histórico incompatível. Consulte novamente.');
+  return page;
+ }
  function createClient(fetcher=root.fetch.bind(root)){
   async function request(path,{method='GET',body,token,family,signal}={}){
    const controller=new AbortController(),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();
@@ -36,6 +47,8 @@
   }
   async function compatible(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/auth/families']||!schema.components?.schemas?.CardCreate?.properties?.client_id)throw error('Aguarde a atualização da Data API antes de conectar esta versão do aplicativo.');}
   return {request,compatible,
+   async compatibleHistory(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/card-history'])throw error('Aguarde a atualização da API para consultar o histórico.');},
+   async history(token,family,before,signal){if(before!==null&&before!==undefined&&(!Number.isSafeInteger(before)||before<1))throw error('Página de histórico inválida.');const page=validateHistory(await request('/v1/card-history'+(before?'?before_id='+encodeURIComponent(before):''),{token,family,signal}));if(before&&page.events.some(e=>e.id>=before))throw error('Página de histórico incompatível. Consulte novamente.');return page;},
    async compatibleAccess(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/family-invitations/accept']||!schema.paths?.['/v1/family-members'])throw error('Aguarde a atualização da API para usar convites e permissões.');},
    async members(token,family,signal){const rows=await request('/v1/family-members',{token,family,signal});if(!Array.isArray(rows)||rows.some(r=>!uuid(r.id)||!uuid(r.user_id)||typeof r.email!=='string'||!['owner','member','viewer'].includes(r.role)))throw error('Lista de acessos incompatível.');return rows;},
    async invitations(token,family,signal){const rows=await request('/v1/family-invitations',{token,family,signal});if(!Array.isArray(rows)||rows.some(r=>!uuid(r.id)||typeof r.email!=='string'||!['member','viewer'].includes(r.role)))throw error('Lista de convites incompatível.');return rows;},
@@ -106,6 +119,6 @@
   return differences;
  }
  const canWrite=family=>!!family&&['owner','member'].includes(family.role);
- const api={BASE,canWrite,uuid,createClient,validateFamilies,validateCatalog,validateCards,planUpload,planEdits,missingCategories};
+ const api={BASE,canWrite,validateHistory,uuid,createClient,validateFamilies,validateCatalog,validateCards,planUpload,planEdits,missingCategories};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.JBDataAPI=api;
 })(typeof window==='undefined'?globalThis:window);

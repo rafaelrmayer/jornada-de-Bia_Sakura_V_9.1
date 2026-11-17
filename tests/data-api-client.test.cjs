@@ -119,3 +119,22 @@ test('aceitar convite não usa a família atual nem expõe código no caminho',a
  assert.equal(seen.init.headers['X-Family-ID'],undefined);
  assert.deepEqual(JSON.parse(seen.init.body),{code:'secret-code'});
 });
+test('histórico valida ordem, autor, ação e cursor antes de apresentar a página',()=>{
+ const event={id:4,card_id:cardId,actor_id:clientId,actor_email:'actor@example.com',action:'card.created',recorded_at:'2026-11-17T12:00:00Z',card_label:'Identificação atual'};
+ assert.equal(m.validateHistory({events:[event],next_before_id:4}).events.length,1);
+ assert.throws(()=>m.validateHistory({events:[event,event],next_before_id:null}));
+ assert.throws(()=>m.validateHistory({events:[{...event,action:'unknown'}],next_before_id:null}));
+ assert.throws(()=>m.validateHistory({events:[event],next_before_id:5}));
+ assert.throws(()=>m.validateHistory({events:[],next_before_id:4}));
+});
+test('histórico pagina por consulta com token e família sem alterar cartões',async()=>{
+ let seen;
+ const client=m.createClient(async(url,init)=>{seen={url,init};return {ok:true,json:async()=>({events:[],next_before_id:null})};});
+ await client.history('token',family,123);
+ assert.equal(seen.url,m.BASE+'/v1/card-history?before_id=123');
+ assert.equal(seen.init.method,'GET');
+ assert.equal(seen.init.headers['X-Family-ID'],family);
+ await assert.rejects(client.history('token',family,-1),/Página/);
+ const stale=m.createClient(async()=>({ok:true,json:async()=>({events:[{id:4,card_id:cardId,actor_id:null,actor_email:null,action:'card.created',recorded_at:'2026-11-17T12:00:00Z',card_label:null}],next_before_id:null})}));
+ await assert.rejects(stale.history('token',family,4),/incompatível/);
+});
