@@ -506,3 +506,17 @@ Esta primeira integração copia frases de **Minha Comunicação** por ação ex
 - Sem internet, as frases já guardadas continuam disponíveis. Envio e importação exigem rede; não existe fila automática de sincronização neste primeiro fluxo.
 
 Para testar entre dispositivos, crie uma frase numa categoria do catálogo (ex.: Geral), envie para a família selecionada, entre na mesma conta no segundo dispositivo e importe. O backend precisa ser atualizado/publicado antes de fazer o merge da interface. Nenhuma credencial PostgreSQL ou chave JWT de servidor pertence ao frontend.
+
+### Revisão de edições entre aparelhos
+
+Em **Apoio → Conta e cartões → Comparar edições das frases**, compare cartões
+já vinculados à família e escolha explicitamente a versão do aparelho ou da
+conta, frase por frase. Fechar a comparação preserva ambas as versões.
+Categorias locais ausentes no catálogo da conta não podem ser enviadas.
+Frases novas continuam usando os botões de envio/importação; exclusões não são
+propagadas. Não há sincronização em segundo plano.
+
+A Data API precisa expor `CardUpdate.expected_updated_at` antes de usar esta
+função. Se outro aparelho editar o cartão após a consulta, o envio é recusado
+e a comparação precisa ser refeita. Se a conexão cair depois de salvar, consulte
+novamente antes de decidir: a operação pode ter sido concluída no servidor.

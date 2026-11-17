@@ -27,3 +27,20 @@ test('recusa backend sem descoberta de famílias e identificador repetível',asy
  const client=m.createClient(async()=>({ok:true,json:async()=>({paths:{},components:{schemas:{}}})}));
  await assert.rejects(client.compatible(),/atualização/);
 });
+test('compara apenas vínculos da família e não recria cartões excluídos',()=>{
+ const remote=[{id:cardId,category_id:category.id,client_id:clientId,text:'Conta',updated_at:'2026-11-17T12:00:00Z'}];
+ const phrases=[{id:'same',text:'Conta',category:'Geral',cloudSources:[{family,id:cardId}]},
+ {id:'different',text:'Aparelho',category:'Geral',cloudIds:{[family]:clientId}},
+ {id:'other',text:'Outra família',cloudSources:[{family:'other',id:cardId}]},
+ {id:'deleted',text:'Excluído',cloudSources:[{family,id:'deleted'}]}];
+ const result=m.planEdits(phrases,[category],remote,family);
+ assert.deepEqual(result.map(x=>x.phrase.id),['different']);
+ assert.equal(result[0].localCategory.id,category.id);
+});
+test('edição envia versão consultada e não aceita sobrescrita concorrente',async()=>{
+ let sent;
+ const client=m.createClient(async(url,init)=>{sent=JSON.parse(init.body);return {ok:false,status:409};});
+ await assert.rejects(client.edit({id:cardId,updated_at:'2026-11-17T12:00:00Z'},{text:'Nova'},'token',family),e=>e.status===409);
+ assert.deepEqual(sent,{text:'Nova',expected_updated_at:'2026-11-17T12:00:00Z'});
+ await assert.rejects(client.edit({id:cardId},{text:'Nova'},'token',family),/Versão/);
+});

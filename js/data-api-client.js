@@ -31,6 +31,8 @@
   }
   async function compatible(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/auth/families']||!schema.components?.schemas?.CardCreate?.properties?.client_id)throw error('Aguarde a atualização da Data API antes de conectar esta versão do aplicativo.');}
   return {request,compatible,
+   async compatibleEdits(signal){const schema=await request('/openapi.json',{signal});if(!schema.components?.schemas?.CardUpdate?.properties?.expected_updated_at)throw error('Aguarde a atualização da Data API para revisar edições.');},
+   async edit(card,body,token,family,signal){if(!card.updated_at)throw error('Versão do cartão indisponível. Consulte novamente.');const result=await request('/v1/cards/'+card.id,{method:'PATCH',body:{...body,expected_updated_at:card.updated_at},token,family,signal});validateCards([result]);return result;},
    async login(email,password,signal){const value=await request('/v1/auth/login',{method:'POST',body:{email,password},signal});if(typeof value.access_token!=='string'||!Number.isFinite(value.expires_in)||value.expires_in<=0)throw error('Resposta de login incompatível.');return value;},
    register:(email,password,family_name,signal)=>request('/v1/auth/register',{method:'POST',body:{email,password,family_name},signal}),
    async families(token,signal){return validateFamilies(await request('/v1/auth/families',{token,signal}));},
@@ -54,6 +56,19 @@
   }
   return {planned,counts};
  }
- const api={BASE,uuid,createClient,validateFamilies,validateCatalog,validateCards,planUpload};
+ function planEdits(phrases,catalog,remote,family){
+  const differences=[];
+  for(const phrase of phrases){
+   const source=(phrase.cloudSources||[]).find(s=>s.family===family);
+   const card=source?remote.find(c=>c.id===source.id):remote.find(c=>c.client_id&&c.client_id===phrase.cloudIds?.[family]);
+   if(!card)continue;
+   const category=catalog.find(c=>c.id===card.category_id)?.name;
+   const localCategory=catalog.find(c=>c.name===(phrase.category||'Geral'));
+   if(category&&(phrase.text!==card.text||(phrase.category||'Geral')!==category))
+    differences.push({phrase,card,category,localCategory});
+  }
+  return differences;
+ }
+ const api={BASE,uuid,createClient,validateFamilies,validateCatalog,validateCards,planUpload,planEdits};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.JBDataAPI=api;
 })(typeof window==='undefined'?globalThis:window);

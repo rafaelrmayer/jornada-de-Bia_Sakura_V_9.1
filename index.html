@@ -521,7 +521,7 @@
                 <section class="settings-group data-account" aria-labelledby="dataAccountTitle">
                   <h3 id="dataAccountTitle">☁️ Conta e cartões</h3>
                   <p>Envie uma cópia das frases de Minha Comunicação para sua conta ou importe cartões de outro aparelho. A comunicação continua disponível offline.</p>
-                  <p>Edições e exclusões não são propagadas nesta versão. Frases de categorias ausentes na conta, imagens, Jardim e aprendizado continuam locais.</p>
+                  <p>Edições podem ser comparadas e escolhidas uma a uma. Exclusões continuam locais. Frases de categorias ausentes na conta, imagens, Jardim e aprendizado continuam locais.</p>
                   <p id="dataAccountStatus" role="status" aria-live="polite"></p>
                   <button type="button" id="dataAccountUnlock">🔓 Desbloquear conexão</button>
                   <div id="dataAccountControls" hidden>
@@ -541,8 +541,10 @@
                     <div class="data-account-actions">
                      <button type="button" id="dataAccountUpload">Enviar novas frases deste aparelho</button>
                      <button type="button" id="dataAccountImport">Importar novos cartões da conta</button>
+                     <button type="button" id="dataAccountReview">Comparar edições das frases</button>
                      <button type="button" id="dataAccountLogout">Sair da conta</button>
                     </div>
+                    <div id="dataAccountDifferences" aria-live="polite"></div>
                    </div>
                   </div>
                 </section>
