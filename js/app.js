@@ -2890,6 +2890,18 @@
     });
     window.JBCommunication={
         snapshot(){assertCloudState();return JSON.parse(JSON.stringify(data));},
+        applyCloudEdit(original,card,category,familyId){
+            assertCloudState();
+            if(!window.SecurityService?.isUnlocked?.())throw Error('Desbloqueie a administração.');
+            const next=JSON.parse(JSON.stringify(data)),phrase=next.phrases.find(p=>p.id===original.id);
+            if(!phrase||JSON.stringify(phrase)!==JSON.stringify(original))throw Error('A frase local mudou. Confira as versões novamente.');
+            phrase.text=card.text;phrase.category=category;
+            phrase.cloudSources=(phrase.cloudSources||[]).filter(s=>s.family!==familyId);
+            phrase.cloudSources.push({family:familyId,id:card.id});
+            if(!next.categories.includes(category))next.categories.push(category);
+            if(JSON.stringify(next).length>1000000||StorageService.setItem(STORE_KEY,JSON.stringify(next))===false)throw Error('Não foi possível salvar a edição neste aparelho. Confira novamente.');
+            data=next;lastSavedRaw=JSON.stringify(next);render();
+        },
         prepareCloudUpload(phraseId,familyId){
             assertCloudState();
             if(!window.SecurityService?.isUnlocked?.())throw Error('Desbloqueie a administração.');

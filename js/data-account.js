@@ -9,10 +9,10 @@
   const unlocked=allowed();$('dataAccountUnlock').hidden=unlocked;$('dataAccountControls').hidden=!unlocked;
   $('dataAccountForm').hidden=!!session;$('dataAccountConnected').hidden=!session;
   $('dataAuthFields').disabled=!!job;
-  for(const id of ['dataAccountUpload','dataAccountImport','dataAccountFamily'])$(id).disabled=!!job;
+  for(const id of ['dataAccountUpload','dataAccountImport','dataAccountReview','dataAccountFamily'])$(id).disabled=!!job;
  }
  function logout(message='Conta desconectada. As frases deste aparelho foram preservadas.'){
-  generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
+  $('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
   $('dataAccountPassword').value='';$('dataAccountEmail').value='';$('dataFamilyName').value='';$('dataAccountFamily').replaceChildren();
   update();status(message);
  }
@@ -61,7 +61,7 @@
   }).finally(()=>{$('dataAccountPassword').value='';});
  };
  $('dataAccountUpload').onclick=()=>run(async(signal,guard)=>{
-  const family=active(),token=session.token;status('Conferindo categorias e cartões da família…');
+  clearReview();const family=active(),token=session.token;status('Conferindo categorias e cartões da família…');
   const catalog=await api.catalog(token,family.id,signal);guard();const remote=await api.cards(token,family.id,signal);guard();
   const plan=root.JBDataAPI.planUpload(root.JBCommunication.snapshot().phrases,catalog,remote,family.id);
   let sent=0;const counts=plan.counts;
@@ -77,12 +77,54 @@
   status(sent+' frase(s) enviada(s). '+counts.existing+' já presente(s); '+counts.changed+' com alterações preservadas; '+counts.unsupported+' fora do catálogo/limite, mantida(s) neste aparelho. Edições e exclusões não foram sincronizadas.');
  });
  $('dataAccountImport').onclick=()=>run(async(signal,guard)=>{
-  const family=active(),token=session.token;status('Consultando cartões da família…');
+  clearReview();const family=active(),token=session.token;status('Consultando cartões da família…');
   const catalog=await api.catalog(token,family.id,signal);guard();const cards=await api.cards(token,family.id,signal);guard();
   if(!cards.length){status('Ainda não há cartões nessa família. As frases locais foram preservadas.');return;}
   if(!root.confirm('Importar novos cartões da família “'+family.name+'” para Minha Comunicação? As frases existentes serão preservadas.')){status('Importação cancelada.');return;}
   guard();active();const result=root.JBCommunication.importCloudCards(cards,catalog,family.id);
   status(result.added+' novo(s) cartão(ões) importado(s). '+result.existing+' já presente(s), preservado(s) sem sobrescrita. Você pode usá-los offline em Minha Comunicação.');
+ });
+ function clearReview(){$('dataAccountDifferences').replaceChildren();}
+ $('dataAccountFamily').addEventListener('change',clearReview);
+ $('dataAccountReview').onclick=()=>run(async(signal,guard)=>{
+  clearReview();const family=active(),token=session.token;
+  status('Comparando frases vinculadas à família…');
+  await api.compatibleEdits(signal);guard();
+  const catalog=await api.catalog(token,family.id,signal);guard();
+  const remote=await api.cards(token,family.id,signal);guard();
+  const differences=root.JBDataAPI.planEdits(root.JBCommunication.snapshot().phrases,catalog,remote,family.id);
+  status(differences.length+' diferença(s) encontrada(s). Escolha uma versão por frase ou deixe para depois. Nenhuma exclusão será propagada.');
+  for(const item of differences){
+   const panel=document.createElement('section'),local=document.createElement('p'),online=document.createElement('p');
+   local.textContent='Neste aparelho: '+item.phrase.text+' — '+(item.phrase.category||'Geral');
+   online.textContent='Na conta: '+item.card.text+' — '+item.category;
+   panel.append(local,online);
+   const choose=(label,useLocal)=>{
+    const button=document.createElement('button');button.type='button';button.textContent=label;
+    button.onclick=()=>run(async(signal,guard)=>{
+     if(active().id!==family.id)throw Error('A família mudou. Compare novamente.');
+     const current=root.JBCommunication.snapshot().phrases.find(p=>p.id===item.phrase.id);
+     if(JSON.stringify(current)!==JSON.stringify(item.phrase))throw Error('A frase local mudou. Compare novamente.');
+     if(!root.confirm('Usar a versão '+(useLocal?'deste aparelho na conta':'da conta neste aparelho')+'? A versão escolhida substituirá o texto e a categoria da outra.'))return;
+     guard();active();
+     if(useLocal){
+      if(!item.localCategory)throw Error('A categoria local ainda não está disponível na conta.');
+      await api.edit(item.card,{text:item.phrase.text,category_id:item.localCategory.id},token,family.id,signal);guard();
+      root.JBCommunication.markCloudUpload(item.phrase.id,family.id,item.card.id);
+     }else{
+      const latest=await api.cards(token,family.id,signal);guard();
+      const card=latest.find(c=>c.id===item.card.id);
+      if(!card||card.updated_at!==item.card.updated_at||card.text!==item.card.text||card.category_id!==item.card.category_id)throw Error('A frase na conta mudou. Compare novamente.');
+      root.JBCommunication.applyCloudEdit(item.phrase,card,item.category,family.id);
+     }
+     panel.remove();status('Edição aplicada. As frases continuam disponíveis offline. Compare novamente para conferir as demais diferenças.');
+    });
+    if(useLocal&&!item.localCategory)button.disabled=true;
+    panel.append(button);
+   };
+   choose('Usar versão deste aparelho',true);choose('Usar versão da conta',false);
+   $('dataAccountDifferences').append(panel);
+  }
  });
  document.addEventListener('bia:admin-access-changed',()=>{if(!allowed())logout('Administração bloqueada. Entre novamente quando desbloquear.');else update();});
  document.addEventListener('jornadaBia:sessionExpired',()=>logout('Administração expirada. Desbloqueie para conectar novamente.'));
