@@ -535,6 +535,22 @@
                      <button type="submit" id="dataAccountSubmit">Entrar</button>
                     </fieldset>
                    </form>
+                   <button type="button" id="dataRecoveryOpen">Esqueci a senha da conta</button>
+                   <form id="dataRecoveryForm" hidden>
+                    <fieldset id="dataRecoveryFields">
+                     <p>Recupere somente a senha da conta online. O PIN deste aparelho é separado.</p>
+                     <label>E-mail da conta<input id="dataRecoveryEmail" type="email" autocomplete="username" maxlength="255" required></label>
+                     <button type="button" id="dataRecoverySend">Enviar código por e-mail</button>
+                     <fieldset id="dataRecoveryCodeFields" hidden>
+                      <p>Copie o código completo do e-mail. Ele vale por 15 minutos. Depois de redefinir, entre novamente em todos os aparelhos.</p>
+                      <label>Código de recuperação<input id="dataRecoveryCode" type="password" autocomplete="off" spellcheck="false" maxlength="128" required></label>
+                      <label>Nova senha<input id="dataRecoveryPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+                      <label>Repita a nova senha<input id="dataRecoveryConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+                      <button type="submit">Redefinir senha da conta</button>
+                     </fieldset>
+                     <button type="button" id="dataRecoveryCancel">Voltar para entrar</button>
+                    </fieldset>
+                   </form>
                    <div id="dataAccountConnected" hidden>
                     <label>Família da conta<select id="dataAccountFamily"></select></label>
                     <p>Somente os botões abaixo enviam ou trazem frases. A sessão online dura até 15 minutos e não é salva no backup. Ao recarregar ou bloquear a administração, entre novamente.</p>

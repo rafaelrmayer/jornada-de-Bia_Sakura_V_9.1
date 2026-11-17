@@ -36,6 +36,15 @@
   }
   async function compatible(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/auth/families']||!schema.components?.schemas?.CardCreate?.properties?.client_id)throw error('Aguarde a atualização da Data API antes de conectar esta versão do aplicativo.');}
   return {request,compatible,
+   async recoveryStatus(signal){const result=await request('/v1/auth/password-recovery/status',{signal});return result?.enabled===true;},
+   async recoveryRequest(email,signal){
+    try{return await request('/v1/auth/password-recovery/request',{method:'POST',body:{email},signal});}
+    catch(e){if(e.status===503)throw error('Recuperação por e-mail ainda não disponível.',503);throw e;}
+   },
+   async recoveryConfirm(email,code,new_password,signal){
+    try{return await request('/v1/auth/password-recovery/confirm',{method:'POST',body:{email,code,new_password},signal});}
+    catch(e){const messages={400:'Código inválido, expirado ou já utilizado. Solicite outro código.',422:'Confira o e-mail e use uma nova senha diferente da anterior, com 12 a 128 caracteres.',503:'Recuperação por e-mail ainda não disponível.'};if(messages[e.status])throw error(messages[e.status],e.status);throw e;}
+   },
    async compatiblePassword(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/auth/change-password'])throw error('Aguarde a atualização da Data API para alterar a senha.');},
    async changePassword(current_password,new_password,token,signal){
     try{return await request('/v1/auth/change-password',{method:'POST',body:{current_password,new_password},token,signal});}
