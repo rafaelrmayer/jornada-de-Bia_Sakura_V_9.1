@@ -100,3 +100,22 @@ test('recuperação indisponível não informa uma ativação inexistente',async
  const client=m.createClient(async()=>({ok:true,json:async()=>({enabled:false})}));
  assert.equal(await client.recoveryStatus(),false);
 });
+test('permissão de consulta nunca habilita escrita na conta',()=>{
+ assert.equal(m.canWrite({role:'viewer'}),false);assert.equal(m.canWrite({role:'member'}),true);
+ assert.equal(m.canWrite({role:'owner'}),true);assert.equal(m.canWrite(null),false);
+ assert.throws(()=>m.validateFamilies([{id:family,name:'Teste',role:'unknown'}]));
+});
+test('revogar acesso aceita resposta 204 sem tentar interpretar JSON vazio',async()=>{
+ let seen;
+ const client=m.createClient(async(url,init)=>{seen={url,init};return {ok:true,status:204,json:()=>{throw Error('empty');}};});
+ assert.equal(await client.memberRevoke(cardId,'token',family),null);
+ assert.equal(seen.init.method,'DELETE');assert.equal(seen.init.headers['X-Family-ID'],family);
+});
+test('aceitar convite não usa a família atual nem expõe código no caminho',async()=>{
+ let seen;
+ const client=m.createClient(async(url,init)=>{seen={url,init};return {ok:true,json:async()=>({id:family,name:'Família',role:'viewer'})};});
+ await client.inviteAccept('secret-code','token');
+ assert.equal(seen.url,m.BASE+'/v1/family-invitations/accept');
+ assert.equal(seen.init.headers['X-Family-ID'],undefined);
+ assert.deepEqual(JSON.parse(seen.init.body),{code:'secret-code'});
+});

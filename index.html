@@ -553,6 +553,8 @@
                    </form>
                    <div id="dataAccountConnected" hidden>
                     <label>Família da conta<select id="dataAccountFamily"></select></label>
+                    <p id="dataAccountIdentity"></p><p id="dataAccountRole"></p>
+                    <button type="button" id="dataAccountRefresh">Atualizar famílias e permissões</button>
                     <p>Somente os botões abaixo enviam ou trazem frases. A sessão online dura até 15 minutos e não é salva no backup. Ao recarregar ou bloquear a administração, entre novamente.</p>
                     <div class="data-account-actions">
                      <button type="button" id="dataAccountCategories">Enviar categorias deste aparelho</button>
@@ -574,6 +576,33 @@
                       </fieldset>
                      </form>
                     </details>
+                    <section aria-labelledby="dataAccessTitle">
+                     <h4 id="dataAccessTitle">Convites e acessos da família</h4>
+                     <p>Cartões e categorias da conta podem ser compartilhados. Jardim e relatórios continuam neste aparelho.</p>
+                     <form id="dataInviteAcceptForm">
+                      <fieldset id="dataInviteAcceptFields">
+                       <label>Código recebido do responsável<input id="dataInviteAcceptCode" type="password" autocomplete="off" maxlength="128" required></label>
+                       <button type="submit">Aceitar convite nesta conta</button>
+                      </fieldset>
+                     </form>
+                     <div id="dataAccessOwner" hidden>
+                      <form id="dataInviteForm">
+                       <fieldset id="dataInviteFields">
+                        <label>E-mail da pessoa convidada<input id="dataInviteEmail" type="email" autocomplete="off" maxlength="255" required></label>
+                        <label>Permissão<select id="dataInviteRole"><option value="viewer">Consultar cartões</option><option value="member">Consultar e editar cartões</option></select></label>
+                        <p>A consulta permite ler e importar os cartões. A edição também permite enviar cartões e categorias e usar a lixeira da conta.</p>
+                        <p>O código vale por 48 horas. Compartilhe diretamente com a pessoa, que deve entrar com esse e-mail. Gerar novamente para o mesmo e-mail invalida o código anterior.</p>
+                        <button type="submit">Gerar convite para esta família</button>
+                       </fieldset>
+                      </form>
+                      <div id="dataInviteCreated" hidden>
+                       <label>Código para compartilhar (exibido somente agora)<input id="dataInviteCode" readonly autocomplete="off"></label>
+                       <button type="button" id="dataInviteCopy">Copiar código</button>
+                      </div>
+                      <button type="button" id="dataAccessLoad">Consultar acessos e convites</button>
+                      <div id="dataAccessList" aria-live="polite"></div>
+                     </div>
+                    </section>
                     <div id="dataAccountDifferences" aria-live="polite"></div>
                    </div>
                   </div>

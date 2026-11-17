@@ -587,3 +587,29 @@ aprovar o remetente e configurar as variáveis somente no backend.
 Publicar primeiro a Data API com a migração password_resets e as rotas
 /v1/auth/password-recovery/*; depois este aplicativo. Nenhuma credencial do
 Brevo deve ser colocada no JavaScript.
+
+### Convidar colaboradores para os cartões da conta
+
+Em **Apoio → Conta e cartões → Convites e acessos da família**, o responsável
+informa o e-mail e escolhe consulta ou edição. Confirma antes de gerar um código
+de 48 horas, exibido somente naquele momento, e o compartilha diretamente com a
+pessoa. Não há envio de e-mail/WhatsApp por esta função.
+
+A pessoa entra com sua própria conta no e-mail indicado, cola o código em
+**Aceitar convite nesta conta** e depois escolhe Importar. O cadastro atual cria
+um espaço/família pessoal; aceitar o convite acrescenta a família convidada
+sem misturar as contas. Nenhum cartão é importado automaticamente ao aceitar.
+
+Somente o responsável pode consultar/alterar/revogar acessos e cancelar convites.
+O colaborador de consulta pode importar, mas não alterar os dados da conta.
+O de edição pode enviar frases/categorias e escolher edições ou usar a lixeira.
+Ambos continuam sem gestão de pessoas. **Atualizar famílias e permissões** reflete
+mudanças; o servidor confere o papel a cada nova requisição.
+
+Códigos são limpos ao sair, bloquear, trocar de família ou consultar a lista;
+não são guardados em armazenamento/backup do app. Revogar acesso não apaga cópias
+já importadas e não remove o acesso da pessoa a outras famílias. Jardim,
+relatórios e modelos permanecem locais.
+
+Publicar primeiro a Data API com viewer e family_invitations. Esta entrega não
+depende de ativar o Brevo.
