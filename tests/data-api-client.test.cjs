@@ -59,3 +59,19 @@ test('categorias são criadas na família selecionada, sem envio de frase',async
  assert.equal(captured.init.headers['X-Family-ID'],family);
  assert.deepEqual(JSON.parse(captured.init.body),{name:'Escola'});
 });
+test('lixeira exige versão e mantém token e família somente nos cabeçalhos',async()=>{
+ let captured;
+ const card={id:cardId,text:'Ajuda',category_id:category.id,updated_at:'2026-11-17T12:00:00Z'};
+ const client=m.createClient(async(url,init)=>{captured={url,init};return {ok:true,json:async()=>({...card,deleted_at:'2026-11-17T12:01:00Z'})};});
+ await client.changeTrash(card,false,'token',family);
+ assert.equal(captured.url,m.BASE+'/v1/cards/'+cardId+'/archive');
+ assert.deepEqual(JSON.parse(captured.init.body),{expected_updated_at:card.updated_at});
+ assert.equal(captured.init.headers['X-Family-ID'],family);
+ await client.changeTrash(card,true,'token',family);
+ assert.equal(captured.url,m.BASE+'/v1/cards/'+cardId+'/restore');
+ await assert.rejects(client.changeTrash({id:cardId},true,'token',family),/Versão/);
+});
+test('recusa servidor sem suporte à lixeira',async()=>{
+ const client=m.createClient(async()=>({ok:true,json:async()=>({paths:{}})}));
+ await assert.rejects(client.compatibleTrash(),/atualização/);
+});

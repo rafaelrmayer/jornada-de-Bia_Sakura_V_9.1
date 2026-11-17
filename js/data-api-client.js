@@ -36,6 +36,13 @@
   }
   async function compatible(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/auth/families']||!schema.components?.schemas?.CardCreate?.properties?.client_id)throw error('Aguarde a atualização da Data API antes de conectar esta versão do aplicativo.');}
   return {request,compatible,
+   async compatibleTrash(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/card-trash']||!schema.paths?.['/v1/cards/{card_id}/archive']||!schema.paths?.['/v1/cards/{card_id}/restore'])throw error('Aguarde a atualização da Data API para usar a lixeira.');},
+   async trash(token,family,signal){return validateCards(await request('/v1/card-trash',{token,family,signal}));},
+   async changeTrash(card,restore,token,family,signal){
+    if(!card.updated_at)throw error('Versão do cartão indisponível. Consulte novamente.');
+    const result=await request('/v1/cards/'+card.id+(restore?'/restore':'/archive'),{method:'POST',body:{expected_updated_at:card.updated_at},token,family,signal});
+    validateCards([result]);return result;
+   },
    async compatibleCategories(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/family-categories'])throw error('Aguarde a atualização da Data API para enviar categorias.');},
    async createCategory(name,token,family,signal){const row=await request('/v1/family-categories',{method:'POST',body:{name},token,family,signal});validateCatalog([row]);return row;},
    async compatibleEdits(signal){const schema=await request('/openapi.json',{signal});if(!schema.components?.schemas?.CardUpdate?.properties?.expected_updated_at)throw error('Aguarde a atualização da Data API para revisar edições.');},

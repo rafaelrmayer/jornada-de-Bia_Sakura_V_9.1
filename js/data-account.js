@@ -9,7 +9,7 @@
   const unlocked=allowed();$('dataAccountUnlock').hidden=unlocked;$('dataAccountControls').hidden=!unlocked;
   $('dataAccountForm').hidden=!!session;$('dataAccountConnected').hidden=!session;
   $('dataAuthFields').disabled=!!job;
-  for(const id of ['dataAccountUpload','dataAccountImport','dataAccountCategories','dataAccountReview','dataAccountFamily'])$(id).disabled=!!job;
+  for(const id of ['dataAccountUpload','dataAccountImport','dataAccountCategories','dataAccountReview','dataAccountTrash','dataAccountFamily'])$(id).disabled=!!job;
  }
  function logout(message='Conta desconectada. As frases deste aparelho foram preservadas.'){
   $('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
@@ -95,6 +95,29 @@
   if(!root.confirm('Importar categorias e novos cartões da família “'+family.name+'” para Minha Comunicação? As frases existentes serão preservadas.')){status('Importação cancelada.');return;}
   guard();active();const result=root.JBCommunication.importCloudCards(cards,catalog,family.id);
   status(result.categoriesAdded+' categoria(s) adicionada(s). '+result.added+' novo(s) cartão(ões) importado(s). '+result.existing+' já presente(s), preservado(s) sem sobrescrita. Você pode usá-los offline em Minha Comunicação.');
+ });
+ $('dataAccountTrash').onclick=()=>run(async(signal,guard)=>{
+  clearReview();const family=active(),token=session.token;
+  status('Consultando cartões e lixeira da conta…');await api.compatibleTrash(signal);guard();
+  const catalog=await api.catalog(token,family.id,signal);guard();
+  const cards=await api.cards(token,family.id,signal);guard();
+  const trash=await api.trash(token,family.id,signal);guard();
+  status(cards.length+' cartão(ões) na conta e '+trash.length+' na lixeira. Estas ações não apagam frases deste aparelho. Para trazer cartões restaurados, use Importar.');
+  for(const [rows,restore] of [[cards,false],[trash,true]]){
+   const heading=document.createElement('h4');heading.textContent=restore?'Lixeira da conta':'Cartões da conta';$('dataAccountDifferences').append(heading);
+   for(const card of rows){
+    const panel=document.createElement('section'),description=document.createElement('p'),button=document.createElement('button');
+    description.textContent=card.text+' — '+(catalog.find(c=>c.id===card.category_id)?.name||'Categoria');
+    button.type='button';button.textContent=restore?'Restaurar cartão na conta':'Mover para lixeira da conta';
+    button.onclick=()=>run(async(signal,guard)=>{
+     if(active().id!==family.id)throw Error('A família mudou. Consulte novamente.');
+     if(!root.confirm((restore?'Restaurar':'Mover para a lixeira')+' o cartão “'+card.text+'” na conta da família “'+family.name+'”? As frases salvas neste aparelho serão preservadas.'))return;
+     guard();active();await api.changeTrash(card,restore,token,family.id,signal);guard();
+     panel.remove();status(restore?'Cartão restaurado na conta. Use Importar para trazê-lo ao aparelho, se necessário.':'Cartão movido para a lixeira da conta. A cópia deste aparelho foi preservada. Consulte a lixeira novamente para restaurar.');
+    });
+    panel.append(description,button);$('dataAccountDifferences').append(panel);
+   }
+  }
  });
  function clearReview(){$('dataAccountDifferences').replaceChildren();}
  $('dataAccountFamily').addEventListener('change',clearReview);
