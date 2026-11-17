@@ -36,6 +36,11 @@
   }
   async function compatible(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/auth/families']||!schema.components?.schemas?.CardCreate?.properties?.client_id)throw error('Aguarde a atualização da Data API antes de conectar esta versão do aplicativo.');}
   return {request,compatible,
+   async compatiblePassword(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/auth/change-password'])throw error('Aguarde a atualização da Data API para alterar a senha.');},
+   async changePassword(current_password,new_password,token,signal){
+    try{return await request('/v1/auth/change-password',{method:'POST',body:{current_password,new_password},token,signal});}
+    catch(e){if(e.status===400)throw error('A senha atual não confere.',400);if(e.status===422)throw error('Use uma nova senha diferente da atual, com 12 a 128 caracteres.',422);throw e;}
+   },
    async compatibleTrash(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/card-trash']||!schema.paths?.['/v1/cards/{card_id}/archive']||!schema.paths?.['/v1/cards/{card_id}/restore'])throw error('Aguarde a atualização da Data API para usar a lixeira.');},
    async trash(token,family,signal){return validateCards(await request('/v1/card-trash',{token,family,signal}));},
    async changeTrash(card,restore,token,family,signal){

@@ -554,3 +554,20 @@ limpa ao bloquear ou trocar de família.
 Publicar primeiro a Data API com a migração de lixeira e os endpoints de
 arquivamento/restauração. O aplicativo verifica esse suporte antes de abrir a
 lista.
+
+### Trocar a senha da conta online
+
+Após entrar em **Apoio → Conta e cartões**, abra **Alterar senha da conta**.
+Informe a senha atual e repita a nova senha (12 a 128 caracteres). A confirmação
+explica que todas as sessões online antigas deixarão de funcionar. Após salvar,
+entre novamente com a nova senha em cada aparelho.
+
+Senhas do formulário são limpas após a tentativa, ao sair ou ao bloquear, e
+não entram no armazenamento local ou no backup. A troca não modifica as frases.
+Se a resposta da rede se perder, o aplicativo desconecta: tente entrar com a
+nova senha; a operação pode ter sido concluída no servidor. Não há repetição
+automática da troca.
+
+Publicar primeiro a API com auth_version e /v1/auth/change-password.
+A função **Esqueci minha senha** ainda depende do serviço de e-mail; a troca
+implementada aqui exige conhecer a senha atual.

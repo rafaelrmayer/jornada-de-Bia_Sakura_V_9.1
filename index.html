@@ -546,6 +546,18 @@
                      <button type="button" id="dataAccountTrash">Cartões e lixeira da conta</button>
                      <button type="button" id="dataAccountLogout">Sair da conta</button>
                     </div>
+                    <details>
+                     <summary>Alterar senha da conta</summary>
+                     <p>A alteração encerra as sessões online de todos os aparelhos. As frases locais e os dados da conta são preservados.</p>
+                     <form id="dataAccountPasswordForm">
+                      <fieldset id="dataPasswordFields">
+                       <label>Senha atual<input id="dataCurrentPassword" type="password" autocomplete="current-password" maxlength="128" required></label>
+                       <label>Nova senha<input id="dataNewPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+                       <label>Repita a nova senha<input id="dataConfirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+                       <button type="submit">Alterar senha e encerrar sessões</button>
+                      </fieldset>
+                     </form>
+                    </details>
                     <div id="dataAccountDifferences" aria-live="polite"></div>
                    </div>
                   </div>
