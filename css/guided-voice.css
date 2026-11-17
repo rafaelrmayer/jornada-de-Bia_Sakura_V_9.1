@@ -1,0 +1,11 @@
+.guided-voice-panel{position:sticky;top:8px;z-index:40;margin:12px 0 20px;padding:16px;border:2px solid var(--friendly-line,currentColor);border-radius:18px;background:var(--friendly-paper,#fff);color:var(--friendly-ink,#23352c);max-height:50vh;overflow:auto}
+.guided-voice-panel[hidden],.guided-voice-panel [hidden]{display:none!important}
+.guided-voice-panel p{margin:0 0 10px;overflow-wrap:anywhere}
+.guided-voice-controls{display:flex;flex-wrap:wrap;gap:8px}
+.guided-voice-panel button,.guided-voice-settings button{min-height:48px;padding:10px 16px;border:1px solid currentColor;border-radius:12px;background:var(--friendly-soft,#edf4ed);color:inherit;font:inherit}
+.guided-voice-selected{outline:4px solid var(--friendly-accent,#b53f70)!important;outline-offset:3px}
+.guided-voice-settings label{display:block;margin:14px 0}
+.guided-voice-settings input[type=range],.guided-voice-settings select{display:block;width:100%;max-width:100%;min-height:44px}
+.guided-voice-settings select{font:inherit;color:inherit;background:var(--friendly-soft,#edf4ed);padding:8px;border:1px solid currentColor;border-radius:10px}
+.guided-voice-panel :focus-visible,.guided-voice-settings :focus-visible{outline:3px solid currentColor;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.guided-voice-panel{scroll-behavior:auto}}

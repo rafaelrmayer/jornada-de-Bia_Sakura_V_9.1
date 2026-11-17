@@ -5806,3 +5806,9 @@ html body .install-banner {bottom:var(--bia-bottom-nav-height,90px)!important;}
   html body .visual-bottom-nav {grid-template-columns:repeat(4,minmax(0,1fr))!important;}
   html body .visual-bottom-nav .nav-item {padding:6px 3px!important;min-width:0;}
 }
+
+
+/* Mantém a ajuda acima da navegação e do aviso de instalação em qualquer tela. */
+html body .sos-floating-button {
+  bottom: calc(var(--bia-bottom-nav-height, 90px) + var(--bia-install-banner-height, 0px) + 16px) !important;
+}

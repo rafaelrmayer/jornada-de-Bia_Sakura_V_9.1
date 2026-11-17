@@ -7,3 +7,11 @@ test('cache inicial cobre todos os scripts e folhas locais referenciados no HTML
 function backupService(){const e=env();e.ctx.JornadaModuleData=e.api;vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/backup.js'),'utf8'),e.ctx);return e.ctx.window.BackupService;}
 test('leitura continua aceitando backup legado sem módulos adicionais',async()=>{const service=backupService();const text=JSON.stringify({type:'full',backupVersion:3,data:{symbolsData:[],guardians:[]}});const result=await service.readAndValidate({size:text.length,text:async()=>text});assert.equal(result.backupVersion,3);assert.equal(result.data.moduleData,undefined);});
 test('backup de configuração não restaura campos pessoais nem dados de módulos extras',async()=>{const service=backupService();const text=JSON.stringify({type:'configuration',backupVersion:4,data:{symbolsData:[],theme:'blue',guardians:[{name:'teste'}],moduleData:{jornadaGuardianUnlocked:'true'}}});const result=await service.readAndValidate({size:text.length,text:async()=>text});assert.equal(result.data.theme,'blue');assert.equal(result.data.guardians,undefined);assert.equal(result.data.moduleData,undefined);});
+test('preferência de voz guiada entra no backup protegido e na limpeza geral',()=>{
+ const value=JSON.stringify({enabled:true,focus:false,rate:0.9,volume:0.8,voice:''});
+ const e=env({'bia-guided-voice-v1':value,unrelated:'preservar'});
+ assert.equal(e.api.snapshot(e.storage)['bia-guided-voice-v1'],value);
+ e.ctx.window.StorageService.clear();
+ assert.equal(e.storage.getItem('bia-guided-voice-v1'),null);
+ assert.equal(e.storage.getItem('unrelated'),'preservar');
+});

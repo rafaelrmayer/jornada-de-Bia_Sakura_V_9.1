@@ -1240,7 +1240,7 @@
             list.replaceChildren();section.hidden=!rows.length;
             rows.forEach(r=>{
                 const b=document.createElement('button');b.type='button';b.className='bia-maybe-choice';
-                b.textContent=(r.emoji||'🌸')+' '+r.text;
+                b.textContent=(r.emoji||'🌸')+' '+r.text;b.dataset.guidedLabel=r.text;
                 b.addEventListener('click',()=>{
                     if(!Array.isArray(r.symbols)||!r.symbols.length)return;
                     selectedSymbols=r.symbols.map(x=>({...x}));updateFeedback();updateSuggestions();
@@ -1286,7 +1286,7 @@
                 return;
             }
             suggestionsList.innerHTML = suggestions.map((sug, index) => `
-                <div class="suggestion-item" style="animation-delay: ${index * 0.05}s" data-type="${sug.type}" role="listitem" tabindex="0" aria-label="Sugestão: ${escapeHtml(sug.label)}">
+                <div class="suggestion-item" style="animation-delay: ${index * 0.05}s" data-type="${sug.type}" data-guided-label="${escapeHtml(sug.label)}" role="listitem" tabindex="0" aria-label="Sugestão: ${escapeHtml(sug.label)}">
                     <span class="suggestion-emoji">${escapeHtml(sug.emoji)}</span>
                     <span>${escapeHtml(sug.label)}</span>
                     <span class="suggestion-context">${escapeHtml(sug.context)}</span>
@@ -1350,6 +1350,8 @@
             if (activeEdgeAudio) { activeEdgeAudio.pause(); activeEdgeAudio.removeAttribute('src'); activeEdgeAudio.load(); activeEdgeAudio = null; }
             if (activeEdgeObjectUrl) { URL.revokeObjectURL(activeEdgeObjectUrl); activeEdgeObjectUrl = null; }
         }
+
+        window.JBVoiceActivity = {isSpeaking: () => Boolean(activeBrowserUtterance || activeEdgeSource || activeEdgeAudio || edgeSpeechRequest)};
 
         function edgeVoiceStatus(message, showNotice = false) {
             if (voiceQualityText) voiceQualityText.textContent = message;
@@ -1485,6 +1487,7 @@
         function speakText(text, preview = false) {
             const phrase = String(text || '').trim();
             if (!phrase) return;
+            document.dispatchEvent(new Event('bia:speech-starting'));
             if (!preview) document.dispatchEvent(new CustomEvent('bia:communication-activated', {detail:{text:phrase}}));
             if (voiceSelect.value === 'edge-francisca') {
                 speakWithEdgeTTS(phrase, preview);
@@ -2631,7 +2634,7 @@
             const names={necessidade:'💙 O que você precisa?',sentimento:'❤️ Como você está?',dor:'🤕 Onde ou como dói?',social:'👋 O que você quer dizer?'};
             title.textContent=names[hub]||'Escolha uma opção';
             choices.className='adaptive-grid'+(hub==='dor'?' pain-grid':'');
-            choices.innerHTML=(HUB_OPTIONS[hub]||[]).map((o,i)=>`<button class="adaptive-choice" type="button" data-choice="${i}">${escapeHtml(o[0])} ${escapeHtml(o[1])}</button>`).join('');
+            choices.innerHTML=(HUB_OPTIONS[hub]||[]).map((o,i)=>`<button class="adaptive-choice" type="button" data-choice="${i}" data-guided-label="${escapeHtml(o[1])}">${escapeHtml(o[0])} ${escapeHtml(o[1])}</button>`).join('');
             choices.querySelectorAll('.adaptive-choice').forEach(btn=>btn.addEventListener('click',()=>{
                 const item=HUB_OPTIONS[hub][Number(btn.dataset.choice)];
                 const text=item[1]; showAdaptivePhrase(text); recordPhraseUse(text); predictor.recordPhrase(text); playClickSound();
@@ -2853,7 +2856,7 @@
         if(!list||!cats||!syms)return;
         syncCategorySelect();
         const visible=activeCategory==='*'?data.phrases:data.phrases.filter(p=>(p.category||'Geral')===activeCategory);
-        list.innerHTML=visible.length?visible.map(p=>`<article class="my-comm-item"><div class="my-comm-item-text"><strong>${safe(p.text)}</strong><small>${safe(p.category||'Geral')}</small></div><div class="my-comm-actions"><button type="button" data-speak="${safe(p.id)}" aria-label="Falar frase">🔊</button><button type="button" data-edit="${safe(p.id)}" aria-label="Editar frase">✏️</button><button type="button" data-delete="${safe(p.id)}" aria-label="Excluir frase">🗑️</button></div></article>`).join(''):`<p class="my-comm-empty">${activeCategory==='*'?'Ainda não há frases personalizadas. Adicione a primeira!':`Ainda não há frases em “${safe(activeCategory)}”. Você pode adicionar uma nova frase nessa categoria.`}</p>`;
+        list.innerHTML=visible.length?visible.map(p=>`<article class="my-comm-item"><div class="my-comm-item-text"><strong>${safe(p.text)}</strong><small>${safe(p.category||'Geral')}</small></div><div class="my-comm-actions"><button type="button" data-speak="${safe(p.id)}" aria-label="Falar frase: ${safe(p.text)}">🔊</button><button type="button" data-edit="${safe(p.id)}" aria-label="Editar frase">✏️</button><button type="button" data-delete="${safe(p.id)}" aria-label="Excluir frase">🗑️</button></div></article>`).join(''):`<p class="my-comm-empty">${activeCategory==='*'?'Ainda não há frases personalizadas. Adicione a primeira!':`Ainda não há frases em “${safe(activeCategory)}”. Você pode adicionar uma nova frase nessa categoria.`}</p>`;
         cats.innerHTML=data.categories.map(name=>{const count=data.phrases.filter(p=>(p.category||'Geral')===name).length;const selected=activeCategory===name;const removable=!['Geral','Necessidades','Alimentação','Rotina','Sentimentos','Pessoas','Atividades'].includes(name);return `<div class="my-comm-category-wrap"><button type="button" class="my-comm-category-card${selected?' is-active':''}" data-category="${safe(name)}" aria-pressed="${selected}"><span class="my-comm-category-emoji" aria-hidden="true">${categoryEmoji[name]||'✨'}</span><span class="my-comm-category-name">${safe(name)}</span><span class="my-comm-category-count">${count} ${count===1?'frase':'frases'}</span></button>${removable?`<button type="button" class="my-comm-category-remove" data-remove-category="${safe(name)}" aria-label="Excluir categoria ${safe(name)}">×</button>`:''}</div>`}).join('');
         const symbols=Array.isArray(symbolsData)?symbolsData:[];
         syms.innerHTML=symbols.map(s=>{const fav=data.favoriteSymbols.includes(String(s.id));return `<div class="my-comm-symbol"><span class="emoji">${safe(s.emoji||'🔹')}</span><strong>${safe(s.label||'Símbolo')}</strong><button type="button" data-favorite-symbol="${safe(s.id)}" aria-pressed="${fav}" aria-label="${fav?'Retirar':'Adicionar'} ${safe(s.label)} ${fav?'dos':'aos'} favoritos">${fav?'★ Favorito':'☆ Favoritar'}</button></div>`}).join('');
