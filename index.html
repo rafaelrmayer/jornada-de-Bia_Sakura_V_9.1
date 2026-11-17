@@ -554,6 +554,7 @@
                    <div id="dataAccountConnected" hidden>
                     <label>Família da conta<select id="dataAccountFamily"></select></label>
                     <p id="dataAccountIdentity"></p><p id="dataAccountRole"></p>
+                    <p>Alterações nos cartões da conta ficam registradas para consulta do responsável.</p>
                     <button type="button" id="dataAccountRefresh">Atualizar famílias e permissões</button>
                     <p>Somente os botões abaixo enviam ou trazem frases. A sessão online dura até 15 minutos e não é salva no backup. Ao recarregar ou bloquear a administração, entre novamente.</p>
                     <div class="data-account-actions">
@@ -601,6 +602,14 @@
                       </div>
                       <button type="button" id="dataAccessLoad">Consultar acessos e convites</button>
                       <div id="dataAccessList" aria-live="polite"></div>
+                      <section aria-labelledby="dataHistoryTitle">
+                       <h4 id="dataHistoryTitle">Histórico dos cartões da conta</h4>
+                       <p>Alterações registradas desde a ativação deste histórico. A identificação usa o texto atual do cartão; textos anteriores não são guardados no histórico.</p>
+                       <button type="button" id="dataHistoryLoad">Consultar ou atualizar histórico</button>
+                       <p id="dataHistoryStatus" role="status"></p>
+                       <div id="dataHistoryList"></div>
+                       <button type="button" id="dataHistoryMore" hidden>Carregar registros anteriores</button>
+                      </section>
                      </div>
                     </section>
                     <div id="dataAccountDifferences" aria-live="polite"></div>
