@@ -543,8 +543,8 @@
                      <label>E-mail da conta<input id="dataRecoveryEmail" type="email" autocomplete="username" maxlength="255" required></label>
                      <button type="button" id="dataRecoverySend">Enviar código por e-mail</button>
                      <fieldset id="dataRecoveryCodeFields" hidden>
-                      <p>Copie o código completo do e-mail. Ele vale por 15 minutos. Depois de redefinir, entre novamente em todos os aparelhos.</p>
-                      <label>Código de recuperação<input id="dataRecoveryCode" type="password" autocomplete="off" spellcheck="false" maxlength="128" required></label>
+                      <p>Digite o código de 6 números recebido por e-mail e escolha sua nova senha abaixo. O código vale por 15 minutos, não é uma senha e só pode ser usado uma vez. Depois de redefinir, entre novamente em todos os aparelhos.</p>
+                      <label>Código de recuperação<input id="dataRecoveryCode" type="text" inputmode="numeric" autocomplete="one-time-code" spellcheck="false" maxlength="128" required></label>
                       <label>Nova senha<input id="dataRecoveryPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
                       <label>Repita a nova senha<input id="dataRecoveryConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
                       <button type="submit">Redefinir senha da conta</button>
