@@ -1,8 +1,8 @@
-/* Interface administrativa: enviar/importar é sempre uma escolha explícita. */
+/* Conta opcional: Google somente por escolha do adulto; sessões em memória. */
 (function(root){
  'use strict';
- const $=id=>document.getElementById(id),api=root.JBDataAPI.createClient();if(!$('dataAccountForm'))return;
- let session=null,job=null,generation=0,expiry=null,recoveryOpen=false,historyBefore=null,historyFamily=null;
+ const $=id=>document.getElementById(id),api=root.JBDataAPI.createClient();if(!$('dataGoogleStart'))return;
+ let session=null,job=null,generation=0,expiry=null,googleAttempt=null,historyBefore=null,historyFamily=null;
  const allowed=()=>!!root.SecurityService?.isUnlocked?.();
  const status=text=>$('dataAccountStatus').textContent=text;
  function update(){
@@ -14,19 +14,19 @@
   for(const id of ['dataInviteFields','dataInviteAcceptFields','dataAccessLoad','dataInviteCopy','dataAccountRefresh','dataHistoryLoad'])$(id).disabled=!!job;
   $('dataHistoryMore').disabled=!!job||historyBefore===null;
   $('dataAccountUnlock').hidden=unlocked;$('dataAccountControls').hidden=!unlocked;
-  $('dataAccountForm').hidden=!!session||recoveryOpen;$('dataRecoveryOpen').hidden=!!session||recoveryOpen;$('dataRecoveryForm').hidden=!!session||!recoveryOpen;$('dataAccountConnected').hidden=!session;
-  $('dataAuthFields').disabled=!!job;$('dataPasswordFields').disabled=!!job;$('dataRecoveryFields').disabled=!!job;$('dataRecoveryCodeFields').disabled=$('dataRecoveryCodeFields').hidden||!!job;$('dataRecoveryOpen').disabled=!!job;
+  $('dataAccountSignIn').hidden=!!session;$('dataAccountConnected').hidden=!session;
+  $('dataGoogleStart').disabled=!!job;
   for(const id of ['dataAccountImport','dataAccountReview','dataAccountTrash','dataAccountFamily'])$(id).disabled=!!job;
   for(const id of ['dataAccountUpload','dataAccountCategories','dataAccountSave'])$(id).disabled=!!job||!writer;
  }
  function logout(message='Conta desconectada. As frases deste aparelho foram preservadas.'){
-  clearHistory();clearAccess();$('dataInviteAcceptCode').value='';$('dataInviteEmail').value='';$('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;clearTimeout(expiry);expiry=null;
-  recoveryOpen=false;$('dataRecoveryEmail').value='';$('dataRecoveryCodeFields').hidden=true;clearPasswords();$('dataAccountPassword').value='';$('dataAccountEmail').value='';$('dataFamilyName').value='';$('dataAccountFamily').replaceChildren();
+  clearHistory();clearAccess();$('dataInviteAcceptCode').value='';$('dataInviteEmail').value='';$('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;googleAttempt=null;clearTimeout(expiry);expiry=null;
+  $('dataGoogleButton').replaceChildren();$('dataAccountFamily').replaceChildren();root.JBGoogleAccess?.cancel();
   update();status(message);
  }
  function active(){
   if(!allowed())throw Error('Desbloqueie a administração para conectar.');
-  if(!session||Date.now()>=session.expiresAt){logout('Sua sessão online expirou. Entre novamente.');throw Error('Sua sessão online expirou. Entre novamente.');}
+  if(!session||Date.now()>=session.expiresAt){logout('Sua sessão online expirou. Conecte novamente com o Google.');throw Error('Sua sessão online expirou. Conecte novamente com o Google.');}
   const family=session.families.find(f=>f.id===$('dataAccountFamily').value);
   if(!family)throw Error('Selecione uma família da sua conta.');
   return family;
@@ -37,92 +37,34 @@
   const ticket=generation,controller=new AbortController();job=controller;update();
   const guard=()=>{if(ticket!==generation||controller.signal.aborted||!allowed())throw Error('Operação interrompida. As frases locais foram preservadas.');};
   try{await operation(controller.signal,guard);}
-  catch(error){if(ticket===generation){if(error.status===401)logout('Sessão inválida ou expirada. Entre novamente.');else status(error.message||'Não foi possível concluir. As frases locais foram preservadas.');}}
+  catch(error){if(ticket===generation){if(error.status===401)logout('Conexão inválida ou expirada. Conecte novamente com o Google.');else status(error.message||'Não foi possível concluir. As frases locais foram preservadas.');}}
   finally{if(job===controller)job=null;update();}
  }
- function changeMode(){
-  const register=$('dataAccountMode').value==='register';
-  $('dataFamilyNameLabel').hidden=!register;$('dataFamilyName').required=register;
-  $('dataAccountPassword').minLength=register?6:1;$('dataAccountPassword').maxLength=register?20:1024;$('dataAccountPassword').autocomplete=register?'new-password':'current-password';
-  $('dataAccountSubmit').textContent=register?'Criar conta e entrar':'Entrar';
- }
- $('dataAccountMode').addEventListener('change',changeMode);changeMode();
  $('dataAccountUnlock').onclick=async()=>{await root.requestGuardianUnlock?.();update();};
  $('dataAccountLogout').onclick=()=>logout();
- $('dataAccountForm').onsubmit=event=>{
-  event.preventDefault();
-  const email=$('dataAccountEmail').value.trim(),password=$('dataAccountPassword').value,mode=$('dataAccountMode').value,name=$('dataFamilyName').value.trim();
-  run(async(signal,guard)=>{
-   status('Conectando à conta…');await api.compatible(signal);guard();
-   if(mode==='register'){
-    if(!name)throw Error('Informe o nome da família.');
-    try{await api.register(email,password,name,signal);}catch(error){if(error.status===409)throw Error('Já existe cadastro com este e-mail. Selecione Entrar na minha conta.');throw error;}guard();
-   }
-   let auth;
-   try{auth=await api.login(email,password,signal);}catch(error){if(error.status===401)throw Error('E-mail ou senha não conferem. A senha da conta é diferente do PIN administrativo.');throw error;}guard();
-   const families=await api.families(auth.access_token,signal);guard();
-   if(!families.length)throw Error('Esta conta ainda não possui uma família disponível.');
-   session={email:email.toLowerCase(),token:auth.access_token,families,expiresAt:Date.now()+Math.min(auth.expires_in,900)*1000};
-   $('dataAccountFamily').replaceChildren();for(const f of families){const option=document.createElement('option');option.value=f.id;option.textContent=f.name;$('dataAccountFamily').append(option);}
-   clearTimeout(expiry);expiry=setTimeout(()=>logout('Sua sessão online expirou. Entre novamente.'),Math.min(auth.expires_in,900)*1000);
-   $('dataAccountPassword').value='';status('Conta conectada. Escolha enviar novas frases ou importar cartões. Nenhuma frase foi transferida automaticamente.');
-  }).finally(()=>{$('dataAccountPassword').value='';});
- };
- function clearPasswords(){for(const id of ['dataCurrentPassword','dataNewPassword','dataConfirmPassword','dataRecoveryCode','dataRecoveryPassword','dataRecoveryConfirm'])$(id).value='';}
- $('dataRecoveryOpen').onclick=()=>run(async(signal,guard)=>{
-  status('Verificando disponibilidade da recuperação…');
-  const enabled=await api.recoveryStatus(signal);guard();
-  if(!enabled){status('Recuperação por e-mail ainda não disponível. Você pode continuar usando as frases neste aparelho.');return;}
-  recoveryOpen=true;$('dataRecoveryCodeFields').hidden=true;clearPasswords();
-  $('dataRecoveryEmail').value=$('dataAccountEmail').value.trim();
-  status('Informe o e-mail da conta para solicitar um código. O PIN deste aparelho não será alterado.');
+ $('dataGoogleStart').onclick=()=>run(async(signal,guard)=>{
+  googleAttempt=null;$('dataGoogleButton').replaceChildren();status('Preparando acesso com o Google…');
+  const config=await api.googleConfig(signal);guard();
+  const challenge=await api.googleChallenge(signal);guard();
+  const attempt={...challenge,ticket:generation,expiresAt:Date.now()+300000};googleAttempt=attempt;
+  await root.JBGoogleAccess.render($('dataGoogleButton'),config.client_id,challenge.nonce,async credential=>{
+   if(googleAttempt!==attempt||attempt.ticket!==generation||session||!allowed())return;
+   if(Date.now()>=attempt.expiresAt){googleAttempt=null;status('O acesso expirou. Toque em Conectar minha conta novamente.');return;}
+   googleAttempt=null;
+   await run(async(signal,guard)=>{
+    status('Conectando sua conta…');
+    const auth=await api.googleLogin(credential,attempt.challenge,signal);guard();
+    const families=await api.families(auth.access_token,signal);guard();
+    if(!families.length)throw Error('Esta conta ainda não possui uma família disponível.');
+    session={email:auth.email,token:auth.access_token,families,expiresAt:Date.now()+Math.min(auth.expires_in,900)*1000};
+    $('dataAccountFamily').replaceChildren();for(const f of families){const option=document.createElement('option');option.value=f.id;option.textContent=f.name;$('dataAccountFamily').append(option);}
+    expiry=setTimeout(()=>logout('Sua sessão online expirou. Conecte novamente com o Google.'),Math.min(auth.expires_in,900)*1000);
+    $('dataGoogleButton').replaceChildren();
+    status('Conta conectada. Escolha Guardar ou Trazer frases. Nenhuma frase foi transferida ao entrar.');
+   });
+  },()=>googleAttempt===attempt&&allowed());guard();
+  status('Use o botão do Google abaixo para escolher sua conta.');
  });
- $('dataRecoveryCancel').onclick=()=>logout('Recuperação fechada. Entre na conta quando desejar.');
- $('dataRecoveryEmail').addEventListener('input',()=>{$('dataRecoveryCodeFields').hidden=true;clearPasswords();update();});
- $('dataRecoverySend').onclick=()=>{
-  if(!$('dataRecoveryEmail').reportValidity())return;
-  const email=$('dataRecoveryEmail').value.trim();clearPasswords();
-  run(async(signal,guard)=>{
-   status('Solicitando código de recuperação…');
-   await api.recoveryRequest(email,signal);guard();clearPasswords();$('dataRecoveryCodeFields').hidden=false;
-   status('Se a conta existir e o envio estiver disponível, você receberá um código. Confira o e-mail e o spam. Aguarde ao menos 60 segundos antes de solicitar novamente.');
-  });
- };
- $('dataRecoveryForm').onsubmit=event=>{
-  event.preventDefault();
-  if($('dataRecoveryCodeFields').hidden)return;
-  const email=$('dataRecoveryEmail').value.trim(),code=$('dataRecoveryCode').value.trim(),password=$('dataRecoveryPassword').value,confirmation=$('dataRecoveryConfirm').value;
-  if(password!==confirmation){status('A confirmação da nova senha não confere.');clearPasswords();return;}
-  run(async(signal,guard)=>{
-   if(!root.confirm('Redefinir a senha da conta e encerrar as sessões antigas? As frases deste aparelho serão preservadas.'))return;
-   status('Redefinindo a senha…');
-   try{await api.recoveryConfirm(email,code,password,signal);guard();}
-   catch(error){
-    if(error.status){throw error;}
-    guard();logout('Não foi possível confirmar a redefinição. Tente entrar com a nova senha; se necessário, solicite outro código.');return;
-   }
-   logout('Senha redefinida. Entre novamente com a nova senha. As frases locais foram preservadas.');
-  }).finally(clearPasswords);
- };
- $('dataAccountPasswordForm').onsubmit=event=>{
-  event.preventDefault();
-  const current=$('dataCurrentPassword').value,next=$('dataNewPassword').value,confirmation=$('dataConfirmPassword').value;
-  if(next!==confirmation){status('A confirmação da nova senha não confere.');clearPasswords();return;}
-  if(next===current){status('A nova senha precisa ser diferente da atual.');clearPasswords();return;}
-  run(async(signal,guard)=>{
-   active();clearReview();
-   await api.compatiblePassword(signal);guard();
-   if(!root.confirm('Alterar a senha e encerrar as sessões online em todos os aparelhos? As frases e os dados serão preservados.'))return;
-   status('Alterando a senha da conta…');
-   try{await api.changePassword(current,next,session.token,signal);guard();}
-   catch(error){
-    if(error.status===400||error.status===422)throw error;
-    guard();logout('Não foi possível confirmar a alteração. Entre novamente; se a senha anterior não funcionar, use a nova senha informada.');
-    return;
-   }
-   logout('Senha alterada. Entre novamente com a nova senha. As sessões antigas foram encerradas.');
-  }).finally(clearPasswords);
- };
  async function sendNewPhrases(signal,guard,confirmed=false){
   clearReview();const family=active(),token=session.token;status('Conferindo categorias e cartões da família…');
   const catalog=await api.catalog(token,family.id,signal);guard();const remote=await api.cards(token,family.id,signal);guard();

@@ -526,33 +526,12 @@
                   <p id="dataAccountStatus" role="status" aria-live="polite"></p>
                   <button type="button" id="dataAccountUnlock">🔓 Desbloquear conexão</button>
                   <div id="dataAccountControls" hidden>
-                   <form id="dataAccountForm">
-                    <fieldset id="dataAuthFields">
-                     <label>O que deseja fazer?<select id="dataAccountMode"><option value="login">Entrar na minha conta</option><option value="register">Criar conta da família</option></select></label>
-                     <label>E-mail<input id="dataAccountEmail" type="email" autocomplete="username" maxlength="255" required></label>
-                     <label>Senha da conta<input id="dataAccountPassword" type="password" autocomplete="current-password" required></label>
-                     <label id="dataFamilyNameLabel" hidden>Nome da família<input id="dataFamilyName" maxlength="120"></label>
-                     <p>Esta senha é da conta online e é diferente do PIN administrativo. Para criar ou redefinir uma senha, use de 6 a 20 caracteres, com pelo menos uma letra e um número.</p>
-                     <button type="submit" id="dataAccountSubmit">Entrar</button>
-                    </fieldset>
-                   </form>
-                   <button type="button" id="dataRecoveryOpen">Esqueci a senha da conta</button>
-                   <form id="dataRecoveryForm" hidden>
-                    <fieldset id="dataRecoveryFields">
-                     <p>Recupere somente a senha da conta online. O PIN deste aparelho é separado.</p>
-                     <label>E-mail da conta<input id="dataRecoveryEmail" type="email" autocomplete="username" maxlength="255" required></label>
-                     <button type="button" id="dataRecoverySend">Enviar código por e-mail</button>
-                     <fieldset id="dataRecoveryCodeFields" hidden>
-                      <p>Digite o código de 6 números recebido por e-mail e escolha sua nova senha abaixo. O código vale por 15 minutos, não é uma senha e só pode ser usado uma vez. Depois de redefinir, entre novamente em todos os aparelhos.</p>
-                      <label>Código de recuperação<input id="dataRecoveryCode" type="text" inputmode="numeric" autocomplete="one-time-code" spellcheck="false" maxlength="128" required></label>
-                      <p>Use de 6 a 20 caracteres, com pelo menos uma letra e um número.</p>
-                      <label>Nova senha<input id="dataRecoveryPassword" type="password" autocomplete="new-password" minlength="6" maxlength="20" required></label>
-                      <label>Repita a nova senha<input id="dataRecoveryConfirm" type="password" autocomplete="new-password" minlength="6" maxlength="20" required></label>
-                      <button type="submit">Redefinir senha da conta</button>
-                     </fieldset>
-                     <button type="button" id="dataRecoveryCancel">Voltar para entrar</button>
-                    </fieldset>
-                   </form>
+                   <div id="dataAccountSignIn">
+                    <p>Entrar é opcional: use o Google apenas para guardar e trazer frases pela conta. O backup por arquivo não exige login.</p>
+                    <button type="button" id="dataGoogleStart">Conectar minha conta</button>
+                    <div id="dataGoogleButton" aria-label="Entrar com o Google"></div>
+                    <p id="dataGoogleHint">O Google será carregado somente quando você escolher conectar. Nenhuma frase é enviada ao entrar.</p>
+                   </div>
                    <div id="dataAccountConnected" hidden>
                     <label>Família da conta<select id="dataAccountFamily"></select></label>
                     <p id="dataAccountIdentity"></p><p id="dataAccountRole"></p>
@@ -574,19 +553,6 @@
                       <button type="button" id="dataAccountUpload">Enviar somente frases novas</button>
                      </div>
                      <div id="dataAccountDifferences" aria-live="polite"></div>
-                    </details>
-                    <details>
-                     <summary>Alterar senha da conta</summary>
-                     <p>A alteração encerra as sessões online de todos os aparelhos. As frases locais e os dados da conta são preservados.</p>
-                     <form id="dataAccountPasswordForm">
-                      <fieldset id="dataPasswordFields">
-                       <label>Senha atual<input id="dataCurrentPassword" type="password" autocomplete="current-password" required></label>
-                       <p>Use de 6 a 20 caracteres, com pelo menos uma letra e um número.</p>
-                       <label>Nova senha<input id="dataNewPassword" type="password" autocomplete="new-password" minlength="6" maxlength="20" required></label>
-                       <label>Repita a nova senha<input id="dataConfirmPassword" type="password" autocomplete="new-password" minlength="6" maxlength="20" required></label>
-                       <button type="submit">Alterar senha e encerrar sessões</button>
-                      </fieldset>
-                     </form>
                     </details>
                     <section aria-labelledby="dataAccessTitle">
                      <h4 id="dataAccessTitle">Convites e acessos da família</h4>
@@ -1215,6 +1181,7 @@
     <script src="js/word-report.js"></script>
     <script src="js/word-summary.js"></script>
     <script src="js/data-api-client.js"></script>
+    <script src="js/google-access.js"></script>
     <script src="js/data-account.js"></script>
     <script src="js/navigation-layout.js"></script>
     <script src="js/guided-voice.js"></script>

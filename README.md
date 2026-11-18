@@ -645,3 +645,9 @@ nem da ativação do Brevo.
 Veja [FRASES_E_LIXEIRA.md](FRASES_E_LIXEIRA.md): lixeira local recuperável,
 restauração diretamente em Minhas frases, ações principais de Guardar/Trazer
 na conta e roteiro curto para repetir o teste de uso após publicação.
+
+## Conta na nuvem com Google
+
+[ACESSO_GOOGLE.md](ACESSO_GOOGLE.md) descreve a entrada opcional, a configuração
+OAuth e os limites. Comunicação e backup local por arquivo não exigem login.
+Os formulários de senha/recuperação do aplicativo são substituídos pelo Google.

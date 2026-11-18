@@ -152,3 +152,21 @@ test('política nova aceita limites e preserva login de senha antiga',async()=>{
  await client.login('test@example.com','senha-antiga-muito-longa-sem-numero');
  assert.equal(calls,1);
 });
+
+test('conexão Google usa corpo POST e mantém identidade somente na resposta',async()=>{
+ const seen=[];
+ const client=m.createClient(async(url,init)=>{seen.push({url,init});return {ok:true,json:async()=>({access_token:'fake-token',email:'test@gmail.com',expires_in:900})};});
+ const result=await client.googleLogin('fictitious-google-token','fictitious-challenge');
+ assert.equal(result.email,'test@gmail.com');
+ assert.equal(seen[0].url,m.BASE+'/v1/auth/google/login');
+ assert.equal(seen[0].init.method,'POST');
+ assert.deepEqual(JSON.parse(seen[0].init.body),{credential:'fictitious-google-token',challenge:'fictitious-challenge'});
+ assert.equal(seen[0].init.credentials,'omit');
+ assert(!seen[0].url.includes('fictitious'));
+});
+test('Google não configurado e vinculação pendente têm mensagens claras',async()=>{
+ const disabled=m.createClient(async()=>({ok:true,json:async()=>({enabled:false,client_id:null})}));
+ await assert.rejects(disabled.googleConfig(),/ainda está sendo configurado/);
+ const collision=m.createClient(async()=>({ok:false,status:409}));
+ await assert.rejects(collision.googleLogin('fake','fake'),e=>e.status===409&&e.message.includes('vinculação'));
+});
