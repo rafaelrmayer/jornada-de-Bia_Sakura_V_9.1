@@ -1,4 +1,4 @@
-const CACHE = 'jornada-bia-sakura-v9-6-52';
+const CACHE = 'jornada-bia-sakura-v9-6-53';
 const CORE = [
   './',
   './index.html',
@@ -28,7 +28,7 @@ const CORE = [
   './js/backup-crypto.js',
   './js/backup.js',
   './js/security-advanced.js',
-  './js/sakura-ui.js', './js/random-forest.js', './js/neural-assistant.js', './js/app.js', './js/routine-activities.js', './js/experience.js', './js/sakura-activities-v9.js', './js/sakura-habits-v9-2.js',
+  './js/sakura-ui.js', './js/random-forest.js', './js/neural-assistant.js', './js/app.js?v=sakura-board', './js/routine-activities.js', './js/experience.js', './js/sakura-activities-v9.js', './js/sakura-habits-v9-2.js',
   './manifest.json',
   './icon.svg', './icons/zen-sakura-logo.svg', './assets/sakura-prototipo.png', './assets/zen-landscape.svg',
   './icons/zen-heart.svg', './icons/zen-hands.svg', './icons/zen-smile.svg', './icons/zen-heart-rays.svg', './icons/chat.svg',
@@ -42,7 +42,9 @@ const CORE = [
   './icons/add.svg'
 ];
 self.addEventListener('install', e => e.waitUntil(
-  caches.open(CACHE).then(c => c.addAll([...new Set(CORE)])).then(() => self.skipWaiting())
+  caches.open(CACHE)
+    .then(cache => cache.addAll([...new Set(CORE)].map(url => new Request(url, { cache: 'reload' }))))
+    .then(() => self.skipWaiting())
 ));
 self.addEventListener('activate', e => e.waitUntil(
   caches.keys()

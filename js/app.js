@@ -2715,20 +2715,22 @@
         // ============================================
         // V18: EVENTOS
         // ============================================
-        intentButtons.forEach(button => button.addEventListener('click', () => {
-            selectedIntent = button.dataset.intent;
-            StorageService.setItem('selectedIntent', selectedIntent);
-            renderIntentCards(button);
-        }));
-        renderIntentCards(intentButtons.find(button => button.dataset.intent === selectedIntent) || intentButtons[0]);
-        intentClear.addEventListener('click', () => {
-            activeIntentCard?.focus();
-            setIntentPhrase(null);
-        });
-        intentSpeak.addEventListener('click', () => {
-            if (activeIntentCard) speakText(activeIntentCard.dataset.phrase);
-        });
-        document.getElementById('intentCollapseBtn').addEventListener('click', collapseIntentExpansion);
+        if (intentButtons.length) {
+            intentButtons.forEach(button => button.addEventListener('click', () => {
+                selectedIntent = button.dataset.intent;
+                StorageService.setItem('selectedIntent', selectedIntent);
+                renderIntentCards(button);
+            }));
+            renderIntentCards(intentButtons.find(button => button.dataset.intent === selectedIntent) || intentButtons[0]);
+            intentClear.addEventListener('click', () => {
+                activeIntentCard?.focus();
+                setIntentPhrase(null);
+            });
+            intentSpeak.addEventListener('click', () => {
+                if (activeIntentCard) speakText(activeIntentCard.dataset.phrase);
+            });
+            document.getElementById('intentCollapseBtn').addEventListener('click', collapseIntentExpansion);
+        }
         // V31: construtor de frase fechado por padrão
         function toggleHomePhraseBuilder(force){
             const home=document.getElementById('page-home');
