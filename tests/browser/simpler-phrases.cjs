@@ -2,7 +2,9 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{
 const browser=await chromium.launch({executablePath:process.env.BIA_CHROMIUM_PATH||undefined,args:['--no-sandbox']});
 const site=process.env.BIA_TEST_SITE||'http://127.0.0.1:8129',family='00000000-0000-4000-8000-000000000001',category='00000000-0000-4000-8000-000000000002',id='00000000-0000-4000-8000-000000000003';
-let card={id,category_id:category,text:'Quero a mochila',image_ref:null,display_order:0,created_at:'2026-11-18T12:00:00Z',updated_at:'2026-11-18T12:00:00Z',deleted_at:null};const requests=[];const catalog=[{id:category,name:"Geral"}];
+let card={id,category_id:category,text:'Quero a mochila',image_ref:null,display_order:0,created_at:'2026-11-18T12:00:00Z',updated_at:'2026-11-18T12:00:00Z',deleted_at:null};const requests=[];const catalog=[{id:category,name:'Geral'}];
+const ownerId='00000000-0000-4000-8000-000000000004',memberId='00000000-0000-4000-8000-000000000005',inviteId='00000000-0000-4000-8000-000000000006';
+let accountRole='owner';let invites=[],members=[{id:ownerId,user_id:ownerId,email:'owner@gmail.com',role:'owner'},{id:memberId,user_id:memberId,email:'guest@gmail.com',role:'viewer'}];
 const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'});
 await c.addInitScript(()=>{let config=null;window.google={accounts:{id:{initialize(value){config=value;window.__googleNonce=value.nonce;},renderButton(container){const button=document.createElement('button');button.type='button';button.id='fakeGoogleSignIn';button.textContent='Continuar com o Google (teste)';button.onclick=()=>config.callback({credential:'fictitious-google-token'});container.replaceChildren(button);},cancel(){},disableAutoSelect(){}}}};});
 await c.route('**/*',async r=>{
@@ -10,12 +12,19 @@ const url=new URL(r.request().url());
 if(url.origin===site)return r.continue();
 if(url.hostname!=='jornada-de-bia-data-api.onrender.com')return r.abort();
 const path=url.pathname;requests.push(r.request().method()+' '+path);let body;
-if(path==='/openapi.json')body={paths:Object.fromEntries(['/v1/family-categories','/v1/auth/families','/v1/card-trash','/v1/cards/{card_id}/archive','/v1/cards/{card_id}/restore'].map(x=>[x,{}])),components:{schemas:{CardCreate:{properties:{client_id:{}}}}}};
+if(path==='/openapi.json')body={paths:Object.fromEntries(['/v1/family-invitations/accept','/v1/family-members','/v1/family-categories','/v1/auth/families','/v1/card-trash','/v1/cards/{card_id}/archive','/v1/cards/{card_id}/restore'].map(x=>[x,{}])),components:{schemas:{CardCreate:{properties:{client_id:{}}}}}};
 else if(path==='/v1/auth/password-recovery/status')body={enabled:true};
 else if(path==='/v1/auth/google/config')body={enabled:true,client_id:'test-client.apps.googleusercontent.com'};
 else if(path==='/v1/auth/google/challenge')body={challenge:'fictitious-challenge',nonce:'n'.repeat(43),expires_in:300};
 else if(path==='/v1/auth/google/login')body={access_token:'fake-test-token',email:'test@gmail.com',expires_in:900};
-else if(path==='/v1/auth/families')body=[{id:family,name:'Teste',role:'owner'}];
+else if(path==='/v1/auth/families')body=[{id:family,name:'Teste',role:accountRole}];
+else if(path==='/v1/family-members')body=members;
+else if(path==='/v1/family-invitations'&&r.request().method()==='POST'){const payload=JSON.parse(r.request().postData());body={id:inviteId,email:payload.email,role:payload.role,code:'a'.repeat(43),expires_at:new Date(Date.now()+48*3600000).toISOString(),used_at:null,revoked_at:null};invites=[body];}
+else if(path==='/v1/family-invitations')body=invites;
+else if(path==='/v1/family-invitations/accept'){if(JSON.parse(r.request().postData()).code!=='b'.repeat(43))return r.fulfill({status:400,contentType:'application/json',body:'{}'});body={id:family,name:'Teste',role:'viewer'};}
+else if(path==='/v1/family-members/'+memberId&&r.request().method()==='PATCH'){const role=JSON.parse(r.request().postData()).role;members=members.map(m=>m.id===memberId?{...m,role}:m);body=members.find(m=>m.id===memberId);}
+else if(path==='/v1/family-members/'+memberId&&r.request().method()==='DELETE'){members=members.filter(m=>m.id!==memberId);return r.fulfill({status:204});}
+else if(path==='/v1/family-invitations/'+inviteId&&r.request().method()==='DELETE'){invites=invites.map(i=>({...i,revoked_at:new Date().toISOString()}));return r.fulfill({status:204});}
 else if(path==='/v1/categories')body=catalog;
 else if(path==='/v1/family-categories'){body={id:require('node:crypto').randomUUID(),name:JSON.parse(r.request().postData()).name};catalog.push(body);}
 else if(path==='/v1/cards')body=card.deleted_at?[]:[card];
@@ -108,6 +117,38 @@ assert.equal(card.deleted_at,null);assert.equal(await p.evaluate(()=>JBCommunica
 await p.evaluate(()=>{StorageService.setItem=window.__saveOriginal;});
 await p.getByRole('button',{name:'Restaurar em Minhas frases',exact:true}).click();
 await p.waitForFunction(()=>document.getElementById('dataAccountStatus').textContent.includes('Frase disponível'));
+// Compartilhamento: três ações recolhidas, convite copiável, lista atualizada e papéis preservados.
+await nav('settings');
+assert.equal(await p.locator('.family-sharing-choice[open]').count(),0);
+await p.getByText('Convidar alguém',{exact:true}).click();
+await p.locator('#dataInviteEmail').fill('newguest@gmail.com');
+assert.match(await p.locator('#dataInviteRoleHelp').innerText(),/Não pode alterar/);
+await p.locator('#dataInviteRole').selectOption('member');assert.match(await p.locator('#dataInviteRoleHelp').innerText(),/Não pode convidar/);
+await p.locator('#dataInviteForm button[type="submit"]').click();await p.locator('#dataInviteCreated').waitFor({state:'visible'});
+await p.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{value:{writeText:async value=>window.__copiedInvite=value},configurable:true});});
+await p.locator('#dataInviteCopy').click();
+assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+if(process.env.BIA_SHARING_SCREENSHOT)await p.locator('.family-sharing').screenshot({path:process.env.BIA_SHARING_SCREENSHOT});
+const shared=await p.evaluate(()=>window.__copiedInvite);assert(shared.includes('newguest@gmail.com')&&shared.includes('a'.repeat(43))&&shared.includes('48 horas'));
+assert.equal(await p.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('a'.repeat(43))),false);
+await p.getByText('Pessoas com acesso',{exact:true}).click();
+await p.waitForFunction(()=>document.getElementById('dataAccessList').textContent.includes('guest@gmail.com'));
+assert.equal(await p.locator('#dataInviteForm').isVisible(),false);
+await p.getByRole('button',{name:'Permitir alterações',exact:true}).click();
+await p.waitForFunction(()=>document.getElementById('dataAccessList').textContent.includes('Pode editar e organizar'));
+await p.getByRole('button',{name:'Remover acesso',exact:true}).click();
+await p.waitForFunction(()=>!document.getElementById('dataAccessList').textContent.includes('guest@gmail.com — Pode'));
+await p.getByRole('button',{name:'Cancelar convite',exact:true}).click();
+await p.waitForFunction(()=>document.getElementById('dataAccessList').textContent.includes('cancelado'));
+await p.getByText('Recebi um convite',{exact:true}).click();assert.equal(await p.locator('#dataAccessLoad').isVisible(),false);
+assert.equal(await p.locator('#dataInviteAcceptForm').isVisible(),true);
+await p.locator('#dataInviteAcceptCode').fill('b'.repeat(43));await p.locator('#dataInviteAcceptForm button[type="submit"]').click();
+await p.waitForFunction(()=>document.getElementById('dataAccountStatus').textContent.includes('Convite aceito'));
+await p.locator('#dataAccountLogout').click();accountRole='viewer';
+await p.locator('#dataGoogleStart').click();await p.locator('#fakeGoogleSignIn').click();await p.locator('#dataAccountConnected').waitFor({state:'visible'});
+assert.equal(await p.locator('#dataInviteForm').isVisible(),false);
+assert.equal(await p.getByText('Pessoas com acesso',{exact:true}).isVisible(),false);
+assert.equal(await p.getByText('Recebi um convite',{exact:true}).isVisible(),true);
 assert.equal(await p.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('fake-test-token')),false);
 assert.deepEqual(errors,[]);
 console.log('PASS: local trash, restore, cancel, failed write, reload, no learning changes, remote archive preserves local, recovery restores local trash in one action, generic import preserves local trash, mobile. API mocked; no production request.');await browser.close();

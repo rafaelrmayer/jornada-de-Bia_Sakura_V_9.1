@@ -2,7 +2,7 @@
 (function(root){
  'use strict';
  const $=id=>document.getElementById(id),api=root.JBDataAPI.createClient();if(!$('dataGoogleStart'))return;
- let session=null,job=null,generation=0,expiry=null,googleAttempt=null,historyBefore=null,historyFamily=null;
+ let session=null,job=null,generation=0,expiry=null,googleAttempt=null,historyBefore=null,historyFamily=null,inviteMessage='';
  const allowed=()=>!!root.SecurityService?.isUnlocked?.();
  const status=text=>$('dataAccountStatus').textContent=text;
  function update(){
@@ -182,7 +182,11 @@
  }
  $('dataHistoryLoad').onclick=()=>run((signal,guard)=>loadHistory(signal,guard,false));
  $('dataHistoryMore').onclick=()=>run((signal,guard)=>loadHistory(signal,guard,true));
- function clearAccess(){$('dataAccessList').replaceChildren();$('dataInviteCode').value='';$('dataInviteCreated').hidden=true;}
+ function updateInviteRoleHelp(){
+  $('dataInviteRoleHelp').textContent=$('dataInviteRole').value==='member'?'Pode ver, trazer, editar e arquivar frases da conta, além de criar categorias. Não pode convidar pessoas nem gerenciar acessos.':'Pode ver as frases da conta e trazer uma cópia para seu aparelho. Não pode alterar a conta.';
+ }
+ $('dataInviteRole').addEventListener('change',updateInviteRoleHelp);updateInviteRoleHelp();
+ function clearAccess(clearInvite=true){$('dataAccessList').replaceChildren();if(clearInvite){inviteMessage='';$('dataInviteCode').value='';$('dataInviteCreated').hidden=true;}}
  async function refreshFamilies(signal,guard,preferred){
   const token=session.token,previous=preferred||$('dataAccountFamily').value;
   const families=await api.families(token,signal);guard();
@@ -200,7 +204,7 @@
    if(!root.confirm('Aceitar o convite na conta conectada? Use a conta com o e-mail para o qual o convite foi criado.'))return;
    status('Aceitando convite…');const family=await api.inviteAccept(code,session.token,signal);guard();
    await refreshFamilies(signal,guard,family.id);guard();
-   status('Convite aceito. Família selecionada: '+family.name+'. Os cartões só serão trazidos quando você escolher Importar.');
+   status('Convite aceito. Família selecionada: '+family.name+'. Para trazer as frases, escolha Trazer frases da conta.');
   }).finally(()=>{$('dataInviteAcceptCode').value='';});
  };
  $('dataInviteForm').onsubmit=event=>{
@@ -210,46 +214,52 @@
    await api.compatibleAccess(signal);guard();
    if(!root.confirm('Convidar '+email+' para a família “'+family.name+'” com permissão de '+(role==='viewer'?'consulta':'edição dos cartões')+'?'))return;
    status('Gerando convite…');clearAccess();const created=await api.inviteCreate(email,role,session.token,family.id,signal);guard();
-   $('dataInviteCode').value=created.code;$('dataInviteCreated').hidden=false;
-   status('Convite criado por 48 horas. Copie o código antes de sair ou trocar de família e compartilhe diretamente com a pessoa. Nenhum e-mail foi enviado.');
+   inviteMessage='Você recebeu um convite para a família “'+family.name+'” na Jornada de Bia.\nEntre com o Google '+email+' em https://rafaelrmayer.github.io/jornada-de-Bia_Sakura_V_9.1/\nEm Apoio, escolha Recebi um convite e cole este código:\n'+created.code+'\nVálido por 48 horas. Permissão: '+(role==='viewer'?'visualizar e trazer frases':'editar e organizar frases')+'.';
+   $('dataInviteCode').value=created.code;$('dataInviteCreated').hidden=false;$('dataInviteCreated').scrollIntoView({block:'center'});
+   status('Convite pronto. Toque em Copiar convite e envie à pessoa. Válido por 48 horas.');
   });
  };
  $('dataInviteCopy').onclick=async()=>{
-  try{if(!allowed()||active().role!=='owner'||!$('dataInviteCode').value)return;await root.navigator.clipboard.writeText($('dataInviteCode').value);status('Código copiado. Compartilhe diretamente com a pessoa convidada.');}
-  catch{status('Selecione o código no campo e copie manualmente.');}
+  try{if(!allowed()||active().role!=='owner'||!$('dataInviteCode').value)return;await root.navigator.clipboard.writeText(inviteMessage||$('dataInviteCode').value);status('Convite copiado. Agora cole na conversa com a pessoa convidada.');}
+  catch{$('dataInviteCode').focus();$('dataInviteCode').select();status('O código está selecionado. Use Copiar no navegador e envie à pessoa convidada.');}
  };
- $('dataAccessLoad').onclick=()=>run(async(signal,guard)=>{
+ async function loadAccess(signal,guard){
   const family=active(),token=session.token;if(family.role!=='owner')throw Error('Somente o responsável pode consultar acessos e convites.');
-  status('Consultando acessos e convites…');clearAccess();await api.compatibleAccess(signal);guard();
+  status('Consultando pessoas…');clearAccess(false);await api.compatibleAccess(signal);guard();
   const members=await api.members(token,family.id,signal);guard();
   const invites=await api.invitations(token,family.id,signal);guard();
-  const addAction=(panel,label,operation)=>{
+  const addAction=(panel,label,operation,email)=>{
    const button=document.createElement('button');button.type='button';button.textContent=label;
    button.onclick=()=>run(async(signal,guard)=>{
     if(active().id!==family.id||active().role!=='owner')throw Error('A família ou permissão mudou. Consulte novamente.');
-    if(!root.confirm(label+' na família “'+family.name+'”?'))return;
-    await operation(signal);guard();clearAccess();status('Acesso ou convite atualizado. Consulte a lista novamente para conferir. As cópias já salvas nos aparelhos permanecem locais.');
+    if(!root.confirm(label+' para '+email+' na família “'+family.name+'”?'))return;
+    await operation(signal);guard();if(label==='Cancelar convite')clearAccess();await loadAccess(signal,guard);status('Acesso atualizado. As cópias já trazidas para outros aparelhos permanecem neles.');
    });panel.append(button);
   };
+  const peopleHeading=document.createElement('h5');peopleHeading.textContent='Pessoas nesta família';$('dataAccessList').append(peopleHeading);
   for(const member of members){
    const panel=document.createElement('section'),description=document.createElement('p');
-   description.textContent=member.email+' — '+({owner:'Responsável',member:'Consulta e edição',viewer:'Consulta'}[member.role]);panel.append(description);
+   description.textContent=member.email+' — '+({owner:'Responsável',member:'Pode editar e organizar',viewer:'Pode visualizar e trazer frases'}[member.role]);panel.append(description);
    if(member.role!=='owner'){
     const role=member.role==='viewer'?'member':'viewer';
-    addAction(panel,(role==='member'?'Permitir edição para ':'Permitir somente consulta para ')+member.email,signal=>api.memberRole(member.id,role,token,family.id,signal));
-    addAction(panel,'Revogar acesso de '+member.email,signal=>api.memberRevoke(member.id,token,family.id,signal));
+    addAction(panel,role==='member'?'Permitir alterações':'Permitir apenas visualização',signal=>api.memberRole(member.id,role,token,family.id,signal),member.email);
+    addAction(panel,'Remover acesso',signal=>api.memberRevoke(member.id,token,family.id,signal),member.email);
    }
    $('dataAccessList').append(panel);
   }
+  const invitesHeading=document.createElement('h5');invitesHeading.textContent='Convites';$('dataAccessList').append(invitesHeading);
+  if(!invites.length){const empty=document.createElement('p');empty.textContent='Nenhum convite enviado.';$('dataAccessList').append(empty);}
   for(const invite of invites){
    const panel=document.createElement('section'),description=document.createElement('p');
    const pending=!invite.used_at&&!invite.revoked_at&&Date.parse(invite.expires_at)>Date.now();
    description.textContent=invite.email+' — convite '+(invite.used_at?'aceito':invite.revoked_at?'cancelado':pending?'pendente':'expirado');panel.append(description);
-   if(pending)addAction(panel,'Cancelar convite para '+invite.email,signal=>api.inviteRevoke(invite.id,token,family.id,signal));
+   if(pending)addAction(panel,'Cancelar convite',signal=>api.inviteRevoke(invite.id,token,family.id,signal),invite.email);
    $('dataAccessList').append(panel);
   }
-  status('Acessos e convites consultados. Códigos anteriores não são exibidos novamente.');
- });
+  status('Lista de pessoas e convites atualizada.');
+ }
+ $('dataAccessLoad').onclick=()=>run(loadAccess);
+ $('dataAccessPeople').addEventListener('toggle',()=>{if($('dataAccessPeople').open&&session&&allowed())run(loadAccess);});
  function clearReview(){$('dataAccountDifferences').replaceChildren();}
  $('dataAccountFamily').addEventListener('change',()=>{clearReview();clearAccess();clearHistory();update();});
  $('dataAccountReview').onclick=()=>run(async(signal,guard)=>{
