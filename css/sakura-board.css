@@ -1,0 +1,210 @@
+/* Prancha de comunicação na tela inicial. */
+.sakura-board {
+    --board-accent: #802d51;
+    --board-on-accent: #fff;
+    --board-phrase: #fff5dc;
+    --board-phrase-line: #decea2;
+    --board-phrase-ink: #41341e;
+    width: 100%;
+    color: var(--friendly-ink);
+}
+
+html[data-theme="blue"] .sakura-board {
+    --board-accent: #31577e;
+}
+
+html[data-theme^="dark"] .sakura-board {
+    --board-accent: var(--calm-accent);
+    --board-on-accent: var(--calm-bg);
+    --board-phrase: #403521;
+    --board-phrase-line: #978152;
+    --board-phrase-ink: #fff3d0;
+}
+
+html.bia-a11y-contrast .sakura-board,
+html.bia-high-contrast .sakura-board {
+    --friendly-paper: #000;
+    --friendly-soft: #000;
+    --friendly-ink: #fff;
+    --friendly-muted: #fff;
+    --friendly-line: #fff;
+    --friendly-petal: #000;
+    --friendly-selected: #222;
+    --board-accent: #fff;
+    --board-on-accent: #000;
+    --board-phrase: #000;
+    --board-phrase-line: #fff;
+    --board-phrase-ink: #fff;
+}
+
+.sakura-board-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: clamp(1.2rem, 4vw, 2.25rem) .75rem;
+    text-align: center;
+    border: 1px solid var(--friendly-line);
+    border-radius: 1.65rem;
+    background: linear-gradient(112deg, var(--friendly-petal), var(--friendly-soft) 55%, var(--friendly-petal));
+}
+
+.sakura-board-hero h2 {
+    margin: 0;
+    color: var(--friendly-ink);
+    font: 500 clamp(2.25rem, 7vw, 4rem)/1.08 Georgia, serif;
+    letter-spacing: -.045em;
+    overflow-wrap: anywhere;
+}
+
+.sakura-board-hero p {
+    margin: .35rem 0 0;
+    color: var(--friendly-muted);
+    font-size: clamp(1rem, 3vw, 1.25rem);
+}
+
+.sakura-board-blossoms {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    color: var(--board-accent);
+    opacity: .25;
+    pointer-events: none;
+}
+
+.sakura-board-blossoms > span { position: absolute; font-size: clamp(1.1rem, 4vw, 2.65rem); }
+.sakura-board-blossoms > :nth-child(1) { left: 8%; top: 14%; transform: rotate(-22deg); }
+.sakura-board-blossoms > :nth-child(2) { left: 17%; bottom: 9%; font-size: 1.1rem; }
+.sakura-board-blossoms > :nth-child(3) { right: 8%; bottom: 9%; transform: rotate(24deg); }
+.sakura-board-blossoms > :nth-child(4) { right: 17%; top: 13%; font-size: 1.1rem; }
+
+.sakura-board-title {
+    margin: 1.05rem 0 .6rem;
+    font-size: clamp(1.15rem, 3vw, 1.4rem);
+}
+
+.sakura-board-categories,
+.sakura-board-cards,
+.sakura-board-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(.45rem, 2vw, .85rem);
+}
+
+.sakura-board button {
+    min-height: 2.75rem;
+    min-width: 0;
+    padding: .5rem;
+    border: 1px solid var(--friendly-line);
+    border-radius: .85rem;
+    background: var(--friendly-paper);
+    color: var(--friendly-ink);
+    font: inherit;
+    font-weight: 800;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+.sakura-board button:hover:enabled {
+    border-color: var(--board-accent);
+}
+
+.sakura-board button[aria-expanded="true"],
+.sakura-board .sakura-board-speak:enabled {
+    color: var(--board-on-accent);
+    background: var(--board-accent);
+    border-color: var(--board-accent);
+}
+
+.sakura-board-categories button { min-height: 3.1rem; }
+
+.sakura-board-phrase {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .65rem;
+    padding: .75rem;
+    margin: .85rem 0;
+    border: 1px solid var(--board-phrase-line);
+    border-radius: 1rem;
+    color: var(--board-phrase-ink);
+    background: var(--board-phrase);
+}
+
+.sakura-board-phrase strong { font-size: .875rem; }
+.sakura-board-phrase p { margin: .2rem 0 0; font-size: 1.08rem; font-weight: 750; }
+.sakura-board-actions { display: flex; gap: .45rem; }
+.sakura-board-actions button { padding-inline: .75rem; }
+
+.sakura-board-actions button:disabled {
+    color: var(--board-phrase-ink);
+    background: var(--board-phrase);
+    border-color: var(--board-phrase-line);
+    cursor: default;
+}
+
+.sakura-board-cards button {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: .5rem;
+    min-height: clamp(7.75rem, 24vw, 11.5rem);
+    padding: .5rem .25rem;
+    border-width: 2px;
+    border-radius: 1.1rem;
+    font-size: clamp(.9rem, 3.2vw, 1.18rem);
+}
+
+.sakura-board-cards button[aria-pressed="true"] {
+    background: var(--friendly-selected);
+    border-color: var(--board-accent);
+}
+
+.sakura-board-pictogram {
+    display: grid;
+    place-items: center;
+    width: clamp(3rem, 15vw, 6.5rem);
+    aspect-ratio: 1;
+    object-fit: contain;
+    background: #fff;
+    border-radius: .65rem;
+    font-size: clamp(1.75rem, 7vw, 3.75rem);
+}
+
+.sakura-board-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem 1rem;
+    flex-wrap: wrap;
+    margin-top: .65rem;
+    color: var(--friendly-muted);
+    font-size: .82rem;
+}
+
+.sakura-board-meta p { margin: 0; }
+.sakura-board-meta a { color: inherit; text-decoration: underline; text-underline-offset: .16em; }
+
+.sakura-board-shortcuts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: .85rem; }
+
+.sakura-board-shortcuts button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 3rem;
+}
+
+.sakura-board-shortcuts img { width: 1.5rem; height: 1.5rem; }
+
+html:is(.bia-a11y-large, .bia-large-cards) .sakura-board-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+html:is(.bia-a11y-large, .bia-large-cards) .sakura-board-cards button { font-size: 1.2rem; }
+html.bia-a11y-touch .sakura-board :is(.sakura-board-categories, .sakura-board-cards) { gap: 1rem; }
+
+@media (max-width: 34rem) {
+    .sakura-board-phrase { grid-template-columns: minmax(0, 1fr); }
+    .sakura-board-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

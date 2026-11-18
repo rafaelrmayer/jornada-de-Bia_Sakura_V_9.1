@@ -1,4 +1,4 @@
-const CACHE = 'jornada-bia-sakura-v9-6-51';
+const CACHE = 'jornada-bia-sakura-v9-6-52';
 const CORE = [
   './',
   './index.html',
@@ -10,7 +10,10 @@ const CORE = [
   './js/card-model-data.js',
   './js/card-model.js',
   './css/card-suggestions.css',
-  './css/sakura-friendly.css',
+  './css/sakura-friendly.css', './css/sakura-board.css',
+  './assets/arasaac/2276.png', './assets/arasaac/2746.png', './assets/arasaac/6537.png',
+  './assets/arasaac/7171.png', './assets/arasaac/15814.png', './assets/arasaac/36109.png',
+  './assets/arasaac/9907.png', './assets/arasaac/35537.png', './assets/arasaac/35545.png',
   './css/app-v9-6-8.css',
   './icons/zen-sakura-logo.svg', './assets/sakura-petalas.svg', './icons/zen-girassol.svg', './css/refinamento-v9-4.css',
   './js/module-data.js',

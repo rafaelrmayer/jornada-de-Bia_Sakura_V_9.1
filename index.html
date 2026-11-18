@@ -41,6 +41,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
     <link rel="stylesheet" href="css/guided-voice.css">
+    <link rel="stylesheet" href="css/sakura-board.css">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -101,23 +102,38 @@
                 <div class="child-avatar" id="childAvatar">🌻</div>
                 <div class="child-info"><strong id="childGreeting">Olá! 🌻</strong><small>Seu espaço de comunicação</small></div>
             </section>
-            <!-- Intenções rápidas -->
-            <section class="intent-section" aria-label="Comunicação principal">
-                <div class="section-header"><div><span class="bia-eyebrow">MEU ESPAÇO DE COMUNICAÇÃO</span><h2>Oi, Bia! ♡</h2><p class="bia-intro">O que você quer dizer?</p></div></div>
-                <div class="intent-grid" id="intentGrid">
-                    <button class="intent-btn" data-intent="quero" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/zen-heart.svg" alt=""></span><span>Quero</span><small>Escolher algo</small></button>
-                    <button class="intent-btn" data-intent="preciso" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/zen-hands.svg" alt=""></span><span>Preciso</span><small>Pedir ajuda</small></button>
-                    <button class="intent-btn" data-intent="sentindo" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/zen-smile.svg" alt=""></span><span>Como estou</span><small>Mostrar o que sinto</small></button>
-                    <button class="intent-btn nav-item home-cards-intent" data-page="my-communication" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/chat.svg" alt=""></span><span>Minhas frases</span><small>Criar e comunicar</small></button>
-
+            <section class="sakura-board" aria-labelledby="homeGreeting">
+                <div class="sakura-board-hero">
+                    <span class="sakura-board-blossoms" aria-hidden="true"><span>✿</span><span>✿</span><span>✿</span><span>✿</span></span>
+                    <h2 id="homeGreeting">Oi, Bia!</h2>
+                    <p>O que você quer dizer?</p>
                 </div>
-                <div class="home-gentle-action"><button class="intent-btn intent-here-btn" id="hereBtn" type="button"><span class="intent-icon" aria-hidden="true"><img src="icons/zen-heart-rays.svg" alt=""></span><span>Eu estou aqui</span><small>Me comunicar</small></button><p>Uma escolha de cada vez, no seu tempo.</p></div>
-                <div class="intent-expansion" id="intentExpansion" hidden aria-live="polite">
-                    <div class="intent-expansion-header">
-                        <div><strong id="intentExpansionTitle">Escolha uma opção</strong><small id="intentExpansionHint">Sugestões para você</small></div>
-                        <button class="intent-collapse-btn" id="intentCollapseBtn" type="button" aria-label="Fechar sugestões">⌃</button>
+                <h3 class="sakura-board-title">Minha Comunicação</h3>
+                <div class="sakura-board-categories" id="intentCategories" role="group" aria-label="Categorias da prancha">
+                    <button data-intent="quero" type="button" aria-expanded="false" aria-controls="intentExpansion">Quero</button>
+                    <button data-intent="preciso" type="button" aria-expanded="false" aria-controls="intentExpansion">Preciso</button>
+                    <button data-intent="sentindo" type="button" aria-expanded="false" aria-controls="intentExpansion">Como estou</button>
+                </div>
+                <div class="sakura-board-panel" id="intentExpansion" hidden>
+                    <div class="sakura-board-phrase" role="group" aria-label="Sua frase">
+                        <div>
+                            <strong>Sua frase</strong>
+                            <p id="intentPhrase" role="status">Toque em um cartão.</p>
+                        </div>
+                        <div class="sakura-board-actions">
+                            <button id="intentClearBtn" type="button" disabled>Limpar</button>
+                            <button class="sakura-board-speak" id="intentSpeakBtn" type="button" disabled>Ouvir frase</button>
+                        </div>
                     </div>
-                    <div class="intent-suggestions" id="intentSuggestions"></div>
+                    <div class="sakura-board-cards" id="intentSuggestions" role="group" aria-label="Cartões de comunicação"></div>
+                    <div class="sakura-board-meta">
+                        <p>Pictogramas de Sergio Palao · <a href="https://arasaac.org/" target="_blank" rel="noopener">ARASAAC</a> · Governo de Aragão, Espanha · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a></p>
+                        <button id="intentCollapseBtn" type="button">Recolher cartões</button>
+                    </div>
+                </div>
+                <div class="sakura-board-shortcuts">
+                    <button class="nav-item" data-page="my-communication" type="button"><img src="icons/chat.svg" alt="">Minhas frases</button>
+                    <button id="hereBtn" type="button"><img src="icons/zen-heart-rays.svg" alt="">Eu estou aqui</button>
                 </div>
             </section>
 
