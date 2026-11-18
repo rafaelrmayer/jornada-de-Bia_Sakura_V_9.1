@@ -47,6 +47,7 @@ let state;
 try { state = JSON.parse(localStorage.getItem(KEY)); } catch { /* Use a rotina inicial. */ }
 if (!Array.isArray(state?.items)) state = {date: dayKey(new Date()), items: defaults};
 if (!Array.isArray(state.completions)) state.completions = [];
+if (typeof state.learnTimes !== 'boolean') state.learnTimes = true;
 
 let period = currentPeriod(), edit = false, suggestion;
 const dismissed = new Set();

@@ -32,3 +32,13 @@ test('ignora repetições no mesmo dia, atividade concluída ou dispensada e his
     assert.equal(recurringSuggestion([{...coffee, done: true}], completions, now, new Set()), undefined);
     assert.equal(recurringSuggestion([coffee], completions, now, new Set(['coffee'])), undefined);
 });
+
+test('sugestões vêm ligadas nos dados novos e antigos e respeitam a opção desligada', () => {
+    const setup = source.slice(source.indexOf('const defaults'), source.indexOf('let period'));
+    for (const [saved, expected] of [[null, true], [{items: []}, true], [{items: [], learnTimes: false}, false]]) {
+        const setting = vm.runInNewContext(setup + '\nstate.learnTimes', {
+            Date, KEY: 'bia-routine-sakura-v1', dayKey: () => '2026-11-18', localStorage: {getItem: () => JSON.stringify(saved)}
+        });
+        assert.equal(setting, expected);
+    }
+});
