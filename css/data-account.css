@@ -11,3 +11,10 @@
 
 #dataAccountDifferences section, #dataAccessList section, #dataHistoryList section { margin-block: 1rem; padding: 1rem; border: 1px solid currentColor; border-radius: 1rem; overflow-wrap: anywhere; }
 #dataAccountDifferences button, #dataAccessList button { margin: .25rem; }
+
+.family-sharing{margin-top:24px;padding-top:16px;border-top:1px solid var(--friendly-line)}
+.family-sharing-choice{margin:12px 0;border:1px solid var(--friendly-line);border-radius:14px;padding:0 14px;background:var(--friendly-paper)}
+.family-sharing-choice>summary{padding:16px 0;min-height:48px;box-sizing:border-box;font-weight:700;cursor:pointer;overflow-wrap:anywhere}
+.family-sharing-choice[open]{padding-bottom:16px}
+.family-sharing-choice h5{font-size:1rem;margin:16px 0 8px}
+.family-sharing-choice>summary:focus-visible{outline:3px solid currentColor;outline-offset:3px}

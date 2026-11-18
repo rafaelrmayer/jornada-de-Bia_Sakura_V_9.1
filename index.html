@@ -554,40 +554,53 @@
                      </div>
                      <div id="dataAccountDifferences" aria-live="polite"></div>
                     </details>
-                    <section aria-labelledby="dataAccessTitle">
-                     <h4 id="dataAccessTitle">Convites e acessos da família</h4>
-                     <p>Cartões e categorias da conta podem ser compartilhados. Jardim e relatórios continuam neste aparelho.</p>
-                     <form id="dataInviteAcceptForm">
-                      <fieldset id="dataInviteAcceptFields">
-                       <label>Código recebido do responsável<input id="dataInviteAcceptCode" type="password" autocomplete="off" maxlength="128" required></label>
-                       <button type="submit">Aceitar convite nesta conta</button>
-                      </fieldset>
-                     </form>
+                    <section class="family-sharing" aria-labelledby="dataAccessTitle">
+                     <h4 id="dataAccessTitle">Compartilhar com alguém</h4>
+                     <p>Compartilhe frases e categorias da conta. Jardim e relatórios continuam neste aparelho.</p>
                      <div id="dataAccessOwner" hidden>
-                      <form id="dataInviteForm">
-                       <fieldset id="dataInviteFields">
-                        <label>E-mail da pessoa convidada<input id="dataInviteEmail" type="email" autocomplete="off" maxlength="255" required></label>
-                        <label>Permissão<select id="dataInviteRole"><option value="viewer">Consultar cartões</option><option value="member">Consultar e editar cartões</option></select></label>
-                        <p>A consulta permite ler e importar os cartões. A edição também permite enviar cartões e categorias e usar a lixeira da conta.</p>
-                        <p>O código vale por 48 horas. Compartilhe diretamente com a pessoa, que deve entrar com esse e-mail. Gerar novamente para o mesmo e-mail invalida o código anterior.</p>
-                        <button type="submit">Gerar convite para esta família</button>
-                       </fieldset>
-                      </form>
-                      <div id="dataInviteCreated" hidden>
-                       <label>Código para compartilhar (exibido somente agora)<input id="dataInviteCode" readonly autocomplete="off"></label>
-                       <button type="button" id="dataInviteCopy">Copiar código</button>
-                      </div>
-                      <button type="button" id="dataAccessLoad">Consultar acessos e convites</button>
-                      <div id="dataAccessList" aria-live="polite"></div>
-                      <section aria-labelledby="dataHistoryTitle">
-                       <h4 id="dataHistoryTitle">Histórico dos cartões da conta</h4>
-                       <p>Alterações registradas desde a ativação deste histórico. A identificação usa o texto atual do cartão; textos anteriores não são guardados no histórico.</p>
-                       <button type="button" id="dataHistoryLoad">Consultar ou atualizar histórico</button>
+                      <details class="family-sharing-choice" name="family-sharing">
+                       <summary>Convidar alguém</summary>
+                       <form id="dataInviteForm">
+                        <fieldset id="dataInviteFields">
+                         <label>E-mail Google da pessoa<input id="dataInviteEmail" type="email" autocomplete="off" maxlength="255" required aria-describedby="dataInviteEmailHelp"></label>
+                         <p id="dataInviteEmailHelp">Ela deverá entrar com esse mesmo e-mail.</p>
+                         <label>O que ela poderá fazer?<select id="dataInviteRole" aria-describedby="dataInviteRoleHelp"><option value="viewer">Só visualizar</option><option value="member">Pode editar</option></select></label>
+                         <p id="dataInviteRoleHelp">Pode ver as frases da conta e trazer uma cópia para seu aparelho. Não pode alterar a conta.</p>
+                         <button type="submit">Criar convite</button>
+                        </fieldset>
+                       </form>
+                       <div id="dataInviteCreated" hidden>
+                        <h5>Convite pronto</h5>
+                        <p>Copie o convite e envie à pessoa, por exemplo pelo WhatsApp. Ele vale por 48 horas; o app não envia e-mail.</p>
+                        <label>Código do convite<input id="dataInviteCode" readonly autocomplete="off"></label>
+                        <button type="button" id="dataInviteCopy">Copiar convite</button>
+                       </div>
+                      </details>
+                      <details id="dataAccessPeople" class="family-sharing-choice" name="family-sharing">
+                       <summary>Pessoas com acesso</summary>
+                       <button type="button" id="dataAccessLoad">Atualizar lista</button>
+                       <div id="dataAccessList" aria-live="polite"></div>
+                       <details><summary>Sobre remover um acesso</summary><p>Impede novas consultas e alterações na conta. Frases que a pessoa já trouxe para o aparelho dela permanecem naquele aparelho.</p></details>
+                      </details>
+                      <details class="family-sharing-choice" name="family-sharing">
+                       <summary>Histórico das alterações</summary>
+                       <p>Quem criou, editou ou restaurou frases na conta. O texto exibido é o atual.</p>
+                       <button type="button" id="dataHistoryLoad">Atualizar histórico</button>
                        <p id="dataHistoryStatus" role="status"></p>
                        <div id="dataHistoryList"></div>
-                       <button type="button" id="dataHistoryMore" hidden>Carregar registros anteriores</button>
-                      </section>
+                       <button type="button" id="dataHistoryMore" hidden>Ver registros anteriores</button>
+                      </details>
                      </div>
+                     <details class="family-sharing-choice" name="family-sharing">
+                      <summary>Recebi um convite</summary>
+                      <p>Entre com o Google indicado no convite e cole o código recebido.</p>
+                      <form id="dataInviteAcceptForm">
+                       <fieldset id="dataInviteAcceptFields">
+                        <label>Código do convite<input id="dataInviteAcceptCode" type="password" autocomplete="off" maxlength="128" required></label>
+                        <button type="submit">Participar desta família</button>
+                       </fieldset>
+                      </form>
+                     </details>
                     </section>
                    </div>
                   </div>
