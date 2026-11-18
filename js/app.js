@@ -2466,8 +2466,9 @@
                 const password = prompt('Crie uma senha para proteger este backup (mínimo 8 caracteres):');
                 if(password === null) return;
                 await BackupService.export(payload, { configurationOnly: !!options.configurationOnly, password });
+                const backupStatus=document.getElementById('backupLocalStatus');if(backupStatus)backupStatus.textContent='Arquivo de backup gerado. Guarde a senha separadamente.';
                 showToast(options.configurationOnly ? '⬇️ Backup de configuração exportado' : '⬇️ Backup completo exportado');
-            } catch (err) { console.error(err); showToast('❌ Não foi possível exportar o backup'); }
+            } catch (err) { console.error(err);const backupStatus=document.getElementById('backupLocalStatus');if(backupStatus)backupStatus.textContent='Não foi possível gerar o backup. Confira a senha e tente novamente.'; showToast('❌ Não foi possível exportar o backup'); }
         }
 
         async function importBackupFile(e){
@@ -2503,9 +2504,10 @@
                 if(typeof d.voicePitch==='number')StorageService.setItem('voicePitch',String(d.voicePitch));
                 if(typeof d.autoSpeak==='boolean')StorageService.setItem('autoSpeak',String(d.autoSpeak));
                 if(p.type!=='configuration'&&d.moduleData)JornadaModuleData.restore(localStorage,d.moduleData);
+                const backupStatus=document.getElementById('backupLocalStatus');if(backupStatus)backupStatus.textContent='Backup restaurado. Reabrindo o aplicativo…';
                 showToast('⬆️ Backup validado e importado. Recarregando...');
                 setTimeout(()=>location.reload(),700);
-            } catch(err) { console.error(err); showToast('❌ Backup inválido ou corrompido'); }
+            } catch(err) { console.error(err);const backupStatus=document.getElementById('backupLocalStatus');if(backupStatus)backupStatus.textContent='Não foi possível restaurar esse arquivo. Confira o backup e a senha.'; showToast('❌ Backup inválido ou corrompido'); }
             finally { e.target.value=''; }
         }
 

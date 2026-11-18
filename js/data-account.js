@@ -2,12 +2,17 @@
 (function(root){
  'use strict';
  const $=id=>document.getElementById(id),api=root.JBDataAPI.createClient();if(!$('dataGoogleStart'))return;
- let session=null,job=null,generation=0,expiry=null,googleAttempt=null,historyBefore=null,historyFamily=null,inviteMessage='';
+ let session=null,job=null,generation=0,expiry=null,googleAttempt=null,historyBefore=null,historyFamily=null,inviteMessage='',statusTarget='dataAccountStatus';
  const allowed=()=>!!root.SecurityService?.isUnlocked?.();
- const status=text=>$('dataAccountStatus').textContent=text;
+ const status=text=>$(statusTarget).textContent=text;
  function update(){
   const unlocked=allowed(),family=session?.families.find(f=>f.id===$('dataAccountFamily').value);
   const writer=root.JBDataAPI.canWrite(family);
+  $('dataAccountFamilyPicker').hidden=!(session?.families.length>1);
+  $('dataAccountFamilyName').hidden=!!(session?.families.length>1);
+  $('dataAccountFamilyName').textContent=family?'Família: '+family.name:'';
+  $('dataAccountPermissionHint').hidden=!family||writer;
+  $('dataSharingConnected').hidden=!unlocked||!session;$('dataSharingOffline').hidden=!!(unlocked&&session);
   const laboratory=!!(unlocked&&session?.manageExperiments&&Date.now()<session.expiresAt);
   $('experimentalCardsAdmin').hidden=!laboratory;$('experimentConfigFields').disabled=!laboratory||!!job;
   $('dataAccessOwner').hidden=family?.role!=='owner';
@@ -22,6 +27,7 @@
   for(const id of ['dataAccountUpload','dataAccountCategories','dataAccountSave'])$(id).disabled=!!job||!writer;
  }
  function logout(message='Conta desconectada. As frases deste aparelho foram preservadas.'){
+  for(const id of ['dataAccountStatus','dataSharingStatus','dataInviteStatus','dataAccessStatus','dataInviteAcceptStatus'])$(id).textContent='';statusTarget=$('support-family').open?'dataSharingStatus':'dataAccountStatus';
   clearHistory();clearAccess();$('dataInviteAcceptCode').value='';$('dataInviteEmail').value='';$('dataAccountDifferences').replaceChildren();generation++;job?.abort();job=null;session=null;googleAttempt=null;clearTimeout(expiry);expiry=null;
   $('dataGoogleButton').replaceChildren();$('dataAccountFamily').replaceChildren();root.JBGoogleAccess?.cancel();
   update();status(message);
@@ -35,6 +41,7 @@
  }
  async function run(operation){
   if(job)return;
+  statusTarget=document.activeElement?.closest('#dataInviteForm,#dataInviteCreated')?'dataInviteStatus':document.activeElement?.closest('#dataInviteAcceptForm')?'dataInviteAcceptStatus':document.activeElement?.closest('#dataAccessPeople')?'dataAccessStatus':document.activeElement?.closest('#support-family')?'dataSharingStatus':'dataAccountStatus';
   if(!allowed()){status('Desbloqueie a administração.');return;}
   const ticket=generation,controller=new AbortController();job=controller;update();
   const guard=()=>{if(ticket!==generation||controller.signal.aborted||!allowed())throw Error('Operação interrompida. As frases locais foram preservadas.');};
@@ -54,6 +61,7 @@
    return false;
   }
  }};
+ $('dataSharingConnect').onclick=()=>{$('support-account').open=true;$('support-account').scrollIntoView({block:'start'});$(allowed()?'dataGoogleStart':'dataAccountUnlock').focus({preventScroll:true});};
  $('dataAccountUnlock').onclick=async()=>{await root.requestGuardianUnlock?.();update();};
  $('dataAccountLogout').onclick=()=>logout();
  $('dataGoogleStart').onclick=()=>run(async(signal,guard)=>{
@@ -229,12 +237,13 @@
    await api.compatibleAccess(signal);guard();
    if(!root.confirm('Convidar '+email+' para a família “'+family.name+'” com permissão de '+(role==='viewer'?'consulta':'edição dos cartões')+'?'))return;
    status('Gerando convite…');clearAccess();const created=await api.inviteCreate(email,role,session.token,family.id,signal);guard();
-   inviteMessage='Você recebeu um convite para a família “'+family.name+'” na Jornada de Bia.\nEntre com o Google '+email+' em https://rafaelrmayer.github.io/jornada-de-Bia_Sakura_V_9.1/\nEm Apoio, escolha Recebi um convite e cole este código:\n'+created.code+'\nVálido por 48 horas. Permissão: '+(role==='viewer'?'visualizar e trazer frases':'editar e organizar frases')+'.';
+   inviteMessage='Você recebeu um convite para a família “'+family.name+'” na Jornada de Bia.\nEntre com o Google '+email+' em https://rafaelrmayer.github.io/jornada-de-Bia_Sakura_V_9.1/\nEm Apoio, abra Família e compartilhamento → Recebi um convite e cole este código:\n'+created.code+'\nVálido por 48 horas. Permissão: '+(role==='viewer'?'visualizar e trazer frases':'editar e organizar frases')+'.';
    $('dataInviteCode').value=created.code;$('dataInviteCreated').hidden=false;$('dataInviteCreated').scrollIntoView({block:'center'});
    status('Convite pronto. Toque em Copiar convite e envie à pessoa. Válido por 48 horas.');
   });
  };
  $('dataInviteCopy').onclick=async()=>{
+  statusTarget='dataInviteStatus';
   try{if(!allowed()||active().role!=='owner'||!$('dataInviteCode').value)return;await root.navigator.clipboard.writeText(inviteMessage||$('dataInviteCode').value);status('Convite copiado. Agora cole na conversa com a pessoa convidada.');}
   catch{$('dataInviteCode').focus();$('dataInviteCode').select();status('O código está selecionado. Use Copiar no navegador e envie à pessoa convidada.');}
  };
@@ -276,7 +285,7 @@
  $('dataAccessLoad').onclick=()=>run(loadAccess);
  $('dataAccessPeople').addEventListener('toggle',()=>{if($('dataAccessPeople').open&&session&&allowed())run(loadAccess);});
  function clearReview(){$('dataAccountDifferences').replaceChildren();}
- $('dataAccountFamily').addEventListener('change',()=>{clearReview();clearAccess();clearHistory();update();});
+ $('dataAccountFamily').addEventListener('change',()=>{for(const id of ['dataSharingStatus','dataInviteStatus','dataAccessStatus','dataInviteAcceptStatus'])$(id).textContent='';clearReview();clearAccess();clearHistory();update();});
  $('dataAccountReview').onclick=()=>run(async(signal,guard)=>{
   clearReview();const family=active(),token=session.token;
   status('Comparando frases vinculadas à família…');
