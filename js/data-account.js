@@ -43,7 +43,7 @@
  function changeMode(){
   const register=$('dataAccountMode').value==='register';
   $('dataFamilyNameLabel').hidden=!register;$('dataFamilyName').required=register;
-  $('dataAccountPassword').minLength=register?12:1;$('dataAccountPassword').autocomplete=register?'new-password':'current-password';
+  $('dataAccountPassword').minLength=register?6:1;$('dataAccountPassword').maxLength=register?20:1024;$('dataAccountPassword').autocomplete=register?'new-password':'current-password';
   $('dataAccountSubmit').textContent=register?'Criar conta e entrar':'Entrar';
  }
  $('dataAccountMode').addEventListener('change',changeMode);changeMode();

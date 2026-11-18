@@ -4,6 +4,9 @@
  const BASE='https://jornada-de-bia-data-api.onrender.com';
  const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
  function error(message,status=0){const e=new Error(message);e.status=status;return e;}
+ function validateNewPassword(value){
+  if(typeof value!=='string'||Array.from(value).length<6||Array.from(value).length>20||!(/\p{L}/u).test(value)||!(/[0-9]/).test(value))throw error('Use de 6 a 20 caracteres, com pelo menos uma letra e um número.',422);
+ }
  function validateFamilies(rows){
   if(!Array.isArray(rows)||rows.some(r=>!uuid(r.id)||typeof r.name!=='string'||r.name.length>120||!['owner','member','viewer'].includes(r.role)))throw error('A API retornou famílias incompatíveis.');
   return rows;
@@ -63,13 +66,15 @@
     catch(e){if(e.status===503)throw error('Recuperação por e-mail ainda não disponível.',503);throw e;}
    },
    async recoveryConfirm(email,code,new_password,signal){
+    validateNewPassword(new_password);
     try{return await request('/v1/auth/password-recovery/confirm',{method:'POST',body:{email,code,new_password},signal});}
-    catch(e){const messages={400:'Código inválido, expirado ou já utilizado. Solicite outro código.',422:'Confira o e-mail e use uma nova senha diferente da anterior, com 12 a 128 caracteres.',503:'Recuperação por e-mail ainda não disponível.'};if(messages[e.status])throw error(messages[e.status],e.status);throw e;}
+    catch(e){const messages={400:'Código inválido, expirado ou já utilizado. Solicite outro código.',422:'Confira o e-mail e use uma nova senha diferente da anterior, com 6 a 20 caracteres, incluindo letra e número.',503:'Recuperação por e-mail ainda não disponível.'};if(messages[e.status])throw error(messages[e.status],e.status);throw e;}
    },
    async compatiblePassword(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/auth/change-password'])throw error('Aguarde a atualização da Data API para alterar a senha.');},
    async changePassword(current_password,new_password,token,signal){
+    validateNewPassword(new_password);
     try{return await request('/v1/auth/change-password',{method:'POST',body:{current_password,new_password},token,signal});}
-    catch(e){if(e.status===400)throw error('A senha atual não confere.',400);if(e.status===422)throw error('Use uma nova senha diferente da atual, com 12 a 128 caracteres.',422);throw e;}
+    catch(e){if(e.status===400)throw error('A senha atual não confere.',400);if(e.status===422)throw error('Use uma nova senha diferente da atual, com 6 a 20 caracteres, incluindo letra e número.',422);throw e;}
    },
    async compatibleTrash(signal){const schema=await request('/openapi.json',{signal});if(!schema.paths?.['/v1/card-trash']||!schema.paths?.['/v1/cards/{card_id}/archive']||!schema.paths?.['/v1/cards/{card_id}/restore'])throw error('Aguarde a atualização da Data API para usar a lixeira.');},
    async trash(token,family,signal){return validateCards(await request('/v1/card-trash',{token,family,signal}));},
@@ -83,7 +88,7 @@
    async compatibleEdits(signal){const schema=await request('/openapi.json',{signal});if(!schema.components?.schemas?.CardUpdate?.properties?.expected_updated_at)throw error('Aguarde a atualização da Data API para revisar edições.');},
    async edit(card,body,token,family,signal){if(!card.updated_at)throw error('Versão do cartão indisponível. Consulte novamente.');const result=await request('/v1/cards/'+card.id,{method:'PATCH',body:{...body,expected_updated_at:card.updated_at},token,family,signal});validateCards([result]);return result;},
    async login(email,password,signal){const value=await request('/v1/auth/login',{method:'POST',body:{email,password},signal});if(typeof value.access_token!=='string'||!Number.isFinite(value.expires_in)||value.expires_in<=0)throw error('Resposta de login incompatível.');return value;},
-   register:(email,password,family_name,signal)=>request('/v1/auth/register',{method:'POST',body:{email,password,family_name},signal}),
+   register:async(email,password,family_name,signal)=>{validateNewPassword(password);return request('/v1/auth/register',{method:'POST',body:{email,password,family_name},signal});},
    async families(token,signal){return validateFamilies(await request('/v1/auth/families',{token,signal}));},
    async catalog(token,family,signal){return validateCatalog(await request('/v1/categories',{token,family,signal}));},
    async cards(token,family,signal){return validateCards(await request('/v1/cards',{token,family,signal}));},
@@ -119,6 +124,6 @@
   return differences;
  }
  const canWrite=family=>!!family&&['owner','member'].includes(family.role);
- const api={BASE,canWrite,validateHistory,uuid,createClient,validateFamilies,validateCatalog,validateCards,planUpload,planEdits,missingCategories};
+ const api={BASE,validateNewPassword,canWrite,validateHistory,uuid,createClient,validateFamilies,validateCatalog,validateCards,planUpload,planEdits,missingCategories};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.JBDataAPI=api;
 })(typeof window==='undefined'?globalThis:window);
