@@ -270,36 +270,68 @@
         // IA: GERADOR DE FRASES
         // ============================================
         class PhraseGenerator {
-            constructor() {
-                this.templates = {
-                    comer: ['Eu quero comer {0}.','Estou com fome. Quero {0}.'],
-                    higiene: ['Eu quero ir ao banheiro.','Preciso de ajuda para ir ao banheiro.'],
-                    emocional: ['Estou me sentindo {0}.','Eu estou {0}.'],
-                    atividades: ['Eu quero {0}.','Quero brincar com {0}.'],
-                    social: ['Quero falar com {0}.','Quero ficar com {0}.'],
-                    objetos: ['Eu quero {0}.','Me dá {0}, por favor.']
-                };
-            }
             generatePhrase(symbols) {
                 if (!symbols.length) return null;
-                const labels=symbols.map(s=>String(s.label||'').trim());
-                const lower=labels.map(x=>x.toLowerCase());
-                const context=contextAnalyzer.analyzeContext(symbols);
-                let phrase='';
-                const has=(...words)=>words.some(w=>lower.some(x=>x===w||x.includes(w)));
-                if (has('não quero','nao quero','não','nao')) phrase='Eu não quero isso.';
-                else if (has('ajuda','socorro')) phrase='Eu preciso de ajuda.';
-                else if (has('dor','dói','doi')) phrase=labels.length>1?`Estou com dor em ${labels[labels.length-1]}.`:'Estou com dor.';
-                else if (has('água','agua')) phrase='Eu quero água.';
-                else if (has('comer','comida','fome')) phrase=labels.length>1?`Eu quero comer ${labels[labels.length-1]}.`:'Eu quero comer.';
-                else if (has('casa')) phrase='Eu quero ir para casa.';
-                else if (has('banheiro')) phrase='Eu quero ir ao banheiro.';
-                else if (has('feliz','triste','cansado','bravo','medo')) phrase=`Estou ${labels[labels.length-1].toLowerCase()}.`;
-                else if (labels.length===1) phrase=labels[0];
-                else if (context && context.context==='social') phrase=`Quero falar com ${labels[labels.length-1]}.`;
-                else phrase=`Eu quero ${labels[labels.length-1].toLowerCase()}.`;
-                phrase=phrase.replace(/\s+/g,' ').replace(/\.\./g,'.').trim();
-                return {text:phrase,emojis:symbols.map(s=>s.emoji).join(' '),symbols};
+                const labels = symbols.map(symbol => String(symbol.label || '').trim()).filter(Boolean);
+                const normalized = label => label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                const isModifier = label => ['mais', 'nao', 'nao quero', 'agora'].includes(normalized(label));
+                const modifiers = new Set(labels.filter(isModifier).map(normalized));
+                const terms = labels.filter(label => !isModifier(label));
+                const words = terms.map(normalized);
+                const negate = modifiers.has('nao') || modifiers.has('nao quero');
+                const more = modifiers.has('mais');
+                const now = modifiers.has('agora');
+                const wants = negate ? 'Não quero' : 'Quero';
+                const quantity = more ? ' mais' : '';
+                const time = now ? ' agora' : '';
+                const [first, second] = words;
+                let phrase;
+
+                if (!modifiers.size) {
+                    phrase = this.plainPhrase(terms, words);
+                } else if (!terms.length) {
+                    phrase = now && !more && !negate ? 'Agora' : wants + (more ? quantity : negate ? ' isso' : '') + time;
+                } else if (terms.length === 1 && ['agua', 'beber agua', 'suco', 'pizza', 'musica'].includes(first)) {
+                    phrase = wants + quantity + ' ' + (first === 'beber agua' || first === 'agua' ? 'água' : terms[0].toLowerCase()) + time;
+                } else if (terms.length === 1 && ['comer', 'dormir', 'brincar', 'tomar banho', 'passear', 'escutar musica', 'ouvir musica'].includes(first)) {
+                    phrase = wants + ' ' + terms[0].toLowerCase() + quantity + time;
+                } else if (terms.length === 2 && first === 'comer') {
+                    phrase = wants + ' comer' + quantity + ' ' + terms[1].toLowerCase() + time;
+                } else if (terms.length === 1 && !more && ['casa', 'banheiro'].includes(first)) {
+                    phrase = wants + (first === 'casa' ? ' ir para casa' : ' ir ao banheiro') + time;
+                } else if (terms.length === 1 && !more && ['ajuda', 'socorro'].includes(first)) {
+                    phrase = (negate ? 'Não quero ajuda' : 'Preciso de ajuda') + time;
+                } else if (terms.length === 2 && words.includes('quero') && ['agua', 'beber agua'].some(word => first === word || second === word)) {
+                    phrase = wants + quantity + ' água' + time;
+                } else {
+                    // Mantenha a sequência escolhida quando a combinação não tiver uma regra conhecida.
+                    phrase = labels.join(' ');
+                }
+
+                const trimmed = phrase.trim().replace(/\s+/g, ' ');
+                return {text: trimmed && !/[.!?…]$/.test(trimmed) && modifiers.size ? trimmed + '.' : trimmed,
+                    emojis: symbols.map(symbol => symbol.emoji).join(' '), symbols};
+            }
+
+            plainPhrase(labels, words) {
+                const [first] = words;
+                if (labels.length === 1) {
+                    if (['ajuda', 'socorro'].includes(first)) return 'Eu preciso de ajuda.';
+                    if (['dor', 'doi'].includes(first)) return 'Estou com dor.';
+                    if (['agua', 'beber agua'].includes(first)) return 'Eu quero água.';
+                    if (['comer', 'comida', 'fome', 'com fome'].includes(first)) return 'Eu quero comer.';
+                    if (first === 'casa') return 'Eu quero ir para casa.';
+                    if (first === 'banheiro') return 'Eu quero ir ao banheiro.';
+                    if (['feliz', 'triste', 'cansado', 'cansada', 'bravo', 'brava'].includes(first)) return `Estou ${labels[0].toLowerCase()}.`;
+                    if (first === 'medo') return 'Estou com medo.';
+                    return labels[0];
+                }
+                if (labels.length === 2) {
+                    if (['comer', 'comida', 'fome', 'com fome'].includes(first)) return `Eu quero comer ${labels[1]}.`;
+                    if (['dor', 'doi'].includes(first)) return `Estou com dor em ${labels[1]}.`;
+                    if (first === 'quero' && ['agua', 'beber agua'].includes(words[1])) return 'Eu quero água.';
+                }
+                return labels.join(' ');
             }
         }
 
@@ -1196,7 +1228,10 @@
 
         function updateFeedback() {
             if (selectedSymbols.length === 0) {
+                feedbackDisplay.removeAttribute('aria-label');
                 feedbackDisplay.innerHTML = `<p class="feedback-placeholder">🌻 Toque em um símbolo para começar</p>`;
+                const undo = document.getElementById('undoBuilderSymbol');
+                if (undo) undo.disabled = true;
                 return;
             }
             const context = contextAnalyzer.analyzeContext(selectedSymbols);
@@ -1207,8 +1242,10 @@
                 feedbackHTML += `<span class="context-indicator">📌 ${escapeHtml(context.context)}</span>`;
                 const cb=document.getElementById('contextBadge'); if(cb){cb.hidden=false;cb.textContent=`🧠 Contexto: ${context.context}`;}
             } else { const cb=document.getElementById('contextBadge'); if(cb) cb.hidden=true; }
-            feedbackDisplay.innerHTML = feedbackHTML;
-            const fullText = selectedSymbols.map(s => s.label).join(' ');
+            const fullText = phraseGenerator.generatePhrase(selectedSymbols)?.text || '';
+            feedbackDisplay.innerHTML = feedbackHTML + `<p class="sakura-builder-preview">${escapeHtml(fullText)}</p>`;
+            const undo = document.getElementById('undoBuilderSymbol');
+            if (undo) undo.disabled = false;
             feedbackDisplay.setAttribute('aria-label', `Mensagem: ${fullText}`);
             const lastSymbol = selectedSymbols[selectedSymbols.length - 1];
             if (lastSymbol) {
@@ -2508,6 +2545,8 @@
             }
             intentClear.disabled = !card;
             intentSpeak.disabled = !card;
+            const correct = document.getElementById('intentCorrectBtn');
+            if (correct) correct.disabled = !card;
         }
 
         function showAdditionalIntentCards(open) {
@@ -2539,14 +2578,7 @@
                 const label = document.createElement('span');
                 label.textContent = labelText || text;
                 card.append(pictogram, label);
-                card.addEventListener('click', () => {
-                    setIntentPhrase(card);
-                    speakText(text);
-                    recordPhraseUse(text);
-                    predictor.recordPhrase(text);
-                    playClickSound();
-                    navigator.vibrate?.(10);
-                });
+                card.addEventListener('click', () => chooseIntentCard(card));
                 return card;
             });
             if (intentAdditionalCards) {
@@ -2556,9 +2588,20 @@
             } else {
                 intentSuggestions.replaceChildren(...cards);
             }
-            const matchingCard = cards.find(card => card.dataset.phrase === activeIntentCard?.dataset.phrase);
+            const matchingCard = !activeIntentCard?.matches('[data-board-help]')
+                && cards.find(card => card.dataset.phrase === activeIntentCard?.dataset.phrase);
             if (matchingCard) setIntentPhrase(matchingCard);
             intentPanel.hidden = false;
+        }
+
+        function chooseIntentCard(card) {
+            const text = card.dataset.phrase;
+            setIntentPhrase(card);
+            speakText(text);
+            recordPhraseUse(text);
+            predictor.recordPhrase(text);
+            playClickSound();
+            navigator.vibrate?.(10);
         }
 
         function collapseIntentExpansion() {
@@ -2846,6 +2889,32 @@
             intentMore?.addEventListener('click', () => showAdditionalIntentCards(intentAdditionalCards.hidden));
             document.getElementById('intentCollapseBtn').addEventListener('click', collapseIntentExpansion);
         }
+        const boardHelp = document.querySelectorAll('[data-board-help]');
+        boardHelp.forEach(card => card.addEventListener('click', () => {
+            if (intentPanel.hidden) renderIntentCards(activeIntentButton || intentButtons[0]);
+            chooseIntentCard(card);
+        }));
+        document.getElementById('intentCorrectBtn')?.addEventListener('click', () => {
+            stopCurrentSpeech();
+            setIntentPhrase(null);
+            intentSuggestions.querySelector('button')?.focus();
+        });
+        document.querySelectorAll('[data-builder-modifier]').forEach(button => {
+            button.addEventListener('click', () => addSymbol({
+                id: button.dataset.builderModifier,
+                label: button.querySelector('.builder-modifier-label').textContent,
+                emoji: button.querySelector('[aria-hidden]').textContent
+            }));
+        });
+        document.getElementById('undoBuilderSymbol')?.addEventListener('click', () => {
+            if (!selectedSymbols.length) return;
+            stopCurrentSpeech();
+            selectedSymbols.pop();
+            updateFeedback();
+            updateSuggestions();
+            renderPredictivePhrases();
+            if (!selectedSymbols.length) document.querySelector('[data-builder-modifier]')?.focus();
+        });
         // V31: construtor de frase fechado por padrão
         function toggleHomePhraseBuilder(force){
             const home=document.getElementById('page-home');
