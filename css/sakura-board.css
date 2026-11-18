@@ -218,7 +218,19 @@ html.bia-high-contrast .sakura-page-banner {
     border-color: var(--board-accent);
 }
 
-.sakura-board-categories button { min-height: 3.1rem; }
+.sakura-board-categories button {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: .35rem;
+    min-height: 5.35rem;
+    padding: .5rem .25rem;
+}
+
+.sakura-board-categories .sakura-board-pictogram {
+    width: clamp(2.45rem, 10vw, 3.5rem);
+    padding: .2rem;
+}
 
 .sakura-board-phrase {
     display: grid;

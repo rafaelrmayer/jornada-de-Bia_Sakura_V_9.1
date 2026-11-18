@@ -41,7 +41,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
     <link rel="stylesheet" href="css/guided-voice.css">
-    <link rel="stylesheet" href="css/sakura-board.css?v=banners">
+    <link rel="stylesheet" href="css/sakura-board.css?v=visual-categories">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -109,9 +109,18 @@
                 </div>
                 <h3 class="sakura-board-title">Minha Comunicação</h3>
                 <div class="sakura-board-categories" id="intentCategories" role="group" aria-label="Categorias da prancha">
-                    <button data-intent="quero" type="button" aria-expanded="false" aria-controls="intentExpansion">Quero</button>
-                    <button data-intent="preciso" type="button" aria-expanded="false" aria-controls="intentExpansion">Preciso</button>
-                    <button data-intent="sentindo" type="button" aria-expanded="false" aria-controls="intentExpansion">Como estou</button>
+                    <button data-intent="quero" type="button" aria-expanded="false" aria-controls="intentExpansion">
+                        <img class="sakura-board-pictogram" src="assets/arasaac/5441.png" alt="">
+                        <span>Quero</span>
+                    </button>
+                    <button data-intent="preciso" type="button" aria-expanded="false" aria-controls="intentExpansion">
+                        <img class="sakura-board-pictogram" src="assets/arasaac/37160.png" alt="">
+                        <span>Preciso</span>
+                    </button>
+                    <button data-intent="sentindo" type="button" aria-expanded="false" aria-controls="intentExpansion">
+                        <img class="sakura-board-pictogram" src="assets/arasaac/11476.png" alt="">
+                        <span>Como estou</span>
+                    </button>
                 </div>
                 <div class="sakura-board-panel" id="intentExpansion" hidden>
                     <div class="sakura-board-phrase" role="group" aria-label="Sua frase">
@@ -128,14 +137,14 @@
                         </div>
                     </div>
                     <div class="sakura-board-cards" id="intentSuggestions" role="group" aria-label="Cartões de comunicação"></div>
-                    <div class="sakura-board-meta">
-                        <p>Pictogramas de Sergio Palao · <a href="https://arasaac.org/" target="_blank" rel="noopener">ARASAAC</a> · Governo de Aragão, Espanha · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a></p>
-                    </div>
                     <div class="sakura-board-controls">
                         <button id="intentMoreBtn" type="button" aria-expanded="false" aria-controls="intentAdditionalCards">Mais cartões</button>
                         <button id="intentCollapseBtn" type="button">Recolher cartões</button>
                     </div>
                     <div class="sakura-board-cards" id="intentAdditionalCards" role="group" aria-label="Mais cartões de comunicação" hidden></div>
+                </div>
+                <div class="sakura-board-meta">
+                    <p>Pictogramas de Sergio Palao, do <a href="https://arasaac.org/terms-of-use" target="_blank" rel="noopener">ARASAAC</a> (Governo de Aragão, Espanha). Pictogramas e prancha visual sob <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.pt-br" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>.</p>
                 </div>
                 <div class="sakura-board-shortcuts">
                     <button class="nav-item" data-page="my-communication" type="button"><img src="icons/chat.svg" alt="">Minhas frases</button>
