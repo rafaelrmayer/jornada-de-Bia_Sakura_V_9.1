@@ -5797,13 +5797,13 @@ html #page-home.intent-compact .intent-suggestion {
 /* Navegação inferior contínua em todas as páginas. */
 html body .visual-bottom-nav {
   display:grid!important;
-  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  grid-template-columns:repeat(8,minmax(0,1fr))!important;
   z-index:1100;
 }
 html body {padding-bottom:calc(var(--bia-bottom-nav-height,90px) + var(--bia-install-banner-height,0px))!important;}
 html body .install-banner {bottom:var(--bia-bottom-nav-height,90px)!important;}
 @media(max-width:620px) {
-  html body .visual-bottom-nav {grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  html body .visual-bottom-nav {grid-template-columns:repeat(4,minmax(0,1fr))!important;}
   html body .visual-bottom-nav .nav-item {padding:6px 3px!important;min-width:0;}
 }
 
