@@ -1,3 +1,69 @@
+/* Cabeçalho e paleta da tela inicial. */
+html:root body:has(#page-home.active) > header[role="banner"] {
+    background: var(--friendly-paper) !important;
+    border-bottom: 1px solid var(--friendly-line) !important;
+}
+
+html body:has(#page-home.active) > header .header-container {
+    max-width: 900px !important;
+    min-height: 3.75rem !important;
+    padding: .65rem clamp(1rem, 3vw, 1.5rem) !important;
+}
+
+html body:has(#page-home.active) > header .header-left .header-brand-title strong {
+    color: var(--friendly-ink) !important;
+    -webkit-text-fill-color: currentColor !important;
+    font: 750 1rem/1.25 system-ui, sans-serif;
+}
+
+html body:has(#page-home.active) > header :is(.header-brand-title small, .header-title, .logo-container img) {
+    display: none !important;
+}
+
+html body:has(#page-home.active) > header .header-left .logo-container {
+    width: 2.2rem !important;
+    height: 2.2rem !important;
+    flex: 0 0 2.2rem !important;
+    margin: 0 !important;
+    border-radius: 50% !important;
+    background: var(--friendly-petal) !important;
+    color: var(--friendly-ink) !important;
+}
+
+html body:has(#page-home.active) > header .logo-container::before {
+    content: "✿";
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+html body:has(#page-home.active) > header #stats-btn {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    background: var(--friendly-paper) !important;
+    border-color: var(--friendly-line) !important;
+}
+
+html:root:not([data-theme], .bia-a11y-contrast, .bia-high-contrast) body:has(#page-home.active) {
+    background: #fbf4f8 !important;
+    --friendly-paper: #fffcfd;
+    --friendly-soft: #fff5f8;
+    --friendly-ink: #382630;
+    --friendly-muted: #664e5b;
+    --friendly-line: #e6ccd8;
+    --friendly-petal: #f9e4ed;
+}
+
+html:root.bia-high-contrast body:has(#page-home.active) > header[role="banner"] {
+    --friendly-paper: #000;
+    --friendly-ink: #fff;
+    --friendly-line: #fff;
+    --friendly-petal: #000;
+}
+
+html body:has(#page-home.active) > .main-content {
+    padding-top: clamp(1rem, 3vw, 1.75rem) !important;
+}
+
 /* Prancha de comunicação na tela inicial. */
 .sakura-board {
     --board-accent: #802d51;
@@ -7,6 +73,7 @@
     --board-phrase-ink: #41341e;
     width: 100%;
     color: var(--friendly-ink);
+    font-family: system-ui, sans-serif;
 }
 
 html[data-theme="blue"] .sakura-board {
@@ -51,7 +118,7 @@ html.bia-high-contrast .sakura-board {
 .sakura-board-hero h2 {
     margin: 0;
     color: var(--friendly-ink);
-    font: 500 clamp(2.25rem, 7vw, 4rem)/1.08 Georgia, serif;
+    font: 500 clamp(2.6rem, 9vw, 4.3rem)/1 Georgia, serif;
     letter-spacing: -.045em;
     overflow-wrap: anywhere;
 }
@@ -78,7 +145,8 @@ html.bia-high-contrast .sakura-board {
 .sakura-board-blossoms > :nth-child(4) { right: 17%; top: 13%; font-size: 1.1rem; }
 
 .sakura-board-title {
-    margin: 1.05rem 0 .6rem;
+    margin: 1.15rem 0 .65rem;
+    font-weight: 700;
     font-size: clamp(1.15rem, 3vw, 1.4rem);
 }
 
@@ -99,7 +167,7 @@ html.bia-high-contrast .sakura-board {
     background: var(--friendly-paper);
     color: var(--friendly-ink);
     font: inherit;
-    font-weight: 800;
+    font-weight: 750;
     line-height: 1.25;
     overflow-wrap: anywhere;
     cursor: pointer;
@@ -131,6 +199,22 @@ html.bia-high-contrast .sakura-board {
     background: var(--board-phrase);
 }
 
+.sakura-board-phrase-content {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    min-width: 0;
+}
+
+.sakura-board-phrase-picture { flex: 0 0 auto; }
+
+.sakura-board-phrase-picture .sakura-board-pictogram {
+    width: 2.85rem;
+    font-size: 1.65rem;
+}
+
+.sakura-board :is(.sakura-board-cards, .sakura-board-phrase-picture)[hidden] { display: none; }
+
 .sakura-board-phrase strong { font-size: .875rem; }
 .sakura-board-phrase p { margin: .2rem 0 0; font-size: 1.08rem; font-weight: 750; }
 .sakura-board-actions { display: flex; gap: .45rem; }
@@ -148,7 +232,7 @@ html.bia-high-contrast .sakura-board {
     justify-items: center;
     align-content: center;
     gap: .5rem;
-    min-height: clamp(7.75rem, 24vw, 11.5rem);
+    min-height: clamp(7.65rem, 25vw, 11.5rem);
     padding: .5rem .25rem;
     border-width: 2px;
     border-radius: 1.1rem;
@@ -177,12 +261,21 @@ html.bia-high-contrast .sakura-board {
     justify-content: space-between;
     gap: .5rem 1rem;
     flex-wrap: wrap;
-    margin-top: .65rem;
+    margin-top: 1.25rem;
     color: var(--friendly-muted);
     font-size: .82rem;
 }
 
 .sakura-board-meta p { margin: 0; }
+.sakura-board-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    margin: .7rem 0;
+}
+
+.sakura-board-controls button { padding-inline: .75rem; font-size: .85rem; }
+
 .sakura-board-meta a { color: inherit; text-decoration: underline; text-underline-offset: .16em; }
 
 .sakura-board-shortcuts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: .85rem; }

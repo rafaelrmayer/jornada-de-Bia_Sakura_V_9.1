@@ -41,7 +41,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
     <link rel="stylesheet" href="css/guided-voice.css">
-    <link rel="stylesheet" href="css/sakura-board.css">
+    <link rel="stylesheet" href="css/sakura-board.css?v=referencia">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -116,9 +116,12 @@
                 </div>
                 <div class="sakura-board-panel" id="intentExpansion" hidden>
                     <div class="sakura-board-phrase" role="group" aria-label="Sua frase">
-                        <div>
-                            <strong>Sua frase</strong>
-                            <p id="intentPhrase" role="status">Toque em um cartão.</p>
+                        <div class="sakura-board-phrase-content">
+                            <span id="intentPhrasePicture" class="sakura-board-phrase-picture" aria-hidden="true" hidden></span>
+                            <div>
+                                <strong>Sua frase</strong>
+                                <p id="intentPhrase" role="status">Toque em um cartão.</p>
+                            </div>
                         </div>
                         <div class="sakura-board-actions">
                             <button id="intentClearBtn" type="button" disabled>Limpar</button>
@@ -128,8 +131,12 @@
                     <div class="sakura-board-cards" id="intentSuggestions" role="group" aria-label="Cartões de comunicação"></div>
                     <div class="sakura-board-meta">
                         <p>Pictogramas de Sergio Palao · <a href="https://arasaac.org/" target="_blank" rel="noopener">ARASAAC</a> · Governo de Aragão, Espanha · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a></p>
+                    </div>
+                    <div class="sakura-board-controls">
+                        <button id="intentMoreBtn" type="button" aria-expanded="false" aria-controls="intentAdditionalCards">Mais cartões</button>
                         <button id="intentCollapseBtn" type="button">Recolher cartões</button>
                     </div>
+                    <div class="sakura-board-cards" id="intentAdditionalCards" role="group" aria-label="Mais cartões de comunicação" hidden></div>
                 </div>
                 <div class="sakura-board-shortcuts">
                     <button class="nav-item" data-page="my-communication" type="button"><img src="icons/chat.svg" alt="">Minhas frases</button>
@@ -1174,7 +1181,7 @@
     <script src="js/neural-assistant.js"></script>
     <script src="js/rf-evaluation.js"></script>
     <script src="js/communication-usage.js"></script>
-    <script src="js/app.js?v=sakura-board"></script>
+    <script src="js/app.js?v=sakura-board-2"></script>
     <script src="js/rf-evaluation-ui.js"></script>
     <script src="js/card-model-data.js"></script>
     <script src="js/card-model.js"></script>

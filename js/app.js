@@ -2382,17 +2382,17 @@
             if (!requireAdminAccess()) return; const file=e.target.files?.[0]; if(!file)return; if(file.size>2*1024*1024){showToast('⚠️ Escolha uma foto de até 2 MB');return;} const r=new FileReader(); r.onload=()=>{childProfile.photo=r.result; StorageService.setItem('childProfile',JSON.stringify(childProfile));renderChildProfile();showToast('📷 Foto atualizada')}; r.readAsDataURL(file); }
         const intentCards = {
             quero: [
-                [2276, 'Quero água.'], [2746, 'Quero ouvir música.'], [6537, 'Quero brincar.'],
+                [2276, 'Quero água.', 'Beber água'], [2746, 'Quero ouvir música.', 'Ouvir música'], [6537, 'Quero brincar.', 'Brincar'],
                 ['🍎', 'Quero comer.'], ['🏠', 'Quero ir para casa.'], ['➕', 'Quero mais.'],
                 ['❌', 'Não quero.']
             ],
             preciso: [
-                [7171, 'Preciso de ajuda.'], [15814, 'Preciso ir ao banheiro.'], [36109, 'Preciso de uma pausa.'],
+                [7171, 'Preciso de ajuda.', 'Ajuda'], [15814, 'Preciso ir ao banheiro.', 'Ir ao banheiro'], [36109, 'Preciso de uma pausa.', 'Uma pausa'],
                 ['❤️', 'Quero meu responsável.'], ['🤕', 'Estou com dor.'],
                 ['🌙', 'Preciso de um lugar tranquilo.'], ['🚪', 'Preciso sair daqui.']
             ],
             sentindo: [
-                [9907, 'Estou feliz.'], [35545, 'Estou triste.'], [35537, 'Estou cansado.'],
+                [9907, 'Estou feliz.', 'Feliz'], [35545, 'Estou triste.', 'Triste'], [35537, 'Estou cansado.', 'Cansado'],
                 ['😡', 'Estou bravo.'], ['😨', 'Estou com medo.'], ['🤕', 'Estou com dor.']
             ]
         };
@@ -2400,6 +2400,9 @@
         const intentPanel = document.getElementById('intentExpansion');
         const intentSuggestions = document.getElementById('intentSuggestions');
         const intentPhrase = document.getElementById('intentPhrase');
+        const intentPhrasePicture = document.getElementById('intentPhrasePicture');
+        const intentAdditionalCards = document.getElementById('intentAdditionalCards');
+        const intentMore = document.getElementById('intentMoreBtn');
         const intentClear = document.getElementById('intentClearBtn');
         const intentSpeak = document.getElementById('intentSpeakBtn');
         let activeIntentButton = null;
@@ -2410,8 +2413,18 @@
             activeIntentCard = card;
             activeIntentCard?.setAttribute('aria-pressed', 'true');
             intentPhrase.textContent = card?.dataset.phrase || 'Toque em um cartão.';
+            if (intentPhrasePicture) {
+                intentPhrasePicture.replaceChildren(...(card ? [card.firstElementChild.cloneNode(true)] : []));
+                intentPhrasePicture.hidden = !card;
+            }
             intentClear.disabled = !card;
             intentSpeak.disabled = !card;
+        }
+
+        function showAdditionalIntentCards(open) {
+            intentAdditionalCards.hidden = !open;
+            intentMore.setAttribute('aria-expanded', String(open));
+            intentMore.textContent = open ? 'Mostrar menos cartões' : 'Mais cartões';
         }
 
         function renderIntentCards(button) {
@@ -2420,8 +2433,7 @@
             activeIntentButton = button;
             button.setAttribute('aria-expanded', 'true');
             intentSuggestions.setAttribute('aria-label', `Cartões da categoria ${button.textContent.trim()}`);
-            setIntentPhrase(null);
-            intentSuggestions.replaceChildren(...intentCards[button.dataset.intent].map(([symbol, text]) => {
+            const cards = intentCards[button.dataset.intent].map(([symbol, text, labelText]) => {
                 const card = document.createElement('button');
                 card.type = 'button';
                 card.dataset.phrase = text;
@@ -2436,7 +2448,7 @@
                     pictogram.setAttribute('aria-hidden', 'true');
                 }
                 const label = document.createElement('span');
-                label.textContent = text;
+                label.textContent = labelText || text;
                 card.append(pictogram, label);
                 card.addEventListener('click', () => {
                     setIntentPhrase(card);
@@ -2447,7 +2459,16 @@
                     navigator.vibrate?.(10);
                 });
                 return card;
-            }));
+            });
+            if (intentAdditionalCards) {
+                intentSuggestions.replaceChildren(...cards.slice(0, 3));
+                intentAdditionalCards.replaceChildren(...cards.slice(3));
+                showAdditionalIntentCards(false);
+            } else {
+                intentSuggestions.replaceChildren(...cards);
+            }
+            const matchingCard = cards.find(card => card.dataset.phrase === activeIntentCard?.dataset.phrase);
+            if (matchingCard) setIntentPhrase(matchingCard);
             intentPanel.hidden = false;
         }
 
@@ -2723,12 +2744,17 @@
             }));
             renderIntentCards(intentButtons.find(button => button.dataset.intent === selectedIntent) || intentButtons[0]);
             intentClear.addEventListener('click', () => {
-                activeIntentCard?.focus();
+                if (activeIntentCard?.isConnected && !activeIntentCard.closest('[hidden]')) {
+                    activeIntentCard.focus();
+                } else {
+                    activeIntentButton?.focus();
+                }
                 setIntentPhrase(null);
             });
             intentSpeak.addEventListener('click', () => {
                 if (activeIntentCard) speakText(activeIntentCard.dataset.phrase);
             });
+            intentMore?.addEventListener('click', () => showAdditionalIntentCards(intentAdditionalCards.hidden));
             document.getElementById('intentCollapseBtn').addEventListener('click', collapseIntentExpansion);
         }
         // V31: construtor de frase fechado por padrão
