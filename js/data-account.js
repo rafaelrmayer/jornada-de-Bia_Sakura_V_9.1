@@ -8,6 +8,8 @@
  function update(){
   const unlocked=allowed(),family=session?.families.find(f=>f.id===$('dataAccountFamily').value);
   const writer=root.JBDataAPI.canWrite(family);
+  const laboratory=!!(unlocked&&session?.manageExperiments&&Date.now()<session.expiresAt);
+  $('experimentalCardsAdmin').hidden=!laboratory;$('experimentConfigFields').disabled=!laboratory||!!job;
   $('dataAccessOwner').hidden=family?.role!=='owner';
   $('dataAccountIdentity').textContent=session?.email?'Conta: '+session.email:'';
   $('dataAccountRole').textContent=family?('Acesso: '+({owner:'responsável da família',member:'consulta e edição dos cartões da conta',viewer:'somente consulta dos cartões da conta'}[family.role]||'consulte suas permissões')):'';
@@ -40,6 +42,18 @@
   catch(error){if(ticket===generation){if(error.status===401)logout('Conexão inválida ou expirada. Conecte novamente com o Google.');else status(error.message||'Não foi possível concluir. As frases locais foram preservadas.');}}
   finally{if(job===controller)job=null;update();}
  }
+ root.JBExperimentAccess={async authorize(){
+  if(!allowed()||!session||!session.manageExperiments||Date.now()>=session.expiresAt){update();return false;}
+  const ticket=generation,token=session.token;
+  try{
+   const capabilities=await api.capabilities(token);
+   if(ticket!==generation||!session||session.token!==token||!allowed()||Date.now()>=session.expiresAt)return false;
+   session.manageExperiments=capabilities.manage_experiments;update();return session.manageExperiments;
+  }catch(error){
+   if(ticket===generation){if(error.status===401)logout();else{session.manageExperiments=false;update();}}
+   return false;
+  }
+ }};
  $('dataAccountUnlock').onclick=async()=>{await root.requestGuardianUnlock?.();update();};
  $('dataAccountLogout').onclick=()=>logout();
  $('dataGoogleStart').onclick=()=>run(async(signal,guard)=>{
@@ -56,7 +70,8 @@
     const auth=await api.googleLogin(credential,attempt.challenge,signal);guard();
     const families=await api.families(auth.access_token,signal);guard();
     if(!families.length)throw Error('Esta conta ainda não possui uma família disponível.');
-    session={email:auth.email,token:auth.access_token,families,expiresAt:Date.now()+Math.min(auth.expires_in,900)*1000};
+    let manageExperiments=false;try{manageExperiments=(await api.capabilities(auth.access_token,signal)).manage_experiments;}catch{}guard();
+    session={email:auth.email,token:auth.access_token,families,manageExperiments,expiresAt:Date.now()+Math.min(auth.expires_in,900)*1000};
     $('dataAccountFamily').replaceChildren();for(const f of families){const option=document.createElement('option');option.value=f.id;option.textContent=f.name;$('dataAccountFamily').append(option);}
     expiry=setTimeout(()=>logout('Sua sessão online expirou. Conecte novamente com o Google.'),Math.min(auth.expires_in,900)*1000);
     $('dataGoogleButton').replaceChildren();

@@ -605,17 +605,17 @@
                    </div>
                   </div>
                 </section>
-                <section class="settings-group" aria-labelledby="neuralApiTitle">
-                    <h3 id="neuralApiTitle">Modelo experimental dos cartões</h3><p>O modelo usa dados fictícios; sua ordem não representa preferências reais. Ao abrir Meus cartões, a ordenação local é atualizada. Não há treinamento com os cliques.</p>
+                <section id="experimentalCardsAdmin" class="settings-group" aria-labelledby="neuralApiTitle" hidden>
+                    <h3 id="neuralApiTitle">Laboratório — cartões experimentais</h3><p>Configuração restrita à conta administradora do projeto.</p><p>O modelo usa dados fictícios; sua ordem não representa preferências reais. Ao abrir Meus cartões, a ordenação local é atualizada. Não há treinamento com os cliques.</p>
                     <p>Por padrão, as sugestões são calculadas neste aparelho, sem enviar contexto à API. Desbloqueie a administração para mudar. No modo API externa, ao solicitar sugestões, enviamos somente o período do dia e o último cartão deste painel escolhido nesta sessão. Sem nome ou histórico de frases.</p>
-                    <form id="neuralApiForm">
+                    <form id="neuralApiForm"><fieldset id="experimentConfigFields" disabled>
                         <label for="neuralCardsMode">Onde calcular as sugestões</label>
                         <select id="neuralCardsMode"><option value="local">Neste aparelho (sem API)</option><option value="remote">API externa (HTTPS)</option></select>
                         <label for="neuralApiUrl">Endereço HTTPS (somente para API externa)</label>
                         <input id="neuralApiUrl" type="url" placeholder="https://sua-api.example" autocomplete="off">
                         <button type="submit" class="btn-secondary">Salvar conexão</button>
                         <p>O modo neste aparelho funciona sem servidor. Só o modo API externa envia contexto.</p>
-                    </form>
+                    </fieldset></form>
                     <p id="neuralApiConfigStatus" role="status"></p>
                 </section>
                 <section class="settings-group bia-a11y-settings" aria-labelledby="biaA11yHeading">

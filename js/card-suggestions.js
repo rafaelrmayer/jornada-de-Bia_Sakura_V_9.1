@@ -97,10 +97,13 @@
     el('neuralApiUrl').value = localStorage.getItem(key) || '';
     el('neuralCardsMode').value = localStorage.getItem(modeKey) === 'remote' ? 'remote' : 'local';
   } catch {}
-  el('neuralApiForm').addEventListener('submit', event => {
+  el('neuralApiForm').addEventListener('submit', async event => {
     event.preventDefault();
     if (!root.SecurityService?.isUnlocked?.()) {
       el('neuralApiConfigStatus').textContent = 'Desbloqueie a administração para configurar a conexão.'; return;
+    }
+    if (!await root.JBExperimentAccess?.authorize?.()) {
+      el('neuralApiConfigStatus').textContent = 'Configuração disponível somente para a conta administradora autorizada.'; return;
     }
     const value = el('neuralApiUrl').value.trim();
     try {

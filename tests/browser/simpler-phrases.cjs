@@ -4,7 +4,7 @@ const browser=await chromium.launch({executablePath:process.env.BIA_CHROMIUM_PAT
 const site=process.env.BIA_TEST_SITE||'http://127.0.0.1:8129',family='00000000-0000-4000-8000-000000000001',category='00000000-0000-4000-8000-000000000002',id='00000000-0000-4000-8000-000000000003';
 let card={id,category_id:category,text:'Quero a mochila',image_ref:null,display_order:0,created_at:'2026-11-18T12:00:00Z',updated_at:'2026-11-18T12:00:00Z',deleted_at:null};const requests=[];const catalog=[{id:category,name:'Geral'}];
 const ownerId='00000000-0000-4000-8000-000000000004',memberId='00000000-0000-4000-8000-000000000005',inviteId='00000000-0000-4000-8000-000000000006';
-let accountRole='owner';let invites=[],members=[{id:ownerId,user_id:ownerId,email:'owner@gmail.com',role:'owner'},{id:memberId,user_id:memberId,email:'guest@gmail.com',role:'viewer'}];
+let accountRole='owner',experimentAdmin=false;let invites=[],members=[{id:ownerId,user_id:ownerId,email:'owner@gmail.com',role:'owner'},{id:memberId,user_id:memberId,email:'guest@gmail.com',role:'viewer'}];
 const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'});
 await c.addInitScript(()=>{let config=null;window.google={accounts:{id:{initialize(value){config=value;window.__googleNonce=value.nonce;},renderButton(container){const button=document.createElement('button');button.type='button';button.id='fakeGoogleSignIn';button.textContent='Continuar com o Google (teste)';button.onclick=()=>config.callback({credential:'fictitious-google-token'});container.replaceChildren(button);},cancel(){},disableAutoSelect(){}}}};});
 await c.route('**/*',async r=>{
@@ -14,6 +14,7 @@ if(url.hostname!=='jornada-de-bia-data-api.onrender.com')return r.abort();
 const path=url.pathname;requests.push(r.request().method()+' '+path);let body;
 if(path==='/openapi.json')body={paths:Object.fromEntries(['/v1/family-invitations/accept','/v1/family-members','/v1/family-categories','/v1/auth/families','/v1/card-trash','/v1/cards/{card_id}/archive','/v1/cards/{card_id}/restore'].map(x=>[x,{}])),components:{schemas:{CardCreate:{properties:{client_id:{}}}}}};
 else if(path==='/v1/auth/password-recovery/status')body={enabled:true};
+else if(path==='/v1/auth/capabilities')body={manage_experiments:experimentAdmin};
 else if(path==='/v1/auth/google/config')body={enabled:true,client_id:'test-client.apps.googleusercontent.com'};
 else if(path==='/v1/auth/google/challenge')body={challenge:'fictitious-challenge',nonce:'n'.repeat(43),expires_in:300};
 else if(path==='/v1/auth/google/login')body={access_token:'fake-test-token',email:'test@gmail.com',expires_in:900};
@@ -49,7 +50,7 @@ await p.locator('[data-restore-phrase]').click();
 assert.match(await p.locator('#myCommPhraseList').innerText(),/Quero a mochila/);
 assert.equal(await p.evaluate(()=>JBCommunication.snapshot().trash.length),0);
 assert.deepEqual(await p.evaluate(()=>['phraseUsage','contextBrainData'].map(k=>StorageService.getItem(k))),learned);
-assert.equal(requests.length,0);assert.equal(await p.locator('#dataAccountPassword').count(),0);assert.equal(await p.locator('#dataRecoveryForm').count(),0);
+assert.equal(requests.length,0);assert.equal(await p.locator('#experimentalCardsAdmin').isVisible(),false);assert.equal(await p.locator('#dataAccountPassword').count(),0);assert.equal(await p.locator('#dataRecoveryForm').count(),0);
 // Uma falha de gravação não remove a frase nem anuncia sucesso.
 await p.evaluate(()=>{window.__saveOriginal=StorageService.setItem;StorageService.setItem=()=>false;});
 await p.locator('#myCommPhraseList [data-delete]').click();
@@ -149,6 +150,23 @@ await p.locator('#dataGoogleStart').click();await p.locator('#fakeGoogleSignIn')
 assert.equal(await p.locator('#dataInviteForm').isVisible(),false);
 assert.equal(await p.getByText('Pessoas com acesso',{exact:true}).isVisible(),false);
 assert.equal(await p.getByText('Recebi um convite',{exact:true}).isVisible(),true);
+// O papel de responsável não concede laboratório. Mesmo submit programático não grava sem capacidade.
+assert.equal(await p.locator('#experimentalCardsAdmin').isVisible(),false);
+const previousMode=await p.evaluate(()=>localStorage.getItem('bia-card-suggestion-mode'));
+await p.locator('#neuralApiForm').evaluate(form=>form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+await p.waitForFunction(()=>document.getElementById('neuralApiConfigStatus').textContent.includes('administradora autorizada'));
+assert.equal(await p.evaluate(()=>localStorage.getItem('bia-card-suggestion-mode')),previousMode);
+await p.locator('#dataAccountLogout').click();accountRole='owner';experimentAdmin=true;
+await p.locator('#dataGoogleStart').click();await p.locator('#fakeGoogleSignIn').click();await p.locator('#dataAccountConnected').waitFor({state:'visible'});
+assert.equal(await p.locator('#experimentalCardsAdmin').isVisible(),true);
+await p.locator('#neuralCardsMode').selectOption('remote');await p.locator('#neuralApiUrl').fill('https://api.example.test');
+await p.locator('#neuralApiForm button[type="submit"]').click();
+await p.waitForFunction(()=>localStorage.getItem('bia-card-suggestion-mode')==='remote');
+experimentAdmin=false;
+await p.locator('#neuralCardsMode').selectOption('local');await p.locator('#neuralApiForm button[type="submit"]').click();
+await p.waitForFunction(()=>document.getElementById('experimentalCardsAdmin').hidden);
+assert.equal(await p.evaluate(()=>localStorage.getItem('bia-card-suggestion-mode')),'remote');
+await p.locator('#dataAccountLogout').click();assert.equal(await p.locator('#experimentalCardsAdmin').isVisible(),false);
 assert.equal(await p.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('fake-test-token')),false);
 assert.deepEqual(errors,[]);
 console.log('PASS: local trash, restore, cancel, failed write, reload, no learning changes, remote archive preserves local, recovery restores local trash in one action, generic import preserves local trash, mobile. API mocked; no production request.');await browser.close();

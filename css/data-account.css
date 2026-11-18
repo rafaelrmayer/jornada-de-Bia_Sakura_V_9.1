@@ -18,3 +18,6 @@
 .family-sharing-choice[open]{padding-bottom:16px}
 .family-sharing-choice h5{font-size:1rem;margin:16px 0 8px}
 .family-sharing-choice>summary:focus-visible{outline:3px solid currentColor;outline-offset:3px}
+
+#experimentalCardsAdmin[hidden]{display:none!important}
+#experimentConfigFields{border:0;padding:0;margin:0;min-width:0}
