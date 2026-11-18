@@ -1,0 +1,20 @@
+/* Apoio em quatro áreas; os IDs e as proteções dos controles são preservados. */
+#page-settings .support-block,#page-settings .support-extra,#page-settings .support-danger{margin:14px 0;border:1px solid var(--friendly-line,#dfcad3);border-radius:18px;background:var(--friendly-paper,#fff);color:var(--friendly-ink,inherit)}
+#page-settings .support-block>summary,#page-settings .support-extra>summary,#page-settings .support-danger>summary{padding:18px;cursor:pointer;min-height:54px;box-sizing:border-box;font-weight:700}
+#page-settings .support-block>summary strong{font-size:1.08rem}
+#page-settings .support-block>summary small{display:block;font-size:.9rem;font-weight:400;line-height:1.45;margin-top:6px;color:var(--text-light,inherit)}
+#page-settings .support-block[open]>summary{border-bottom:1px solid var(--friendly-line,#dfcad3)}
+#page-settings .support-block-body{padding:16px}
+#page-settings .support-block-body .settings-group{margin:0 0 18px;padding:0;border:0;box-shadow:none;background:transparent}
+#page-settings .support-option{margin:14px 0}
+#page-settings .support-option>summary{min-height:44px;padding:10px 0;cursor:pointer;font-weight:600}
+#page-settings .support-extra>.settings-group,#page-settings .support-extra>.support-option,#page-settings .support-extra>.support-links{margin:16px;padding:0}
+#page-settings .support-sharing.data-account{border:0;border-radius:0;padding:0;box-shadow:none;background:transparent}
+#page-settings .support-sharing .family-sharing{border:0;margin-top:0;padding-top:0}
+#page-settings .support-danger{margin-top:30px;border-style:dashed}
+#page-settings .support-danger>.settings-group{margin:0;padding:0 18px 18px}
+#page-settings .support-block summary:focus-visible,#page-settings .support-extra summary:focus-visible,#page-settings .support-danger summary:focus-visible{outline:3px solid currentColor;outline-offset:3px}
+#page-settings #dataAccountFamilyName{font-weight:700}
+@media(max-width:540px){#page-settings .support-block-body{padding:14px}#page-settings .support-block>summary{padding:16px}}
+
+#page-settings [hidden]{display:none!important}

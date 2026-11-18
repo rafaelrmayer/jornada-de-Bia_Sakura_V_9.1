@@ -37,6 +37,7 @@
     <link rel="stylesheet" href="css/sakura-friendly.css">
     <link rel="stylesheet" href="css/word-goals.css">
     <link rel="stylesheet" href="css/data-account.css">
+    <link rel="stylesheet" href="css/support-settings.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
     <link rel="stylesheet" href="css/guided-voice.css">
@@ -498,137 +499,19 @@
         <!-- ===== PÁGINA: CONFIGURAÇÕES ===== -->
         <div class="page-section" id="page-settings">
             <section class="settings-container">
-                <h3>⚙️ Configurações</h3>
-                <p class="settings-subtitle">Personalize a experiência e acesse as áreas de apoio.</p>
-                <section class="support-links" aria-label="Área de apoio">
-                    <button class="intent-btn create-symbol-shortcut" id="homeCreateSymbolBtn" type="button" aria-label="Criar símbolo"><span class="intent-icon" aria-hidden="true"><img src="icons/add.svg" alt=""></span><span>Criar símbolo</span><small>adicionar cartão</small></button>
-                    <button type="button" data-page="assistant">🦋 Assistente</button>
-                    <button type="button" data-page="edit-symbols">🗂️ Categorias</button>
-                    <button type="button" data-page="guardians">👨‍👩‍👧 Responsáveis e PIN</button>
-                </section>
-                <section class="settings-group calm-appearance-settings" aria-label="Aparência e temas"><h3>🌸 Sakura Zen — Aparência</h3><p>Escolha rosa ou azul, com modo claro ou escuro. Para evitar mudanças acidentais, estes controles ficam fora da tela de comunicação.</p>                <div class="sakura-theme-controls" role="group" aria-label="Aparência da Jornada de Bia">
+<h2>Apoio</h2><p class="settings-subtitle">Escolha o que deseja ajustar.</p>
+<div class="guardian-access-inline"><span id="adminAccessStatus" role="status">🔒 Administração bloqueada</span><button type="button" id="settingsAdminUnlock">🔐 Desbloquear administração</button></div>
+<details id="support-appearance" class="support-block" name="support-sections">
+ <summary><span><strong>Aparência e acessibilidade</strong><small>Cores, texto, contraste e movimento.</small></span></summary>
+ <div class="support-block-body "><section class="settings-group calm-appearance-settings" aria-label="Aparência e temas"><h3>Cor e iluminação</h3><p>Escolha rosa ou azul e modo claro ou escuro.</p>                <div class="sakura-theme-controls" role="group" aria-label="Aparência da Jornada de Bia">
                     <div class="sakura-palette-dots" role="group" aria-label="Escolher rosa ou azul">
 <button type="button" class="sakura-color-dot" data-sakura-color="pink" aria-label="Sakura rosa" title="Sakura rosa"></button>
 <button type="button" class="sakura-color-dot" data-sakura-color="blue" aria-label="Sakura azul" title="Sakura azul"></button>
 </div>
                     <button type="button" id="theme-toggle" class="header-btn theme-btn" aria-label="Ativar modo escuro" aria-pressed="false">🌙<span class="theme-tooltip" id="themeTooltip">Ativar modo escuro</span></button>
                 </div>
-</section>
-                <div class="guardian-access-inline"><span id="adminAccessStatus" role="status">🔒 Administração bloqueada</span><button type="button" id="settingsAdminUnlock">🔐 Desbloquear administração</button></div>
-
-                <div class="settings-group"><h3>♿ Acessibilidade e personalização</h3><p>Desbloqueie a administração para modificar estas opções. Preferências salvas apenas neste aparelho.</p><div id="biaExperiencePrefs" class="bia-prefs"></div><p id="biaExperienceStatus" role="status"></p></div>
-                <section class="settings-group data-account" aria-labelledby="dataAccountTitle">
-                  <h3 id="dataAccountTitle">☁️ Conta e cópia das frases</h3>
-                  <p>Guarde suas frases na conta ou traga uma cópia para este aparelho. Suas frases continuam disponíveis sem internet.</p>
-                  <details><summary>O que fica salvo na conta?</summary><p>Frases e categorias. Imagens, Jardim e aprendizado continuam neste aparelho. Apagar no aparelho não apaga na conta. Alterações diferentes são revisadas antes de substituir uma frase.</p></details>
-                  <p id="dataAccountStatus" role="status" aria-live="polite"></p>
-                  <button type="button" id="dataAccountUnlock">🔓 Desbloquear conexão</button>
-                  <div id="dataAccountControls" hidden>
-                   <div id="dataAccountSignIn">
-                    <p>Entrar é opcional: use o Google apenas para guardar e trazer frases pela conta. O backup por arquivo não exige login.</p>
-                    <button type="button" id="dataGoogleStart">Conectar minha conta</button>
-                    <div id="dataGoogleButton" aria-label="Entrar com o Google"></div>
-                    <p id="dataGoogleHint">O Google será carregado somente quando você escolher conectar. Nenhuma frase é enviada ao entrar.</p>
-                   </div>
-                   <div id="dataAccountConnected" hidden>
-                    <label>Família da conta<select id="dataAccountFamily"></select></label>
-                    <p id="dataAccountIdentity"></p><p id="dataAccountRole"></p>
-                    <p>Alterações nos cartões da conta ficam registradas para consulta do responsável.</p>
-                    <button type="button" id="dataAccountRefresh">Atualizar famílias e permissões</button>
-                    <div class="data-account-actions">
-                     <button type="button" id="dataAccountSave">Guardar minhas frases na conta</button>
-                     <button type="button" id="dataAccountImport">Trazer frases da conta</button>
-                     <button type="button" id="dataAccountLogout">Sair da conta</button>
-                    </div>
-                    <p>Guardar inclui as categorias e frases novas. Trazer preserva suas frases atuais. Se houver versões diferentes, use Revisar alterações em Opções avançadas.</p>
-                    <details id="dataAccountAdvanced">
-                     <summary>Opções avançadas das frases</summary>
-                     <p>Estes controles afetam a conta selecionada. A lixeira do aparelho fica em Minha Comunicação.</p>
-                     <div class="data-account-actions">
-                      <button type="button" id="dataAccountReview">Revisar alterações</button>
-                      <button type="button" id="dataAccountTrash">Recuperar frases da conta</button>
-                      <button type="button" id="dataAccountCategories">Enviar somente categorias</button>
-                      <button type="button" id="dataAccountUpload">Enviar somente frases novas</button>
-                     </div>
-                     <div id="dataAccountDifferences" aria-live="polite"></div>
-                    </details>
-                    <section class="family-sharing" aria-labelledby="dataAccessTitle">
-                     <h4 id="dataAccessTitle">Compartilhar com alguém</h4>
-                     <p>Compartilhe frases e categorias da conta. Jardim e relatórios continuam neste aparelho.</p>
-                     <div id="dataAccessOwner" hidden>
-                      <details class="family-sharing-choice" name="family-sharing">
-                       <summary>Convidar alguém</summary>
-                       <form id="dataInviteForm">
-                        <fieldset id="dataInviteFields">
-                         <label>E-mail Google da pessoa<input id="dataInviteEmail" type="email" autocomplete="off" maxlength="255" required aria-describedby="dataInviteEmailHelp"></label>
-                         <p id="dataInviteEmailHelp">Ela deverá entrar com esse mesmo e-mail.</p>
-                         <label>O que ela poderá fazer?<select id="dataInviteRole" aria-describedby="dataInviteRoleHelp"><option value="viewer">Só visualizar</option><option value="member">Pode editar</option></select></label>
-                         <p id="dataInviteRoleHelp">Pode ver as frases da conta e trazer uma cópia para seu aparelho. Não pode alterar a conta.</p>
-                         <button type="submit">Criar convite</button>
-                        </fieldset>
-                       </form>
-                       <div id="dataInviteCreated" hidden>
-                        <h5>Convite pronto</h5>
-                        <p>Copie o convite e envie à pessoa, por exemplo pelo WhatsApp. Ele vale por 48 horas; o app não envia e-mail.</p>
-                        <label>Código do convite<input id="dataInviteCode" readonly autocomplete="off"></label>
-                        <button type="button" id="dataInviteCopy">Copiar convite</button>
-                       </div>
-                      </details>
-                      <details id="dataAccessPeople" class="family-sharing-choice" name="family-sharing">
-                       <summary>Pessoas com acesso</summary>
-                       <button type="button" id="dataAccessLoad">Atualizar lista</button>
-                       <div id="dataAccessList" aria-live="polite"></div>
-                       <details><summary>Sobre remover um acesso</summary><p>Impede novas consultas e alterações na conta. Frases que a pessoa já trouxe para o aparelho dela permanecem naquele aparelho.</p></details>
-                      </details>
-                      <details class="family-sharing-choice" name="family-sharing">
-                       <summary>Histórico das alterações</summary>
-                       <p>Quem criou, editou ou restaurou frases na conta. O texto exibido é o atual.</p>
-                       <button type="button" id="dataHistoryLoad">Atualizar histórico</button>
-                       <p id="dataHistoryStatus" role="status"></p>
-                       <div id="dataHistoryList"></div>
-                       <button type="button" id="dataHistoryMore" hidden>Ver registros anteriores</button>
-                      </details>
-                     </div>
-                     <details class="family-sharing-choice" name="family-sharing">
-                      <summary>Recebi um convite</summary>
-                      <p>Entre com o Google indicado no convite e cole o código recebido.</p>
-                      <form id="dataInviteAcceptForm">
-                       <fieldset id="dataInviteAcceptFields">
-                        <label>Código do convite<input id="dataInviteAcceptCode" type="password" autocomplete="off" maxlength="128" required></label>
-                        <button type="submit">Participar desta família</button>
-                       </fieldset>
-                      </form>
-                     </details>
-                    </section>
-                   </div>
-                  </div>
-                </section>
-                <section id="experimentalCardsAdmin" class="settings-group" aria-labelledby="neuralApiTitle" hidden>
-                    <h3 id="neuralApiTitle">Laboratório — cartões experimentais</h3><p>Configuração restrita à conta administradora do projeto.</p><p>O modelo usa dados fictícios; sua ordem não representa preferências reais. A ordenação é atualizada manualmente no teste. Não há treinamento com os cliques.</p>
-                    <p>Por padrão, as sugestões são calculadas neste aparelho, sem enviar contexto à API. Desbloqueie a administração para mudar. No modo API externa, ao solicitar sugestões, enviamos somente o período do dia e o último cartão deste painel escolhido nesta sessão. Sem nome ou histórico de frases.</p>
-                    <form id="neuralApiForm"><fieldset id="experimentConfigFields" disabled>
-                        <label for="neuralCardsMode">Onde calcular as sugestões</label>
-                        <select id="neuralCardsMode"><option value="local">Neste aparelho (sem API)</option><option value="remote">API externa (HTTPS)</option></select>
-                        <label for="neuralApiUrl">Endereço HTTPS (somente para API externa)</label>
-                        <input id="neuralApiUrl" type="url" placeholder="https://sua-api.example" autocomplete="off">
-                        <button type="submit" class="btn-secondary">Salvar conexão</button>
-                        <p>O modo neste aparelho funciona sem servidor. Só o modo API externa envia contexto.</p>
-                    </fieldset></form>
-                    <p id="neuralApiConfigStatus" role="status"></p>
-                    <details><summary>Testar a demonstração</summary>
-        <section class="my-comm-panel" aria-labelledby="neuralCardsTitle">
-            <h3 id="neuralCardsTitle">Cartões de demonstração</h3>
-            <p>Frases fictícias para testar o modelo. Não representam o vocabulário pessoal.</p>
-            <div id="neuralCards" class="neural-card-grid" aria-label="Cartões de atividades"></div>
-            <div id="neuralCardsFixed" class="neural-card-grid" aria-label="Outras escolhas"></div>
-            <p id="neuralCardsChoice" role="status" aria-live="polite"></p>
-            <button id="neuralCardsSuggest" type="button" class="btn-secondary">Atualizar cartões</button>
-            <p id="neuralCardsStatus" role="status" aria-live="polite"></p>
-        </section>
-                    </details>
-                </section>
-                <section class="settings-group bia-a11y-settings" aria-labelledby="biaA11yHeading">
-                  <h3 id="biaA11yHeading">👁️ Visão, movimento e estímulos</h3>
+</section><section class="settings-group bia-a11y-settings" aria-labelledby="biaA11yHeading">
+                  <h3 id="biaA11yHeading">Texto, contraste e movimento</h3>
                   <p>Estas preferências podem ser ajustadas sem desbloquear a administração. São salvas somente neste aparelho.</p>
                   <label class="bia-a11y-option" for="biaA11yLarge"><input id="biaA11yLarge" type="checkbox"> Texto e símbolos maiores</label>
                   <label class="bia-a11y-option" for="biaA11yContrast"><input id="biaA11yContrast" type="checkbox"> Alto contraste</label>
@@ -637,25 +520,13 @@
                   <label class="bia-a11y-option" for="biaA11yConfirm"><input id="biaA11yConfirm" type="checkbox"> Confirmar escolhas de comunicação na tela</label>
                   <button type="button" id="biaA11yReset">Restaurar estas preferências</button>
                   <p id="biaA11yMessage" role="status" aria-live="polite"></p>
-                </section>
-                <section class="settings-group guided-voice-settings" aria-labelledby="guidedVoiceTitle">
-                 <h3 id="guidedVoiceTitle">Voz guiada — explorar e confirmar</h3>
-                 <p>Modo opcional para cartões, frases e símbolos de comunicação. Primeiro escolha para explorar; depois confirme para realizar a ação. O botão Falar continua comunicando a mensagem montada.</p>
-                 <label><input id="guidedVoiceEnabled" type="checkbox"> Ativar exploração com confirmação</label>
-                 <label><input id="guidedVoiceFocus" type="checkbox"> Anunciar cartões e navegação inferior ao receber foco</label>
-                 <p>Se usa TalkBack ou VoiceOver, mantenha o anúncio automático desligado para evitar duas vozes. Não há detecção automática do leitor de tela. Você pode pedir a prévia pelo botão Ouvir nome.</p>
-                 <label>Voz local para a prévia<select id="guidedVoiceVoice"></select></label>
-                 <label>Velocidade da voz guiada <output id="guidedVoiceRateValue">0.9×</output><input id="guidedVoiceRate" type="range" min="0.5" max="1.5" step="0.1" value="0.9"></label>
-                 <label>Volume da voz guiada <output id="guidedVoiceVolumeValue">80%</output><input id="guidedVoiceVolume" type="range" min="0" max="100" step="5" value="80"></label>
-                 <p id="guidedVoiceAvailability"></p>
-                 <p>A prévia usa vozes locais disponibilizadas pelo navegador, sem enviar a frase à API. A fala confirmada mantém a voz escolhida na seção Voz; para uso offline, escolha uma voz do aparelho também nessa seção.</p>
-                 <button id="guidedVoiceReset" type="button">Restaurar preferências da voz guiada</button>
-                 <p id="guidedVoiceStatus" role="status"></p>
-                </section>
-                <!-- Voz -->
-                <div class="settings-group">
+                </section><details class="support-option"><summary>Personalização adicional</summary><div class="settings-group"><h3>♿ Acessibilidade e personalização</h3><p>Desbloqueie a administração para modificar estas opções. Preferências salvas apenas neste aparelho.</p><div id="biaExperiencePrefs" class="bia-prefs"></div><p id="biaExperienceStatus" role="status"></p></div></details></div>
+</details>
+<details id="support-voice" class="support-block" name="support-sections">
+ <summary><span><strong>Voz</strong><small>Escolher a voz e a forma de explorar.</small></span></summary>
+ <div class="support-block-body "><div class="settings-group">
                     <div class="group-title">🔊 Voz</div>
-                    
+
                     <div class="settings-item">
                         <div class="settings-label">
                             <span class="icon">🗣️</span>
@@ -666,7 +537,7 @@
                             <option value="edge-francisca">🌷 Francisca Neural (online)</option>
                         </select>
                         <button type="button" class="voice-preview-btn" id="voicePreviewBtn">🔊 Ouvir esta voz</button>
-                        <div class="voice-helper">A Francisca Neural (online) oferece uma voz brasileira mais natural e precisa de internet. Ao usá-la, o texto da mensagem é enviado ao serviço de voz para gerar o áudio. As demais opções usam as vozes disponíveis no aparelho.</div>
+                        <div class="voice-helper">Francisca usa internet e envia o texto ao serviço de voz. Para falar sem internet, escolha uma voz do aparelho.</div>
                         <div class="voice-quality"><span class="voice-quality-dot" id="voiceQualityDot"></span><span id="voiceQualityText">Procurando uma voz em português…</span></div>
                     </div>
 
@@ -702,10 +573,127 @@
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
-                </div>
+                </div><details id="support-guidedVoice" class="support-option"><summary>Voz guiada — explorar antes de falar</summary><section class="settings-group guided-voice-settings" aria-labelledby="guidedVoiceTitle">
+                 <h3 id="guidedVoiceTitle">Voz guiada — explorar e confirmar</h3>
+                 <p>Modo opcional para cartões, frases e símbolos de comunicação. Primeiro escolha para explorar; depois confirme para realizar a ação. O botão Falar continua comunicando a mensagem montada.</p>
+                 <label><input id="guidedVoiceEnabled" type="checkbox"> Ativar exploração com confirmação</label>
+                 <label><input id="guidedVoiceFocus" type="checkbox"> Anunciar cartões e navegação inferior ao receber foco</label>
+                 <p>Se usa TalkBack ou VoiceOver, mantenha o anúncio automático desligado para evitar duas vozes. Não há detecção automática do leitor de tela. Você pode pedir a prévia pelo botão Ouvir nome.</p>
+                 <label>Voz local para a prévia<select id="guidedVoiceVoice"></select></label>
+                 <label>Velocidade da voz guiada <output id="guidedVoiceRateValue">0.9×</output><input id="guidedVoiceRate" type="range" min="0.5" max="1.5" step="0.1" value="0.9"></label>
+                 <label>Volume da voz guiada <output id="guidedVoiceVolumeValue">80%</output><input id="guidedVoiceVolume" type="range" min="0" max="100" step="5" value="80"></label>
+                 <p id="guidedVoiceAvailability"></p>
+                 <p>A prévia usa vozes locais disponibilizadas pelo navegador, sem enviar a frase à API. A fala confirmada mantém a voz escolhida na seção Voz; para uso offline, escolha uma voz do aparelho também nessa seção.</p>
+                 <button id="guidedVoiceReset" type="button">Restaurar preferências da voz guiada</button>
+                 <p id="guidedVoiceStatus" role="status"></p>
+                </section></details></div>
+</details>
+<details id="support-account" class="support-block" name="support-sections">
+ <summary><span><strong>Conta e backup</strong><small>Guardar frases e recuperar cópias.</small></span></summary>
+ <div class="support-block-body "><section class="settings-group data-account" aria-labelledby="dataAccountTitle">
+                  <h3 id="dataAccountTitle">☁️ Conta e cópia das frases</h3>
+                  <p>Guarde suas frases na conta ou traga uma cópia para este aparelho. Suas frases continuam disponíveis sem internet.</p>
+                  <details><summary>O que fica salvo na conta?</summary><p>Frases e categorias. Imagens, Jardim e aprendizado continuam neste aparelho. Apagar no aparelho não apaga na conta. Alterações diferentes são revisadas antes de substituir uma frase.</p></details>
+                  <p id="dataAccountStatus" role="status" aria-live="polite"></p>
+                  <button type="button" id="dataAccountUnlock">🔓 Desbloquear conexão</button>
+                  <div id="dataAccountControls" hidden>
+                   <div id="dataAccountSignIn">
+                    <p>Entrar é opcional: use o Google apenas para guardar e trazer frases pela conta. O backup por arquivo não exige login.</p>
+                    <button type="button" id="dataGoogleStart">Conectar minha conta</button>
+                    <div id="dataGoogleButton" aria-label="Entrar com o Google"></div>
+                    <p id="dataGoogleHint">O Google será carregado somente quando você escolher conectar. Nenhuma frase é enviada ao entrar.</p>
+                   </div>
+                   <div id="dataAccountConnected" hidden>
+                    <p id="dataAccountFamilyName"></p><label id="dataAccountFamilyPicker">Família da conta<select id="dataAccountFamily"></select></label>
+                    <details class="support-option"><summary>Sobre minha conta</summary><p id="dataAccountIdentity"></p><p id="dataAccountRole"></p><button type="button" id="dataAccountRefresh">Atualizar conta e permissões</button></details><p id="dataAccountPermissionHint" hidden>Seu acesso permite trazer frases, mas não alterar a conta.</p>
+                    <div class="data-account-actions">
+                     <button type="button" id="dataAccountSave">Guardar minhas frases na conta</button>
+                     <button type="button" id="dataAccountImport">Trazer frases da conta</button>
+                     <button type="button" id="dataAccountLogout">Sair da conta</button>
+                    </div>
+                    <p>Guardar inclui categorias e frases novas. Trazer mantém o que você já tem. Versões diferentes podem ser revisadas nas opções avançadas.</p>
+                    <details id="dataAccountAdvanced">
+                     <summary>Opções avançadas das frases</summary>
+                     <p>Estes controles afetam a conta selecionada. A lixeira do aparelho fica em Minha Comunicação.</p>
+                     <div class="data-account-actions">
+                      <button type="button" id="dataAccountReview">Revisar alterações</button>
+                      <button type="button" id="dataAccountTrash">Recuperar frases da conta</button>
+                      <button type="button" id="dataAccountCategories">Enviar somente categorias</button>
+                      <button type="button" id="dataAccountUpload">Enviar somente frases novas</button>
+                     </div>
+                     <div id="dataAccountDifferences" aria-live="polite"></div>
+                    </details>
 
-                <!-- Segurança e biometria experimental -->
-                <div class="settings-group biometric-settings admin-protected" hidden>
+                   </div>
+                  </div>
+                </section><div class="settings-group backup-section admin-protected" hidden>
+                    <div class="group-title">📦 Backup e restauração</div>
+                    <p style="font-size:.8rem;color:var(--text-light);margin:0 0 12px;font-weight:600;">Guarde símbolos, responsáveis, histórico, preferências e aprendizado local.</p>
+                    <div class="data-buttons"><button id="exportDataBtn" type="button">⬇️ Exportar backup</button><button id="exportConfigBtn" type="button">⚙️ Backup configuração</button><button id="importDataBtn" type="button">⬆️ Importar backup</button><input id="importDataInput" type="file" accept="application/json" hidden></div><p id="backupLocalStatus" role="status" aria-live="polite"></p>
+                </div></div>
+</details>
+<details id="support-family" class="support-block" name="support-sections">
+ <summary><span><strong>Família e compartilhamento</strong><small>Responsáveis, PIN, perfil e convites.</small></span></summary>
+ <div class="support-block-body "><section class="support-links"><button type="button" data-page="guardians">👨‍👩‍👧 Responsáveis e PIN</button></section><div class="settings-group profile-section admin-protected" hidden>
+                    <div class="group-title">🌻 Perfil da criança</div>
+                    <div class="profile-photo-row">
+                        <div class="profile-photo" id="profilePhotoPreview">🌻</div>
+                        <div><strong id="profileNamePreview">Como podemos chamar?</strong><div style="font-size:.78rem;color:var(--text-light);margin-top:4px;font-weight:600;">Personalize nome, saudação e foto.</div></div>
+                    </div>
+                    <div class="profile-form">
+                        <div class="settings-item"><label for="childName">Nome</label><input id="childName" type="text" placeholder="Nome da criança"></div>
+                        <div class="settings-item"><label for="childGreetingInput">Saudação</label><input id="childGreetingInput" type="text" placeholder="Olá! Vamos conversar?"></div>
+                        <div class="settings-item full"><label for="childPhotoInput">Foto</label><input id="childPhotoInput" type="file" accept="image/*"></div>
+                    </div>
+                    <div class="profile-actions"><button id="saveProfileBtn" type="button" class="data-buttons profile-action-btn icon-only-action" aria-label="Salvar perfil" title="Salvar perfil"><span aria-hidden="true">💾</span></button><button id="resetProfileBtn" type="button" class="data-buttons profile-action-btn icon-only-action" aria-label="Restaurar perfil" title="Restaurar perfil"><span aria-hidden="true">⟲</span></button></div>
+                </div><div class="data-account support-sharing"><p id="dataSharingStatus" role="status" aria-live="polite"></p><div id="dataSharingOffline"><p>Para compartilhar frases, conecte sua conta Google.</p><button type="button" id="dataSharingConnect">Conectar minha conta</button></div><div id="dataSharingConnected" hidden><section class="family-sharing" aria-labelledby="dataAccessTitle">
+                     <h4 id="dataAccessTitle">Compartilhar com alguém</h4>
+                     <p>Compartilhe frases e categorias da conta. Jardim e relatórios continuam neste aparelho.</p>
+                     <div id="dataAccessOwner" hidden>
+                      <details class="family-sharing-choice" name="family-sharing">
+                       <summary>Convidar alguém</summary>
+                       <form id="dataInviteForm">
+                        <fieldset id="dataInviteFields">
+                         <label>E-mail Google da pessoa<input id="dataInviteEmail" type="email" autocomplete="off" maxlength="255" required aria-describedby="dataInviteEmailHelp"></label>
+                         <p id="dataInviteEmailHelp">Ela deverá entrar com esse mesmo e-mail.</p>
+                         <label>O que ela poderá fazer?<select id="dataInviteRole" aria-describedby="dataInviteRoleHelp"><option value="viewer">Só visualizar</option><option value="member">Pode editar</option></select></label>
+                         <p id="dataInviteRoleHelp">Pode ver as frases da conta e trazer uma cópia para seu aparelho. Não pode alterar a conta.</p>
+                         <button type="submit">Criar convite</button><p id="dataInviteStatus" role="status" aria-live="polite"></p>
+                        </fieldset>
+                       </form>
+                       <div id="dataInviteCreated" hidden>
+                        <h5>Convite pronto</h5>
+                        <p>Copie o convite e envie à pessoa, por exemplo pelo WhatsApp. Ele vale por 48 horas; o app não envia e-mail.</p>
+                        <label>Código do convite<input id="dataInviteCode" readonly autocomplete="off"></label>
+                        <button type="button" id="dataInviteCopy">Copiar convite</button>
+                       </div>
+                      </details>
+                      <details id="dataAccessPeople" class="family-sharing-choice" name="family-sharing">
+                       <summary>Pessoas com acesso</summary>
+                       <button type="button" id="dataAccessLoad">Atualizar lista</button><p id="dataAccessStatus" role="status" aria-live="polite"></p>
+                       <div id="dataAccessList" aria-live="polite"></div>
+                       <details><summary>Sobre remover um acesso</summary><p>Impede novas consultas e alterações na conta. Frases que a pessoa já trouxe para o aparelho dela permanecem naquele aparelho.</p></details>
+                      </details>
+                      <details class="family-sharing-choice" name="family-sharing">
+                       <summary>Histórico das alterações</summary>
+                       <p>Quem criou, editou ou restaurou frases na conta. O texto exibido é o atual.</p>
+                       <button type="button" id="dataHistoryLoad">Atualizar histórico</button>
+                       <p id="dataHistoryStatus" role="status"></p>
+                       <div id="dataHistoryList"></div>
+                       <button type="button" id="dataHistoryMore" hidden>Ver registros anteriores</button>
+                      </details>
+                     </div>
+                     <details class="family-sharing-choice" name="family-sharing">
+                      <summary>Recebi um convite</summary>
+                      <p>Entre com o Google indicado no convite e cole o código recebido.</p>
+                      <form id="dataInviteAcceptForm">
+                       <fieldset id="dataInviteAcceptFields">
+                        <label>Código do convite<input id="dataInviteAcceptCode" type="password" autocomplete="off" maxlength="128" required></label>
+                        <button type="submit">Participar desta família</button><p id="dataInviteAcceptStatus" role="status" aria-live="polite"></p>
+                       </fieldset>
+                      </form>
+                     </details>
+                    </section></div></div><details class="support-option admin-protected" hidden><summary>Biometria do aparelho (teste)</summary><div class="settings-group biometric-settings admin-protected" hidden>
                     <div class="group-title security-biometric-title"><span class="icon" aria-hidden="true">🔐</span> Segurança e biometria</div>
                     <p class="setting-help">Configure primeiro o PIN administrativo. A biometria usa o autenticador do aparelho quando disponível; o PIN continua como alternativa.</p>
                     <div class="settings-item">
@@ -720,32 +708,14 @@
                         </div>
                     </div>
                     <p class="setting-help biometric-warning">ETAPA DE TESTE: esta prova de conceito usa WebAuthn local no navegador, mas ainda não tem validação por servidor. Não a use como única proteção de dados sensíveis. Publique apenas em HTTPS; a Jornada de Bia não recebe nem armazena sua impressão digital ou rosto.</p>
-                </div>
+                </div></details></div>
+</details>
+<details id="supportMoreOptions" class="support-extra"><summary>Mais opções</summary><section class="support-links" aria-label="Área de apoio">
+                    <button class="intent-btn create-symbol-shortcut" id="homeCreateSymbolBtn" type="button" aria-label="Criar símbolo"><span class="intent-icon" aria-hidden="true"><img src="icons/add.svg" alt=""></span><span>Criar símbolo</span><small>adicionar cartão</small></button>
+                    <button type="button" data-page="assistant">🦋 Assistente</button>
+                    <button type="button" data-page="edit-symbols">🗂️ Categorias</button>
 
-                <!-- Perfil da criança -->
-                <div class="settings-group profile-section admin-protected" hidden>
-                    <div class="group-title">🌻 Perfil da criança</div>
-                    <div class="profile-photo-row">
-                        <div class="profile-photo" id="profilePhotoPreview">🌻</div>
-                        <div><strong id="profileNamePreview">Como podemos chamar?</strong><div style="font-size:.78rem;color:var(--text-light);margin-top:4px;font-weight:600;">Personalize nome, saudação e foto.</div></div>
-                    </div>
-                    <div class="profile-form">
-                        <div class="settings-item"><label for="childName">Nome</label><input id="childName" type="text" placeholder="Nome da criança"></div>
-                        <div class="settings-item"><label for="childGreetingInput">Saudação</label><input id="childGreetingInput" type="text" placeholder="Olá! Vamos conversar?"></div>
-                        <div class="settings-item full"><label for="childPhotoInput">Foto</label><input id="childPhotoInput" type="file" accept="image/*"></div>
-                    </div>
-                    <div class="profile-actions"><button id="saveProfileBtn" type="button" class="data-buttons profile-action-btn icon-only-action" aria-label="Salvar perfil" title="Salvar perfil"><span aria-hidden="true">💾</span></button><button id="resetProfileBtn" type="button" class="data-buttons profile-action-btn icon-only-action" aria-label="Restaurar perfil" title="Restaurar perfil"><span aria-hidden="true">⟲</span></button></div>
-                </div>
-
-                <!-- Backup -->
-                <div class="settings-group backup-section admin-protected" hidden>
-                    <div class="group-title">📦 Backup e restauração</div>
-                    <p style="font-size:.8rem;color:var(--text-light);margin:0 0 12px;font-weight:600;">Guarde símbolos, responsáveis, histórico, preferências e aprendizado local.</p>
-                    <div class="data-buttons"><button id="exportDataBtn" type="button">⬇️ Exportar backup</button><button id="exportConfigBtn" type="button">⚙️ Backup configuração</button><button id="importDataBtn" type="button">⬆️ Importar backup</button><input id="importDataInput" type="file" accept="application/json" hidden></div>
-                </div>
-
-                <!-- V16: Painel de aprendizado -->
-                <div class="settings-group bia-habit-settings">
+                </section><details class="support-option"><summary>Sugestões de atividades</summary><div class="settings-group bia-habit-settings">
                   <h3>🌸 Sugestões de atividades por horário</h3>
                   <p>O aplicativo pode sugerir atividades escolhidas em pelo menos três dias diferentes perto do mesmo horário. Os registros ficam neste navegador. Não são previsões de necessidades.</p>
                   <label><input type="checkbox" id="biaHabitSuggestions" checked> Mostrar sugestões discretas dentro do aplicativo</label>
@@ -754,8 +724,7 @@
                   <label><input type="checkbox" id="biaHabitNotify"> Permitir notificações de teste</label>
                   <div class="bia-habit-actions"><button type="button" id="biaHabitTest">🔔 Testar notificação</button><button type="button" id="biaHabitClear">Apagar histórico de atividades</button></div>
                   <p id="biaHabitNotificationStatus" role="status">Notificações automáticas com o aplicativo fechado exigem configuração futura de push e HTTPS. A permissão não ativa envios automáticos.</p>
-                </div>
-                <div class="settings-group learning-dashboard">
+                </div></details><details class="support-option"><summary>Histórico de uso e aprendizado</summary><div class="settings-group learning-dashboard">
                     <div class="group-title">🧠 Aprendizado da Jornada de Bia</div>
                     <p style="font-size:.8rem;color:var(--text-light);margin:0 0 14px;font-weight:600;">O aprendizado acontece localmente no aparelho. A Jornada de Bia observa padrões de uso para melhorar sugestões.</p>
                     <div class="learning-stats-grid">
@@ -766,26 +735,47 @@
                     </div>
                     <div id="learningTopList" class="learning-top-list"></div>
                     <button id="resetLearningBtn" type="button" class="data-buttons learning-reset-btn icon-only-action" aria-label="Reiniciar aprendizado" title="Reiniciar aprendizado"><span aria-hidden="true">↻</span></button>
-                </div>
+                </div></details><section id="experimentalCardsAdmin" class="settings-group" aria-labelledby="neuralApiTitle" hidden>
+                    <h3 id="neuralApiTitle">Laboratório — cartões experimentais</h3><p>Configuração restrita à conta administradora do projeto.</p><p>O modelo usa dados fictícios; sua ordem não representa preferências reais. A ordenação é atualizada manualmente no teste. Não há treinamento com os cliques.</p>
+                    <p>Por padrão, as sugestões são calculadas neste aparelho, sem enviar contexto à API. Desbloqueie a administração para mudar. No modo API externa, ao solicitar sugestões, enviamos somente o período do dia e o último cartão deste painel escolhido nesta sessão. Sem nome ou histórico de frases.</p>
+                    <form id="neuralApiForm"><fieldset id="experimentConfigFields" disabled>
+                        <label for="neuralCardsMode">Onde calcular as sugestões</label>
+                        <select id="neuralCardsMode"><option value="local">Neste aparelho (sem API)</option><option value="remote">API externa (HTTPS)</option></select>
+                        <label for="neuralApiUrl">Endereço HTTPS (somente para API externa)</label>
+                        <input id="neuralApiUrl" type="url" placeholder="https://sua-api.example" autocomplete="off">
+                        <button type="submit" class="btn-secondary">Salvar conexão</button>
+                        <p>O modo neste aparelho funciona sem servidor. Só o modo API externa envia contexto.</p>
+                    </fieldset></form>
+                    <p id="neuralApiConfigStatus" role="status"></p>
+                    <details><summary>Testar a demonstração</summary>
+        <section class="my-comm-panel" aria-labelledby="neuralCardsTitle">
+            <h3 id="neuralCardsTitle">Cartões de demonstração</h3>
+            <p>Frases fictícias para testar o modelo. Não representam o vocabulário pessoal.</p>
+            <div id="neuralCards" class="neural-card-grid" aria-label="Cartões de atividades"></div>
+            <div id="neuralCardsFixed" class="neural-card-grid" aria-label="Outras escolhas"></div>
+            <p id="neuralCardsChoice" role="status" aria-live="polite"></p>
+            <button id="neuralCardsSuggest" type="button" class="btn-secondary">Atualizar cartões</button>
+            <p id="neuralCardsStatus" role="status" aria-live="polite"></p>
+        </section>
+                    </details>
+                </section></details>
+<details id="supportDanger" class="support-danger"><summary>Limpar dados deste aparelho</summary><div class="settings-group">
+                    <p>Apaga os dados locais deste navegador. Antes, guarde um backup. A conta na nuvem não é apagada por esta ação.</p>
 
-                <!-- Dados -->
-                <div class="settings-group">
-                    <div class="group-title">💾 Dados</div>
-                    
                     <div class="settings-item">
                         <div class="settings-label">
                             <span class="icon">🗑️</span>
                             <span>Limpar todos os dados</span>
                         </div>
                         <button id="clearAllDataBtn" aria-label="Limpar todos os dados do aplicativo" style="background: var(--red); color: white; border: none; padding: 8px 20px; border-radius: 50px; font-family: var(--font); font-weight: 800; font-size: 0.75rem; cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-sm);">
-                            Limpar
+                            Apagar dados deste aparelho
                         </button>
                     </div>
-                </div>
-            </section>
+                </div></details>
+</section>
         </div>
 
-        <!-- ===== PÁGINA: SOBRE ===== -->
+<!-- ===== PÁGINA: SOBRE ===== -->
         <div class="page-section" id="page-about">
             <section class="about-container">
                 <h3>🌻∞ Sobre a Jornada de Bia</h3>

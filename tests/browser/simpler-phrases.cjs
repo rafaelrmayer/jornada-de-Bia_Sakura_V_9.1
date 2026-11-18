@@ -4,7 +4,7 @@ const browser=await chromium.launch({executablePath:process.env.BIA_CHROMIUM_PAT
 const site=process.env.BIA_TEST_SITE||'http://127.0.0.1:8129',family='00000000-0000-4000-8000-000000000001',category='00000000-0000-4000-8000-000000000002',id='00000000-0000-4000-8000-000000000003';
 let card={id,category_id:category,text:'Quero a mochila',image_ref:null,display_order:0,created_at:'2026-11-18T12:00:00Z',updated_at:'2026-11-18T12:00:00Z',deleted_at:null};const requests=[];const catalog=[{id:category,name:'Geral'}];
 const ownerId='00000000-0000-4000-8000-000000000004',memberId='00000000-0000-4000-8000-000000000005',inviteId='00000000-0000-4000-8000-000000000006';
-let accountRole='owner',experimentAdmin=false;let invites=[],members=[{id:ownerId,user_id:ownerId,email:'owner@gmail.com',role:'owner'},{id:memberId,user_id:memberId,email:'guest@gmail.com',role:'viewer'}];
+let accountRole='owner',experimentAdmin=false,multipleFamilies=false;let invites=[],members=[{id:ownerId,user_id:ownerId,email:'owner@gmail.com',role:'owner'},{id:memberId,user_id:memberId,email:'guest@gmail.com',role:'viewer'}];
 const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'});
 await c.addInitScript(()=>{
 const voice={voiceURI:'local-test',name:'Voz local de teste',lang:'pt-BR',localService:true,default:true};
@@ -22,7 +22,7 @@ else if(path==='/v1/auth/capabilities')body={manage_experiments:experimentAdmin}
 else if(path==='/v1/auth/google/config')body={enabled:true,client_id:'test-client.apps.googleusercontent.com'};
 else if(path==='/v1/auth/google/challenge')body={challenge:'fictitious-challenge',nonce:'n'.repeat(43),expires_in:300};
 else if(path==='/v1/auth/google/login')body={access_token:'fake-test-token',email:'test@gmail.com',expires_in:900};
-else if(path==='/v1/auth/families')body=[{id:family,name:'Teste',role:accountRole}];
+else if(path==='/v1/auth/families')body=[{id:family,name:'Teste',role:accountRole},...(multipleFamilies?[{id:'00000000-0000-4000-8000-000000000007',name:'Outra família',role:'viewer'}]:[])];
 else if(path==='/v1/family-members')body=members;
 else if(path==='/v1/family-invitations'&&r.request().method()==='POST'){const payload=JSON.parse(r.request().postData());body={id:inviteId,email:payload.email,role:payload.role,code:'a'.repeat(43),expires_at:new Date(Date.now()+48*3600000).toISOString(),used_at:null,revoked_at:null};invites=[body];}
 else if(path==='/v1/family-invitations')body=invites;
@@ -41,7 +41,17 @@ return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(
 });
 const p=await c.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept());await p.goto(site);await p.waitForFunction(()=>window.JBCommunication);
 await p.evaluate(()=>{sessionStorage.setItem('jornadaGuardianUnlocked','true');setGuardianMode(true);});
-const nav=name=>p.locator('.visual-bottom-nav [data-page="'+name+'"]').click();
+const nav=async(name,group='account')=>{await p.locator('.visual-bottom-nav [data-page="'+name+'"]').click();if(name==='settings'&&group&&!(await p.locator('#support-'+group).evaluate(n=>n.open)))await p.locator('#support-'+group+' > summary').click();};
+await nav('settings',null);
+assert.equal(await p.locator('.support-block').count(),4);assert.equal(await p.locator('.support-block[open]').count(),0);
+assert.equal(await p.locator('#clearAllDataBtn').isVisible(),false);
+if(process.env.BIA_SUPPORT_SCREENSHOT)await p.locator('.settings-container').screenshot({path:process.env.BIA_SUPPORT_SCREENSHOT});
+await nav('settings','appearance');await p.locator('#biaA11yLarge').check();assert.equal(await p.locator('#biaA11yLarge').isChecked(),true);await p.locator('#biaA11yLarge').uncheck();
+await nav('settings','voice');assert.equal(await p.locator('#support-appearance').evaluate(n=>n.open),false);
+await p.locator('#voiceRate').evaluate(n=>{n.value='1.1';n.dispatchEvent(new Event('input',{bubbles:true}));});
+assert.equal(await p.evaluate(()=>StorageService.getItem('voiceRate')),'1.1');
+await nav('settings','family');assert.equal(await p.locator('#dataSharingOffline').isVisible(),true);
+await p.locator('#dataSharingConnect').click();assert.equal(await p.locator('#support-account').evaluate(n=>n.open),true);
 await nav('my-communication');await p.locator('#myCommAddPhrase').click();await p.locator('#myCommPhraseText').fill('Quero a mochila');await p.locator('#myCommPhraseCategory').selectOption('Geral');await p.locator('#myCommPhraseForm button[type="submit"]').click();
 const before=await p.evaluate(()=>JBCommunication.snapshot());
 // Lixeira local funciona sem API, preserva aprendizado e restaura acima dos filtros.
@@ -67,6 +77,12 @@ await p.locator('#myCommPhraseList [data-delete]').click();
 assert.equal(await p.evaluate(()=>JBCommunication.snapshot().phrases.length),1);
 p.removeAllListeners('dialog');p.on('dialog',d=>d.accept());
 await nav('settings');await p.locator('#dataGoogleStart').click();await p.locator('#fakeGoogleSignIn').click();await p.locator('#dataAccountConnected').waitFor({state:'visible'});
+assert.equal(await p.locator('#dataAccountFamilyPicker').isVisible(),false);
+assert.match(await p.locator('#dataAccountFamilyName').innerText(),/Teste/);
+multipleFamilies=true;await p.getByText('Sobre minha conta',{exact:true}).click();await p.locator('#dataAccountRefresh').click();
+await p.waitForFunction(()=>document.getElementById('dataAccountFamily').options.length===2);
+assert.equal(await p.locator('#dataAccountFamilyPicker').isVisible(),true);
+multipleFamilies=false;await p.locator('#dataAccountRefresh').click();await p.waitForFunction(()=>document.getElementById('dataAccountFamily').options.length===1);
 assert.equal(await p.locator('#dataAccountAdvanced').getAttribute('open'),null);
 await p.locator('#dataAccountSave').click();await p.waitForFunction(()=>document.getElementById('dataAccountStatus').textContent.includes('guardadas'));
 assert.equal(requests.filter(x=>x==='POST /v1/family-categories').length,6);
@@ -123,7 +139,7 @@ await p.evaluate(()=>{StorageService.setItem=window.__saveOriginal;});
 await p.getByRole('button',{name:'Restaurar em Minhas frases',exact:true}).click();
 await p.waitForFunction(()=>document.getElementById('dataAccountStatus').textContent.includes('Frase disponível'));
 // Compartilhamento: três ações recolhidas, convite copiável, lista atualizada e papéis preservados.
-await nav('settings');
+await nav('settings','family');
 assert.equal(await p.locator('.family-sharing-choice[open]').count(),0);
 await p.getByText('Convidar alguém',{exact:true}).click();
 await p.locator('#dataInviteEmail').fill('newguest@gmail.com');
@@ -148,10 +164,10 @@ await p.waitForFunction(()=>document.getElementById('dataAccessList').textConten
 await p.getByText('Recebi um convite',{exact:true}).click();assert.equal(await p.locator('#dataAccessLoad').isVisible(),false);
 assert.equal(await p.locator('#dataInviteAcceptForm').isVisible(),true);
 await p.locator('#dataInviteAcceptCode').fill('b'.repeat(43));await p.locator('#dataInviteAcceptForm button[type="submit"]').click();
-await p.waitForFunction(()=>document.getElementById('dataAccountStatus').textContent.includes('Convite aceito'));
-await p.locator('#dataAccountLogout').click();accountRole='viewer';
+await p.waitForFunction(()=>document.getElementById('dataInviteAcceptStatus').textContent.includes('Convite aceito'));
+await nav('settings');await p.locator('#dataAccountLogout').click();accountRole='viewer';
 await p.locator('#dataGoogleStart').click();await p.locator('#fakeGoogleSignIn').click();await p.locator('#dataAccountConnected').waitFor({state:'visible'});
-assert.equal(await p.locator('#dataInviteForm').isVisible(),false);
+await nav('settings','family');assert.equal(await p.locator('#dataInviteForm').isVisible(),false);
 assert.equal(await p.getByText('Pessoas com acesso',{exact:true}).isVisible(),false);
 assert.equal(await p.getByText('Recebi um convite',{exact:true}).isVisible(),true);
 // O papel de responsável não concede laboratório. Mesmo submit programático não grava sem capacidade.
@@ -160,9 +176,9 @@ const previousMode=await p.evaluate(()=>localStorage.getItem('bia-card-suggestio
 await p.locator('#neuralApiForm').evaluate(form=>form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
 await p.waitForFunction(()=>document.getElementById('neuralApiConfigStatus').textContent.includes('administradora autorizada'));
 assert.equal(await p.evaluate(()=>localStorage.getItem('bia-card-suggestion-mode')),previousMode);
-await p.locator('#dataAccountLogout').click();accountRole='owner';experimentAdmin=true;
+await nav('settings');await p.locator('#dataAccountLogout').click();accountRole='owner';experimentAdmin=true;
 await p.locator('#dataGoogleStart').click();await p.locator('#fakeGoogleSignIn').click();await p.locator('#dataAccountConnected').waitFor({state:'visible'});
-assert.equal(await p.locator('#experimentalCardsAdmin').isVisible(),true);
+await p.locator('#supportMoreOptions > summary').click();assert.equal(await p.locator('#experimentalCardsAdmin').isVisible(),true);
 await p.locator('#neuralCardsMode').selectOption('remote');await p.locator('#neuralApiUrl').fill('https://api.example.test');
 await p.locator('#neuralApiForm button[type="submit"]').click();
 await p.waitForFunction(()=>localStorage.getItem('bia-card-suggestion-mode')==='remote');
@@ -173,7 +189,7 @@ assert.equal(await p.evaluate(()=>localStorage.getItem('bia-card-suggestion-mode
 await p.locator('#dataAccountLogout').click();assert.equal(await p.locator('#experimentalCardsAdmin').isVisible(),false);
 assert.equal(await p.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('fake-test-token')),false);
 // Comunicação única e atalhos de uso real, sem mudar a ordem da lista.
-await nav('settings');await p.locator('#voiceSelect').selectOption({label:'Voz local de teste (pt-BR)'});await nav('my-communication');
+await nav('settings','voice');await p.locator('#voiceSelect').selectOption({label:'Voz local de teste (pt-BR)'});await nav('my-communication');
 assert.equal(await p.locator('.visual-bottom-nav [data-page="cards"]').count(),0);
 assert.equal(await p.locator('#page-cards').count(),0);
 assert.equal(await p.locator('#myCommMostUsed').isVisible(),false);
@@ -191,11 +207,11 @@ assert.deepEqual(await p.evaluate(()=>JBCommunication.snapshot().phrases.map(p=>
 assert(!(await p.locator('#page-my-communication').innerText()).includes('Quero jogar Zelda: Ocarina of Time.'));
 await p.evaluate(()=>showPage('cards'));assert.equal(await p.locator('#page-my-communication').isVisible(),true);
 // Prévia e cancelamento não aumentam uso; confirmação aumenta uma única vez.
-await nav('settings');await p.locator('#guidedVoiceEnabled').check();await nav('my-communication');
+await nav('settings','voice');await p.locator('#support-guidedVoice').evaluate(n=>n.open=true);await p.locator('#guidedVoiceEnabled').check();await nav('my-communication');
 const count=()=>p.evaluate(()=>JSON.parse(StorageService.getItem('phraseUsage'))['Quero água']);
 const prior=await count();await p.locator('#myCommMostUsedGrid [data-speak="'+water+'"]').click();await p.locator('#guidedVoiceListen').click();await p.locator('#guidedVoiceCancel').click();assert.equal(await count(),prior);
 await p.locator('#myCommMostUsedGrid [data-speak="'+water+'"]').click();await p.locator('#guidedVoiceConfirm').click();assert.equal(await count(),prior+1);
-await nav('settings');await p.locator('#guidedVoiceEnabled').uncheck();await nav('my-communication');
+await nav('settings','voice');await p.locator('#support-guidedVoice').evaluate(n=>n.open=true);await p.locator('#guidedVoiceEnabled').uncheck();await nav('my-communication');
 await p.locator('#myCommPhraseList [data-delete="'+water+'"]').click();assert.equal(await p.locator('#myCommMostUsedGrid [data-speak="'+water+'"]').count(),0);
 await p.locator('#myCommOpenTrash').click();await p.locator('[data-restore-phrase="'+water+'"]').click();assert.equal(await p.locator('#myCommMostUsedGrid [data-speak="'+water+'"]').count(),1);
 assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
