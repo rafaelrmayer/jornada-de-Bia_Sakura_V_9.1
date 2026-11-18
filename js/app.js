@@ -1590,7 +1590,7 @@
             'home': 'page-home',
             'word-goals': 'page-word-goals',
             'my-communication': 'page-my-communication',
-            'cards': 'page-cards',
+            'cards': 'page-my-communication',
             'routine': 'page-routine',
             'activities': 'page-activities',
             'assistant': 'page-assistant',
@@ -1605,7 +1605,7 @@
         });
 
         function showPage(page) {
-            let requestedPage = page;
+            let requestedPage = page==='cards'?'my-communication':page;
 
             // Nunca deixe a interface sem uma página ativa por causa de um
             // data-page inválido ou de uma chamada antiga.
@@ -2423,7 +2423,7 @@
             document.querySelectorAll('.intent-btn').forEach(b=>b.classList.remove('active'));
         }
         function recordPhraseUse(text){
-            const key='phraseUsage'; const data=JSON.parse(StorageService.getItem(key)||'{}'); data[text]=(data[text]||0)+1; StorageService.setItem(key,JSON.stringify(data));
+            const key='phraseUsage'; const data=JSON.parse(StorageService.getItem(key)||'{}'); const count=data[text]; Object.defineProperty(data,text,{value:Math.min((Number.isSafeInteger(count)&&count>=0?count:0)+1,Number.MAX_SAFE_INTEGER),enumerable:true,writable:true,configurable:true}); if(StorageService.setItem(key,JSON.stringify(data))!==false)document.dispatchEvent(new CustomEvent('bia:phrase-usage-changed'));
         }
         function communicatePersonalPhrase(text) {
             const phrase=String(text||'').trim();
@@ -2452,6 +2452,7 @@
                     voiceRate, voicePitch, autoSpeak, theme: StorageService.getItem('theme'),
                     predictorData: JSON.parse(StorageService.getItem('predictorData') || '{\"sequences\":[],\"frequency\":{}}'),
                     predictivePhraseData: JSON.parse(StorageService.getItem('predictivePhraseData') || '{}'),
+                    phraseUsage: JSON.parse(StorageService.getItem('phraseUsage') || '{}'),
                     myCommunicationData: JSON.parse(StorageService.getItem('myCommunicationData') || '{"phrases":[],"categories":["Geral","Necessidades","Alimentação","Rotina","Sentimentos","Pessoas","Atividades"],"favoriteSymbols":[]}'),
                     contextBrainData: JSON.parse(StorageService.getItem('contextBrainData') || '{}'),
                     environmentContext: StorageService.getItem('environmentContext') || 'auto',
@@ -2493,6 +2494,7 @@
                 if(d.aiFeedback)StorageService.setItem('aiFeedback',JSON.stringify(d.aiFeedback));
                 if(d.predictorData)StorageService.setItem('predictorData',JSON.stringify(d.predictorData));
                 if(d.predictivePhraseData)StorageService.setItem('predictivePhraseData',JSON.stringify(d.predictivePhraseData));
+                if(d.phraseUsage)StorageService.setItem('phraseUsage',JSON.stringify(d.phraseUsage));
                 if(d.myCommunicationData)StorageService.setItem('myCommunicationData',JSON.stringify(d.myCommunicationData));
                 if(d.contextBrainData)StorageService.setItem('contextBrainData',JSON.stringify(d.contextBrainData));
                 if(typeof d.environmentContext==='string')StorageService.setItem('environmentContext',d.environmentContext);
@@ -2852,7 +2854,19 @@
         select.innerHTML=data.categories.map(name=>`<option value="${safe(name)}">${safe(name)}</option>`).join('');
         select.value=data.categories.includes(previous)?previous:(data.categories.includes('Geral')?'Geral':data.categories[0]||'Geral');
     }
+    function renderMostUsedPhrases(){
+        const section=el('myCommMostUsed'),grid=el('myCommMostUsedGrid');if(!section||!grid)return;
+        let usage={};try{usage=JSON.parse(StorageService.getItem('phraseUsage')||'{}');}catch{}
+        const items=window.JBCommunicationUsage?.mostUsed(data.phrases,usage)||[];
+        const focused=document.activeElement?.closest('#myCommMostUsedGrid [data-speak]')?.dataset.speak;
+        section.hidden=!items.length;
+        grid.innerHTML=items.map(p=>`<button type="button" class="my-comm-item my-comm-used-card" data-speak="${safe(p.id)}" aria-label="Falar frase: ${safe(p.text)}"><span class="my-comm-item-text"><strong>${safe(p.text)}</strong><small>${safe(p.category||'Geral')}</small></span></button>`).join('');
+        if(focused)[...grid.querySelectorAll('[data-speak]')].find(b=>b.dataset.speak===focused)?.focus({preventScroll:true});
+    }
+    document.addEventListener('bia:phrase-usage-changed',renderMostUsedPhrases);
+    document.addEventListener('bia:pagechange',e=>{if(e.detail?.page==='my-communication')renderMostUsedPhrases();});
     function render(){
+        renderMostUsedPhrases();
         const list=el('myCommPhraseList'), cats=el('myCommCategoryList'), syms=el('myCommSymbolList');
         if(!list||!cats||!syms)return;
         syncCategorySelect();
@@ -2871,6 +2885,7 @@
         const clearAll=el('myCommClearAll');if(clearAll)clearAll.disabled=data.phrases.length===0;
         const showAll=el('myCommShowAll'); if(showAll){showAll.classList.toggle('is-active',activeCategory==='*');showAll.textContent=activeCategory==='*'?'Todas as frases':'Ver todas as frases';}
     }
+    el('myCommAddSymbol')?.addEventListener('click',()=>openAddSymbol());
     el('myCommAddPhrase')?.addEventListener('click',()=>{editingId=null;el('myCommPhraseForm').reset();syncCategorySelect();if(activeCategory!=='*'&&data.categories.includes(activeCategory))el('myCommPhraseCategory').value=activeCategory;el('myCommPhraseForm').hidden=false;el('myCommPhraseText').focus();});
     el('myCommCancelPhrase')?.addEventListener('click',()=>{el('myCommPhraseForm').hidden=true;editingId=null;});
     el('myCommPhraseForm')?.addEventListener('submit',e=>{e.preventDefault();const text=el('myCommPhraseText').value.trim();if(!text)return;const category=el('myCommPhraseCategory').value||'Geral';if(editingId){const item=data.phrases.find(p=>p.id===editingId);if(item){item.text=text;item.category=category;}}else data.phrases.push({id:`phrase-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,text,category});activeCategory=category;save();el('myCommPhraseForm').hidden=true;editingId=null;render();});

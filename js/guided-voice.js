@@ -35,7 +35,7 @@
  }
  function action(element){
   if(!element?.closest)return null;
-  const node=element.closest('#myCommPhraseList [data-speak], #neuralCards .neural-card, #neuralCardsFixed .neural-card, #symbolsGrid .symbol-card, #homeQuickSymbolsGrid .home-quick-symbol-card, #quickPhrasesGrid .quick-phrase-btn, #predictiveList .predictive-item, .bia-maybe-choice, #mostUsedGrid .most-used-card, #suggestionsList .suggestion-item, #adaptiveChoices .adaptive-choice, #hereBtn');
+  const node=element.closest('#myCommPhraseList [data-speak], #myCommMostUsedGrid [data-speak], #neuralCards .neural-card, #neuralCardsFixed .neural-card, #symbolsGrid .symbol-card, #homeQuickSymbolsGrid .home-quick-symbol-card, #quickPhrasesGrid .quick-phrase-btn, #predictiveList .predictive-item, .bia-maybe-choice, #mostUsedGrid .most-used-card, #suggestionsList .suggestion-item, #adaptiveChoices .adaptive-choice, #hereBtn');
   if(!available(node))return null;
   let label='',verb='Comunicar';
   if(node.hasAttribute('data-speak'))label=node.closest('.my-comm-item')?.querySelector('.my-comm-item-text strong')?.textContent;

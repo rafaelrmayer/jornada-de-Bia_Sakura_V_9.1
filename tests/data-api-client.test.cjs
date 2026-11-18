@@ -170,3 +170,12 @@ test('Google não configurado e vinculação pendente têm mensagens claras',asy
  const collision=m.createClient(async()=>({ok:false,status:409}));
  await assert.rejects(collision.googleLogin('fake','fake'),e=>e.status===409&&e.message.includes('vinculação'));
 });
+
+test('capacidade de laboratório exige booleano explícito do servidor',async()=>{
+ for(const permitted of [false,true]){
+  const client=m.createClient(async()=>({ok:true,json:async()=>({manage_experiments:permitted})}));
+  assert.equal((await client.capabilities('fake-token')).manage_experiments,permitted);
+ }
+ const invalid=m.createClient(async()=>({ok:true,json:async()=>({manage_experiments:'true'})}));
+ await assert.rejects(invalid.capabilities('fake-token'),/indisponível/);
+});

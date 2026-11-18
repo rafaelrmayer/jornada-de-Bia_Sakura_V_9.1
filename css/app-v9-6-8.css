@@ -5797,13 +5797,13 @@ html #page-home.intent-compact .intent-suggestion {
 /* Navegação inferior contínua em todas as páginas. */
 html body .visual-bottom-nav {
   display:grid!important;
-  grid-template-columns:repeat(7,minmax(0,1fr))!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
   z-index:1100;
 }
 html body {padding-bottom:calc(var(--bia-bottom-nav-height,90px) + var(--bia-install-banner-height,0px))!important;}
 html body .install-banner {bottom:var(--bia-bottom-nav-height,90px)!important;}
 @media(max-width:620px) {
-  html body .visual-bottom-nav {grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+  html body .visual-bottom-nav {grid-template-columns:repeat(3,minmax(0,1fr))!important;}
   html body .visual-bottom-nav .nav-item {padding:6px 3px!important;min-width:0;}
 }
 
@@ -5812,3 +5812,13 @@ html body .install-banner {bottom:var(--bia-bottom-nav-height,90px)!important;}
 html body .sos-floating-button {
   bottom: calc(var(--bia-bottom-nav-height, 90px) + var(--bia-install-banner-height, 0px) + 16px) !important;
 }
+
+/* Atalhos pessoais sem alterar a lista organizada pelo usuário. */
+#myCommMostUsed[hidden]{display:none!important}
+.my-comm-used-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:14px}
+.my-comm-used-card{min-height:88px;text-align:left;color:inherit;font:inherit;cursor:pointer;background:var(--card-bg,#fff)}
+.my-comm-used-card:focus-visible{outline:3px solid currentColor;outline-offset:3px}
+
+@media(min-width:360px) and (max-width:620px){.my-comm-used-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.my-comm-panel>summary{font-size:1.05rem;font-weight:700;cursor:pointer;min-height:44px;padding-block:8px}

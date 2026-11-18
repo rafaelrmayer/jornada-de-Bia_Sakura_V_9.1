@@ -651,3 +651,11 @@ na conta e roteiro curto para repetir o teste de uso após publicação.
 [ACESSO_GOOGLE.md](ACESSO_GOOGLE.md) descreve a entrada opcional, a configuração
 OAuth e os limites. Comunicação e backup local por arquivo não exigem login.
 Os formulários de senha/recuperação do aplicativo são substituídos pelo Google.
+
+## Laboratório restrito
+
+A configuração de cartões experimentais fica oculta para contas comuns. A conta
+Google autorizada por EXPERIMENT_ADMIN_EMAIL no backend recebe a capacidade de
+laboratório; ainda exige desbloqueio local, sessão válida e nova validação ao salvar.
+Ser responsável de família não concede essa permissão. A API neural externa
+mantém seu controle próprio. Preferências já gravadas e dados locais são preservados.

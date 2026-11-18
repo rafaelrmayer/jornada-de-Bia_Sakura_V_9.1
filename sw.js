@@ -1,4 +1,4 @@
-const CACHE = 'jornada-bia-sakura-v9-6-46';
+const CACHE = 'jornada-bia-sakura-v9-6-48';
 const CORE = [
   './',
   './index.html',
@@ -6,7 +6,7 @@ const CORE = [
   './js/google-access.js', './js/data-api-client.js', './js/data-account.js', './css/data-account.css',
   './js/word-practice.js', './js/word-goals.js', './js/word-summary.js', './js/word-report.js', './css/word-goals.css',
   './js/card-suggestions.js',
-  './js/navigation-layout.js',
+  './js/navigation-layout.js', './js/communication-usage.js',
   './js/card-model-data.js',
   './js/card-model.js',
   './css/card-suggestions.css',
