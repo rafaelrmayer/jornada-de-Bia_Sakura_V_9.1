@@ -2,6 +2,11 @@
 (() => {
   const BACKUP_VERSION = 4;
   const MAX_BYTES = 5 * 1024 * 1024;
+  const HEALTH_BACKUP_VERSION = 1;
+  const MAX_HEALTH_DATA_BYTES = 64 * 1024;
+  const MAX_HEALTH_FILE_BYTES = 128 * 1024;
+  const HEALTH_TEXT_FIELDS = ['supportLevel','observations','signal','gesture','meaning','sensoryBothers','sensoryHelps','care','updatedAt'];
+  const SENSORY_FLAGS = ['sound','light','touch','smells','crowds','fabrics'];
   const CONFIG_KEYS = new Set(['symbolsData','voiceRate','voicePitch','autoSpeak','theme']);
   const safeJson = v => { try { return JSON.parse(v); } catch { return null; } };
 
@@ -28,7 +33,64 @@
     if(d.moduleData!==undefined)JornadaModuleData.validate(d.moduleData);
     return true;
   }
+  function healthRecord(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  function selectHealthFields(source) {
+    const invalid = () => new Error('Dados de saúde inválidos');
+    if (!healthRecord(source)) throw invalid();
+    const result = {};
+    for (const key of HEALTH_TEXT_FIELDS) {
+      if (!Object.hasOwn(source, key)) continue;
+      const value = source[key];
+      if (typeof value !== 'string' || (key === 'updatedAt' && value && !Number.isFinite(Date.parse(value)))) throw invalid();
+      result[key] = value;
+    }
+    const textList = value => Array.isArray(value) && value.every(item => typeof item === 'string');
+    if (Object.hasOwn(source, 'allergies')) {
+      if (typeof source.allergies !== 'string' && !textList(source.allergies)) throw invalid();
+      result.allergies = source.allergies;
+    }
+    if (Object.hasOwn(source, 'sensoryPreferences')) {
+      const preferences = source.sensoryPreferences;
+      if (!healthRecord(preferences)) throw invalid();
+      const sensory = {};
+      for (const key of SENSORY_FLAGS) {
+        if (!Object.hasOwn(preferences, key)) continue;
+        if (typeof preferences[key] !== 'boolean') throw invalid();
+        sensory[key] = preferences[key];
+      }
+      if (Object.hasOwn(preferences, 'helps')) {
+        if (!textList(preferences.helps)) throw invalid();
+        sensory.helps = preferences.helps;
+      }
+      result.sensoryPreferences = sensory;
+    }
+    if (!Object.keys(result).length || new TextEncoder().encode(JSON.stringify(result)).length > MAX_HEALTH_DATA_BYTES) throw invalid();
+    return result;
+  }
+
   window.BackupService = {
+    async exportHealth(data, password, canDownload) {
+      const payload = { app: 'A Jornada de Bia', type: 'health', backupVersion: HEALTH_BACKUP_VERSION, data: selectHealthFields(data) };
+      const encrypted = await BackupCrypto.encrypt(payload, password);
+      if (canDownload && !canDownload()) return false;
+      download(JSON.stringify(encrypted), `jornada-bia-backup-saude-${new Date().toISOString().slice(0,10)}.json`);
+      return true;
+    },
+    async readHealth(file, password) {
+      if (!file || !file.size || file.size > MAX_HEALTH_FILE_BYTES) throw new Error('Arquivo de saúde inválido');
+      const text = await file.text();
+      if (text.length > MAX_HEALTH_FILE_BYTES) throw new Error('Arquivo de saúde inválido');
+      const encrypted = JSON.parse(text);
+      if (encrypted?.app !== 'A Jornada de Bia' || encrypted.encrypted !== true) throw new Error('O backup de saúde precisa estar criptografado');
+      const payload = await BackupCrypto.decrypt(encrypted, password);
+      if (payload?.app !== 'A Jornada de Bia' || payload.type !== 'health' || payload.backupVersion !== HEALTH_BACKUP_VERSION) {
+        throw new Error('Formato de backup de saúde inválido');
+      }
+      return selectHealthFields(payload.data);
+    },
     async export(data, opts={}) {
       const clean = opts.configurationOnly ? Object.fromEntries(Object.entries(data).filter(([k])=>CONFIG_KEYS.has(k))) : Object.fromEntries(Object.entries(data).filter(([k])=>k!=='medicalData'));
       const body = JSON.stringify(clean);

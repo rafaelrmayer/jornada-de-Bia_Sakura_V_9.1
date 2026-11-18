@@ -15,7 +15,7 @@
   window.StorageService = {
     getItem(k){ try { return localStorage.getItem(key(k)); } catch { return null; } },
     setItem(k,v){ try { localStorage.setItem(key(k), String(v)); return true; } catch(e) { void e; return false; } },
-    removeItem(k){ try { localStorage.removeItem(key(k)); } catch(e){} },
+    removeItem(k){ try { localStorage.removeItem(key(k)); return true; } catch { return false; } },
     clear(){
       try {
         const keys=[];

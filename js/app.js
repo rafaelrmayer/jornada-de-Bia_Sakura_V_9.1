@@ -110,7 +110,7 @@
             'Outra alergia'
         ];
 
-        let medicalData = JSON.parse(StorageService.getItem('medicalData') || JSON.stringify(defaultMedical));
+        let medicalData = StorageService.getJSON('medicalData', defaultMedical) || defaultMedical;
 
         // ============================================
         // IA: PREDITOR DE SÍMBOLOS (COM LIMPEZA DE REFERÊNCIAS)
@@ -1980,8 +1980,8 @@
 
         function clearAllData() {
             if (!requireAdminAccess()) return;
-            if (!confirm('Tem certeza que deseja limpar TODOS os dados? Esta ação não pode ser desfeita!')) return;
-            if (!confirm('Isso apagará: histórico, símbolos editados, responsáveis, informações médicas e padrões da IA. Continuar?')) return;
+            if (!confirm('Apagar todos os dados locais da Jornada de Bia neste navegador?')) return;
+            if (!confirm('Isso apaga dados de saúde, histórico, símbolos, responsáveis, preferências e aprendizado local. A conta na nuvem e os backups baixados permanecem. Confirmar?')) return;
             // Apaga somente dados pertencentes à Jornada de Bia; preserva outras aplicações
             // que compartilhem a mesma origem. Também encerra a sessão de responsáveis.
             const localCleared = StorageService.clear();
@@ -2243,6 +2243,92 @@
             playClickSound();
         });
         medicalSaveBtn.addEventListener('click', saveMedicalData);
+
+        const medicalBackupForm = document.getElementById('medicalBackupForm');
+        if (medicalBackupForm) {
+            const tools = document.getElementById('medicalDataTools');
+            const controls = document.getElementById('medicalBackupControls');
+            const passwordInput = document.getElementById('medicalBackupPassword');
+            const fileInput = document.getElementById('medicalBackupFile');
+            const status = document.getElementById('medicalBackupStatus');
+            const erase = document.getElementById('medicalEraseBtn');
+
+            medicalBackupForm.addEventListener('submit', async event => {
+                event.preventDefault();
+                if (controls.disabled || !requireAdminAccess()) return;
+                const restoring = event.submitter?.value === 'restore';
+                const file = fileInput.files[0];
+                const saved = StorageService.getItem('medicalData');
+                if (restoring && !file) {
+                    status.textContent = 'Escolha o arquivo de backup de saúde.';
+                    fileInput.focus();
+                    return;
+                }
+                if (!restoring && saved === null) {
+                    status.textContent = 'Salve os dados de saúde antes de fazer o backup.';
+                    return;
+                }
+
+                const password = passwordInput.value;
+                passwordInput.value = '';
+                controls.disabled = true;
+                erase.disabled = true;
+                status.textContent = restoring ? 'Verificando o backup de saúde…' : 'Preparando o backup de saúde…';
+                try {
+                    if (!restoring) {
+                        const downloaded = await BackupService.exportHealth(JSON.parse(saved), password, requireAdminAccess);
+                        if (downloaded) status.textContent = 'Backup de saúde baixado. Guarde a senha separadamente.';
+                        return;
+                    }
+
+                    const restored = await BackupService.readHealth(file, password);
+                    if (!requireAdminAccess()) return;
+                    if (!confirm('Substituir os dados de Saúde e cuidados neste aparelho pelos dados do arquivo?')) {
+                        status.textContent = 'Restauração cancelada.';
+                        return;
+                    }
+                    if (StorageService.getItem('medicalData') !== saved) {
+                        status.textContent = 'Os dados de saúde mudaram durante a restauração. Revise os dados atuais e tente novamente.';
+                        return;
+                    }
+                    if (!StorageService.setJSON('medicalData', restored)) {
+                        status.textContent = 'Não foi possível salvar os dados de saúde neste aparelho.';
+                        return;
+                    }
+                    medicalData = restored;
+                    renderMedical();
+                    fileInput.value = '';
+                    status.textContent = 'Dados de saúde restaurados. Confira os campos antes de usá-los.';
+                } catch {
+                    status.textContent = restoring
+                        ? 'Não foi possível abrir este backup de saúde. Confira o arquivo e a senha.'
+                        : 'Não foi possível baixar o backup de saúde. Confira os dados salvos e tente novamente.';
+                } finally {
+                    controls.disabled = false;
+                    erase.disabled = false;
+                }
+            });
+
+            erase.addEventListener('click', () => {
+                if (erase.disabled || !requireAdminAccess()) return;
+                if (!confirm('Apagar todos os dados de Saúde e cuidados salvos neste aparelho?')) return;
+                if (!StorageService.removeItem('medicalData')) {
+                    status.textContent = 'Não foi possível apagar os dados de saúde neste aparelho.';
+                    return;
+                }
+                medicalData = defaultMedical;
+                renderMedical();
+                status.textContent = 'Dados de saúde apagados deste aparelho.';
+            });
+
+            document.addEventListener('bia:admin-access-changed', () => {
+                if (guardianUnlocked) return;
+                passwordInput.value = '';
+                fileInput.value = '';
+                status.textContent = '';
+                tools.open = false;
+            });
+        }
 
         voiceSelect.addEventListener('change', () => {
             const selected = voiceSelect.value;

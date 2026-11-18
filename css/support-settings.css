@@ -18,3 +18,43 @@
 @media(max-width:540px){#page-settings .support-block-body{padding:14px}#page-settings .support-block>summary{padding:16px}}
 
 #page-settings [hidden]{display:none!important}
+
+.medical-data-tools {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--friendly-line);
+  border-radius: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.medical-data-tools > summary {
+  cursor: pointer;
+  padding-block: .4rem;
+  font-weight: 750;
+}
+
+.medical-data-tools p { margin-block: .75rem; }
+
+.medical-data-tools fieldset {
+  display: grid;
+  gap: .55rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.medical-data-tools input,
+.medical-data-tools button {
+  max-width: 100%;
+  min-height: 2.75rem;
+  padding: .45rem .7rem;
+  border: 1px solid var(--friendly-line);
+  border-radius: .65rem;
+  background: var(--friendly-paper);
+  color: var(--friendly-ink);
+  font: inherit;
+}
+
+.medical-data-tools button { cursor: pointer; }
+.medical-data-tools button:disabled { opacity: .65; cursor: default; }

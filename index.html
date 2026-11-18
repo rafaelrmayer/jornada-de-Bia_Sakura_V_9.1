@@ -37,7 +37,7 @@
     <link rel="stylesheet" href="css/sakura-friendly.css">
     <link rel="stylesheet" href="css/word-goals.css">
     <link rel="stylesheet" href="css/data-account.css">
-    <link rel="stylesheet" href="css/support-settings.css">
+    <link rel="stylesheet" href="css/support-settings.css?v=health-backup">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
     <link rel="stylesheet" href="css/guided-voice.css">
@@ -484,6 +484,23 @@
                         💾 Salvar
                     </button>
                 </form>
+                <details id="medicalDataTools" class="medical-data-tools admin-protected" hidden>
+                    <summary>Backup e exclusão dos dados de saúde</summary>
+                    <p>O backup contém somente os dados de saúde já salvos. O arquivo é criptografado neste aparelho e fica protegido pela senha que você escolher.</p>
+                    <form id="medicalBackupForm">
+                        <fieldset id="medicalBackupControls">
+                            <label for="medicalBackupPassword">Senha do backup (mínimo de 8 caracteres)</label>
+                            <input id="medicalBackupPassword" type="password" minlength="8" required autocomplete="off">
+                            <button type="submit" name="medicalAction" value="export">Baixar backup de saúde</button>
+                            <label for="medicalBackupFile">Arquivo de backup para restaurar</label>
+                            <input id="medicalBackupFile" type="file" accept=".json,application/json">
+                            <button type="submit" name="medicalAction" value="restore">Restaurar dados de saúde</button>
+                        </fieldset>
+                    </form>
+                    <p>Apagar os dados de saúde remove os registros deste aparelho. Os arquivos baixados ficam na pasta de downloads.</p>
+                    <button id="medicalEraseBtn" type="button">Apagar dados de saúde</button>
+                    <p id="medicalBackupStatus" role="status"></p>
+                </details>
             </section>
         </div>
 
@@ -807,7 +824,7 @@
                     </details>
                 </section></details>
 <details id="supportDanger" class="support-danger"><summary>Limpar dados deste aparelho</summary><div class="settings-group">
-                    <p>Apaga os dados locais deste navegador. Antes, guarde um backup. A conta na nuvem não é apagada por esta ação.</p>
+                    <p>Apaga os dados locais da Jornada de Bia neste navegador, incluindo Saúde e cuidados. Os arquivos de backup já baixados e os dados da conta na nuvem permanecem disponíveis.</p>
 
                     <div class="settings-item">
                         <div class="settings-label">
@@ -1204,16 +1221,16 @@
     </section>
     <script src="js/module-data.js"></script>
     <script src="js/security.js"></script>
-    <script src="js/storage.js"></script>
+    <script src="js/storage.js?v=health-backup"></script>
     <script src="js/backup-crypto.js"></script>
-    <script src="js/backup.js"></script>
+    <script src="js/backup.js?v=health-backup"></script>
     <script src="js/security-advanced.js"></script>
     <script src="js/context-records.js"></script>
     <script src="js/random-forest.js"></script>
     <script src="js/neural-assistant.js"></script>
     <script src="js/rf-evaluation.js"></script>
     <script src="js/communication-usage.js"></script>
-    <script src="js/app.js?v=sakura-board-2"></script>
+    <script src="js/app.js?v=health-backup"></script>
     <script src="js/rf-evaluation-ui.js"></script>
     <script src="js/card-model-data.js"></script>
     <script src="js/card-model.js"></script>
