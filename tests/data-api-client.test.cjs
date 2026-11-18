@@ -78,11 +78,11 @@ test('recusa servidor sem suporte à lixeira',async()=>{
 test('troca de senha usa token sem família e não expõe senha em erros',async()=>{
  let captured;
  const client=m.createClient(async(url,init)=>{captured={url,init};return {ok:false,status:400,json:async()=>({detail:'segredo'})};});
- await assert.rejects(client.changePassword('segredo-atual','segredo-novo','token'),e=>e.status===400&&e.message.includes('senha atual')&&!e.message.includes('segredo'));
+ await assert.rejects(client.changePassword('segredo-atual','segredo-novo1','token'),e=>e.status===400&&e.message.includes('senha atual')&&!e.message.includes('segredo'));
  assert.equal(captured.url,m.BASE+'/v1/auth/change-password');
  assert.equal(captured.init.headers['X-Family-ID'],undefined);
  assert.equal(captured.init.headers.Authorization,'Bearer token');
- assert.deepEqual(JSON.parse(captured.init.body),{current_password:'segredo-atual',new_password:'segredo-novo'});
+ assert.deepEqual(JSON.parse(captured.init.body),{current_password:'segredo-atual',new_password:'segredo-novo1'});
 });
 test('troca de senha recusa backend sem contrato correspondente',async()=>{
  const client=m.createClient(async()=>({ok:true,json:async()=>({paths:{}})}));
@@ -91,10 +91,10 @@ test('troca de senha recusa backend sem contrato correspondente',async()=>{
 test('recuperação usa POST sem token ou segredo na URL e mantém erros genéricos',async()=>{
  let captured;
  const client=m.createClient(async(url,init)=>{captured={url,init};return {ok:false,status:400,json:async()=>({detail:'sensitive-code'})};});
- await assert.rejects(client.recoveryConfirm('test@example.com','sensitive-code','sensitive-password'),e=>e.status===400&&!e.message.includes('sensitive'));
+ await assert.rejects(client.recoveryConfirm('test@example.com','sensitive-code','sensitive-password1'),e=>e.status===400&&!e.message.includes('sensitive'));
  assert.equal(captured.url,m.BASE+'/v1/auth/password-recovery/confirm');
  assert.equal(captured.init.headers.Authorization,undefined);
- assert.deepEqual(JSON.parse(captured.init.body),{email:'test@example.com',code:'sensitive-code',new_password:'sensitive-password'});
+ assert.deepEqual(JSON.parse(captured.init.body),{email:'test@example.com',code:'sensitive-code',new_password:'sensitive-password1'});
 });
 test('recuperação indisponível não informa uma ativação inexistente',async()=>{
  const client=m.createClient(async()=>({ok:true,json:async()=>({enabled:false})}));
@@ -137,4 +137,18 @@ test('histórico pagina por consulta com token e família sem alterar cartões',
  await assert.rejects(client.history('token',family,-1),/Página/);
  const stale=m.createClient(async()=>({ok:true,json:async()=>({events:[{id:4,card_id:cardId,actor_id:null,actor_email:null,action:'card.created',recorded_at:'2026-11-17T12:00:00Z',card_label:null}],next_before_id:null})}));
  await assert.rejects(stale.history('token',family,4),/incompatível/);
+});
+
+
+test('política nova aceita limites e preserva login de senha antiga',async()=>{
+ for(const value of ['abc123','a1'+'x'.repeat(18),'Ação12!'])assert.doesNotThrow(()=>m.validateNewPassword(value));
+ for(const value of ['abc12','abcdef','123456','a1'+'x'.repeat(19)])assert.throws(()=>m.validateNewPassword(value),e=>e.status===422);
+ let calls=0;
+ const client=m.createClient(async()=>{calls++;return {ok:true,json:async()=>({access_token:'fake-token',expires_in:900})};});
+ await assert.rejects(client.register('test@example.com','abcdef','Teste'),e=>e.status===422);
+ await assert.rejects(client.changePassword('antiga','123456','token'),e=>e.status===422);
+ await assert.rejects(client.recoveryConfirm('test@example.com','000042','abcdef'),e=>e.status===422);
+ assert.equal(calls,0);
+ await client.login('test@example.com','senha-antiga-muito-longa-sem-numero');
+ assert.equal(calls,1);
 });
