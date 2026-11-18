@@ -520,9 +520,9 @@
 
                 <div class="settings-group"><h3>♿ Acessibilidade e personalização</h3><p>Desbloqueie a administração para modificar estas opções. Preferências salvas apenas neste aparelho.</p><div id="biaExperiencePrefs" class="bia-prefs"></div><p id="biaExperienceStatus" role="status"></p></div>
                 <section class="settings-group data-account" aria-labelledby="dataAccountTitle">
-                  <h3 id="dataAccountTitle">☁️ Conta e cartões</h3>
-                  <p>Envie uma cópia das frases de Minha Comunicação para sua conta ou importe cartões de outro aparelho. A comunicação continua disponível offline.</p>
-                  <p>Edições podem ser comparadas e escolhidas uma a uma. Excluir frases no aparelho não as exclui da conta. Envie suas categorias antes das frases. Imagens, Jardim e aprendizado continuam locais.</p>
+                  <h3 id="dataAccountTitle">☁️ Conta e cópia das frases</h3>
+                  <p>Guarde suas frases na conta ou traga uma cópia para este aparelho. Suas frases continuam disponíveis sem internet.</p>
+                  <details><summary>O que fica salvo na conta?</summary><p>Frases e categorias. Imagens, Jardim e aprendizado continuam neste aparelho. Apagar no aparelho não apaga na conta. Alterações diferentes são revisadas antes de substituir uma frase.</p></details>
                   <p id="dataAccountStatus" role="status" aria-live="polite"></p>
                   <button type="button" id="dataAccountUnlock">🔓 Desbloquear conexão</button>
                   <div id="dataAccountControls" hidden>
@@ -558,15 +558,23 @@
                     <p id="dataAccountIdentity"></p><p id="dataAccountRole"></p>
                     <p>Alterações nos cartões da conta ficam registradas para consulta do responsável.</p>
                     <button type="button" id="dataAccountRefresh">Atualizar famílias e permissões</button>
-                    <p>Somente os botões abaixo enviam ou trazem frases. A sessão online dura até 15 minutos e não é salva no backup. Ao recarregar ou bloquear a administração, entre novamente.</p>
                     <div class="data-account-actions">
-                     <button type="button" id="dataAccountCategories">Enviar categorias deste aparelho</button>
-                     <button type="button" id="dataAccountUpload">Enviar novas frases deste aparelho</button>
-                     <button type="button" id="dataAccountImport">Importar categorias e novos cartões da conta</button>
-                     <button type="button" id="dataAccountReview">Comparar edições das frases</button>
-                     <button type="button" id="dataAccountTrash">Cartões e lixeira da conta</button>
+                     <button type="button" id="dataAccountSave">Guardar minhas frases na conta</button>
+                     <button type="button" id="dataAccountImport">Trazer frases da conta</button>
                      <button type="button" id="dataAccountLogout">Sair da conta</button>
                     </div>
+                    <p>Guardar inclui as categorias e frases novas. Trazer preserva suas frases atuais. Se houver versões diferentes, use Revisar alterações em Opções avançadas.</p>
+                    <details id="dataAccountAdvanced">
+                     <summary>Opções avançadas das frases</summary>
+                     <p>Estes controles afetam a conta selecionada. A lixeira do aparelho fica em Minha Comunicação.</p>
+                     <div class="data-account-actions">
+                      <button type="button" id="dataAccountReview">Revisar alterações</button>
+                      <button type="button" id="dataAccountTrash">Recuperar frases da conta</button>
+                      <button type="button" id="dataAccountCategories">Enviar somente categorias</button>
+                      <button type="button" id="dataAccountUpload">Enviar somente frases novas</button>
+                     </div>
+                     <div id="dataAccountDifferences" aria-live="polite"></div>
+                    </details>
                     <details>
                      <summary>Alterar senha da conta</summary>
                      <p>A alteração encerra as sessões online de todos os aparelhos. As frases locais e os dados da conta são preservados.</p>
@@ -615,7 +623,6 @@
                       </section>
                      </div>
                     </section>
-                    <div id="dataAccountDifferences" aria-live="polite"></div>
                    </div>
                   </div>
                 </section>
@@ -1060,7 +1067,7 @@
             <p>Organize suas frases e categorias do seu jeito. Você e seu responsável podem personalizar este espaço.</p>
         </div>
         <section class="my-comm-panel" aria-labelledby="myCommPhraseTitle">
-            <div class="section-header"><div><h3 id="myCommPhraseTitle">Minhas frases</h3><p class="my-comm-helper">Escolha uma categoria para ver as frases ou visualize todas.</p></div><button class="btn-primary" id="myCommAddPhrase" type="button">＋ Nova frase</button></div>
+            <div class="section-header"><div><h3 id="myCommPhraseTitle">Minhas frases</h3><p class="my-comm-helper" id="myCommFilterStatus">Todas as frases deste aparelho.</p><button type="button" id="myCommResetFilter" class="btn-secondary" hidden>Mostrar todas as frases</button></div><div class="my-comm-form-actions"><button class="btn-primary" id="myCommAddPhrase" type="button">＋ Nova frase</button><button class="btn-secondary" id="myCommOpenTrash" type="button">Lixeira</button></div></div>
             <form id="myCommPhraseForm" class="my-comm-form" hidden>
                 <label for="myCommPhraseText">Frase</label><textarea id="myCommPhraseText" rows="2" maxlength="240" required placeholder="Ex.: Quero descansar um pouco"></textarea>
                 <label for="myCommPhraseCategory">Categoria</label><select id="myCommPhraseCategory"><option value="Geral">Geral</option><option value="Necessidades">Necessidades</option><option value="Alimentação">Alimentação</option><option value="Rotina">Rotina</option><option value="Sentimentos">Sentimentos</option><option value="Pessoas">Pessoas</option><option value="Atividades">Atividades</option></select>
@@ -1068,11 +1075,19 @@
             </form>
             <div id="rfTestPendingNotice" class="rf-test-pending" hidden><p role="status">Teste manual ativo: o próximo clique no botão de falar será avaliado, sem entrar no aprendizado normal.</p><button type="button" id="rfTestCancelFromCommunication">Cancelar teste e voltar ao uso normal</button></div>
             <div id="myCommPhraseList" class="my-comm-list" aria-live="polite"></div>
-            <div class="my-comm-bulk-clear">
-                <p>Esta ação abrange todas as frases, inclusive de outras categorias. Desbloqueie a administração para apagar. O aprendizado dos modelos, categorias, símbolos, favoritos e configurações são preservados.</p>
-                <button id="myCommClearAll" class="btn-secondary" type="button">Apagar todas as frases</button>
+            <p id="myCommPhraseStatus" role="status" aria-live="polite"></p>
+            <details class="my-comm-bulk-clear">
+                <summary>Organizar todas as frases</summary>
+                <p>Move todas as frases deste aparelho para a lixeira. Categorias, favoritos e aprendizado são preservados. Nada é apagado da conta.</p>
+                <button id="myCommClearAll" class="btn-secondary" type="button">Mover todas para a lixeira</button>
                 <p id="myCommClearStatus" role="status" aria-live="polite"></p>
-            </div>
+            </details>
+            <details id="myCommTrash" class="my-comm-bulk-clear">
+                <summary id="myCommTrashSummary">Lixeira deste aparelho</summary>
+                <p>As frases aqui não aparecem em Minhas frases. Toque em Restaurar para trazê-las de volta. A conta online não é alterada.</p>
+                <button type="button" id="myCommTrashUnlock" hidden>🔓 Desbloquear organização</button>
+                <div id="myCommTrashList" class="my-comm-list"></div>
+            </details>
         </section>
         <section class="my-comm-panel" aria-labelledby="myCommCategoryTitle">
             <div class="section-header"><h3 id="myCommCategoryTitle">Explore por assunto</h3><button class="my-comm-show-all" id="myCommShowAll" type="button">Ver todas as frases</button></div>

@@ -639,3 +639,9 @@ Veja [VOZ_GUIADA_E_TESTES.md](VOZ_GUIADA_E_TESTES.md) para uso, limites e testes
 de celular pendentes. A fala confirmada mantém a configuração de voz do app.
 A exploração não registra comunicação ou aprendizado. Não depende do backend
 nem da ativação do Brevo.
+
+## Frases e lixeira simplificadas
+
+Veja [FRASES_E_LIXEIRA.md](FRASES_E_LIXEIRA.md): lixeira local recuperável,
+restauração diretamente em Minhas frases, ações principais de Guardar/Trazer
+na conta e roteiro curto para repetir o teste de uso após publicação.
