@@ -46,7 +46,7 @@ test('backup de saúde criptografa apenas o perfil de saúde e recusa arquivos d
  }
  const service = e.ctx.window.BackupService;
  const health = {
-  allergies: ['Alergia fictícia'], gesture: 'Gesto fictício', observations: 'Observação anterior',
+  allergies: ['Alergia fictícia'], gesture: 'Gesto fictício', observations: 'Observação anterior', healthPlan: 'Convênio anterior',
   sensoryPreferences: {sound: true, helps: ['Silêncio']}, updatedAt: '2026-11-18T16:00:00Z'
  };
  const data = {...health, guardians: ['Contato fora do backup'], history: ['Mensagem fora do backup']};

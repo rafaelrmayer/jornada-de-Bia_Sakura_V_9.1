@@ -874,7 +874,10 @@
                 helps: Array.from(document.querySelectorAll('.sensHelp:checked')).map(el => el.value)
             };
             const details=Object.fromEntries([['medSignal','signal'],['medGesture','gesture'],['medMeaning','meaning'],['medSensoryBothers','sensoryBothers'],['medSensoryHelps','sensoryHelps'],['medCare','care']].map(([id,key])=>[key,document.getElementById(id).value.trim().slice(0,1000)]));
-            const nextMedical={supportLevel,allergies,sensoryPreferences,...details,updatedAt:new Date().toISOString()};
+            const previous = StorageService.getJSON('medicalData', {});
+            const legacy = Object.fromEntries(['healthPlan', 'observations']
+                .filter(key => typeof previous?.[key] === 'string').map(key => [key, previous[key]]));
+            const nextMedical={...legacy,supportLevel,allergies,sensoryPreferences,...details,updatedAt:new Date().toISOString()};
             if(!StorageService.setItem('medicalData', JSON.stringify(nextMedical))){showToast('Não foi possível salvar neste aparelho.');return;}
             medicalData=nextMedical;
             playSuccessSound();

@@ -5,7 +5,7 @@
   const HEALTH_BACKUP_VERSION = 1;
   const MAX_HEALTH_DATA_BYTES = 64 * 1024;
   const MAX_HEALTH_FILE_BYTES = 128 * 1024;
-  const HEALTH_TEXT_FIELDS = ['supportLevel','observations','signal','gesture','meaning','sensoryBothers','sensoryHelps','care','updatedAt'];
+  const HEALTH_TEXT_FIELDS = ['healthPlan','supportLevel','observations','signal','gesture','meaning','sensoryBothers','sensoryHelps','care','updatedAt'];
   const SENSORY_FLAGS = ['sound','light','touch','smells','crowds','fabrics'];
   const CONFIG_KEYS = new Set(['symbolsData','voiceRate','voicePitch','autoSpeak','theme']);
   const safeJson = v => { try { return JSON.parse(v); } catch { return null; } };
