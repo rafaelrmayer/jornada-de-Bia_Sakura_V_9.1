@@ -1,26 +1,26 @@
-/* Cabeçalho e paleta da tela inicial. */
-html:root body:has(#page-home.active) > header[role="banner"] {
+/* Cabeçalho compartilhado e paleta dos banners Sakura. */
+html:root body > header[role="banner"] {
     background: var(--friendly-paper) !important;
     border-bottom: 1px solid var(--friendly-line) !important;
 }
 
-html body:has(#page-home.active) > header .header-container {
+html body > header .header-container {
     max-width: 900px !important;
     min-height: 3.75rem !important;
     padding: .65rem clamp(1rem, 3vw, 1.5rem) !important;
 }
 
-html body:has(#page-home.active) > header .header-left .header-brand-title strong {
+html body > header .header-left .header-brand-title strong {
     color: var(--friendly-ink) !important;
     -webkit-text-fill-color: currentColor !important;
     font: 750 1rem/1.25 system-ui, sans-serif;
 }
 
-html body:has(#page-home.active) > header :is(.header-brand-title small, .header-title, .logo-container img) {
+html body > header :is(.header-brand-title small, .header-title, .logo-container img) {
     display: none !important;
 }
 
-html body:has(#page-home.active) > header .header-left .logo-container {
+html body > header .header-left .logo-container {
     width: 2.2rem !important;
     height: 2.2rem !important;
     flex: 0 0 2.2rem !important;
@@ -30,13 +30,13 @@ html body:has(#page-home.active) > header .header-left .logo-container {
     color: var(--friendly-ink) !important;
 }
 
-html body:has(#page-home.active) > header .logo-container::before {
+html body > header .logo-container::before {
     content: "✿";
     font-size: 1.35rem;
     line-height: 1;
 }
 
-html body:has(#page-home.active) > header #stats-btn {
+html body > header #stats-btn {
     min-width: 2.75rem;
     min-height: 2.75rem;
     background: var(--friendly-paper) !important;
@@ -45,6 +45,9 @@ html body:has(#page-home.active) > header #stats-btn {
 
 html:root:not([data-theme], .bia-a11y-contrast, .bia-high-contrast) body:has(#page-home.active) {
     background: #fbf4f8 !important;
+}
+
+html:root:not([data-theme], .bia-a11y-contrast, .bia-high-contrast) body :is(header[role="banner"], .sakura-board-hero) {
     --friendly-paper: #fffcfd;
     --friendly-soft: #fff5f8;
     --friendly-ink: #382630;
@@ -53,7 +56,7 @@ html:root:not([data-theme], .bia-a11y-contrast, .bia-high-contrast) body:has(#pa
     --friendly-petal: #f9e4ed;
 }
 
-html:root.bia-high-contrast body:has(#page-home.active) > header[role="banner"] {
+html:root.bia-high-contrast body > header[role="banner"] {
     --friendly-paper: #000;
     --friendly-ink: #fff;
     --friendly-line: #fff;
@@ -129,20 +132,51 @@ html.bia-high-contrast .sakura-board {
     font-size: clamp(1rem, 3vw, 1.25rem);
 }
 
-.sakura-board-blossoms {
+.sakura-board-hero::before,
+.sakura-board-hero::after {
+    content: "✿" / "";
     position: absolute;
-    inset: 0;
     z-index: -1;
-    color: var(--board-accent);
+    color: var(--board-accent, var(--calm-accent));
     opacity: .25;
     pointer-events: none;
+    font-size: clamp(1.1rem, 4vw, 2.65rem);
 }
 
-.sakura-board-blossoms > span { position: absolute; font-size: clamp(1.1rem, 4vw, 2.65rem); }
-.sakura-board-blossoms > :nth-child(1) { left: 8%; top: 14%; transform: rotate(-22deg); }
-.sakura-board-blossoms > :nth-child(2) { left: 17%; bottom: 9%; font-size: 1.1rem; }
-.sakura-board-blossoms > :nth-child(3) { right: 8%; bottom: 9%; transform: rotate(24deg); }
-.sakura-board-blossoms > :nth-child(4) { right: 17%; top: 13%; font-size: 1.1rem; }
+.sakura-board-hero::before {
+    inset: 12% auto auto 8%;
+    text-shadow: 1.15em 1.55em currentColor;
+    transform: rotate(-12deg);
+}
+
+.sakura-board-hero::after {
+    inset: auto 8% 8% auto;
+    text-shadow: -1.15em -1.55em currentColor;
+    transform: rotate(12deg);
+}
+
+.sakura-page-banner {
+    width: 100%;
+    margin: 0 0 1.2rem;
+    padding-inline: clamp(1.5rem, 8vw, 4.5rem);
+    font-family: system-ui, sans-serif;
+}
+
+.sakura-page-banner h2 { font-size: clamp(1.75rem, 6vw, 3rem); }
+
+.sakura-page-banner p {
+    max-width: 60ch;
+    margin-inline: auto;
+    font-size: clamp(.95rem, 2.5vw, 1.1rem);
+}
+
+html.bia-high-contrast .sakura-page-banner {
+    --friendly-ink: #fff;
+    --friendly-muted: #fff;
+    --friendly-line: #fff;
+    --friendly-petal: #000;
+    --friendly-soft: #000;
+}
 
 .sakura-board-title {
     margin: 1.15rem 0 .65rem;

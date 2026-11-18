@@ -41,7 +41,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
     <link rel="stylesheet" href="css/guided-voice.css">
-    <link rel="stylesheet" href="css/sakura-board.css?v=referencia">
+    <link rel="stylesheet" href="css/sakura-board.css?v=banners">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -104,7 +104,6 @@
             </section>
             <section class="sakura-board" aria-labelledby="homeGreeting">
                 <div class="sakura-board-hero">
-                    <span class="sakura-board-blossoms" aria-hidden="true"><span>✿</span><span>✿</span><span>✿</span><span>✿</span></span>
                     <h2 id="homeGreeting">Oi, Bia!</h2>
                     <p>O que você quer dizer?</p>
                 </div>
@@ -317,11 +316,12 @@
 
         <!-- ===== PÁGINA: CRISE SENSORIAL ===== -->
         <div class="page-section" id="page-sensory-crisis">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2>Modo Calmo</h2>
+                <p>Escolha uma mensagem. A tela reduz estímulos e mantém apenas o essencial.</p>
+            </div>
             <section class="sensory-crisis-page">
                 <div class="sensory-crisis-card">
-                    <div class="sensory-calm-brand">🌸 ♾️</div>
-                    <h2>🌸 MODO CALMO</h2>
-                    <p>Escolha uma mensagem. A tela reduz estímulos e mantém apenas o essencial.</p>
                     <div class="sensory-crisis-grid">
                         <button class="sensory-option" type="button" onclick="speakSensory('Preciso de silêncio')">🤫<strong>Silêncio</strong><small>Preciso de menos sons</small></button>
                         <button class="sensory-option" type="button" onclick="speakSensory('Preciso de um lugar tranquilo')">🌙<strong>Lugar calmo</strong><small>Quero diminuir os estímulos</small></button>
@@ -342,14 +342,12 @@
 
         <!-- ===== PÁGINA: EDITAR SÍMBOLOS ===== -->
         <div class="page-section" id="page-edit-symbols">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2>Editar Símbolos</h2>
+                <p>Gerencie os símbolos disponíveis para comunicação.</p>
+            </div>
             <section class="edit-symbols-container">
                 <div class="edit-symbols-header">
-                    <div>
-                        <h3>✏️ Editar Símbolos</h3>
-                        <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 4px; font-weight: 600;">
-                            Gerencie os símbolos disponíveis para comunicação.
-                        </p>
-                    </div>
                     <div class="symbol-count" id="editSymbolCount">0 símbolos</div>
                 </div>
 
@@ -363,9 +361,11 @@
 
         <!-- ===== PÁGINA: HISTÓRICO ===== -->
         <div class="page-section" id="page-history">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2>Todas as Mensagens</h2>
+            </div>
             <section class="history-section">
                 <div class="history-header">
-                    <h2>📜 Todas as Mensagens</h2>
                     <button id="clearHistoryBtn2" class="clear-history-btn" aria-label="Limpar todo o histórico">🗑️ Limpar histórico</button>
                 </div>
                 <div id="historyList2" class="history-list" style="max-height: 400px;" role="list">
@@ -376,6 +376,9 @@
 
         <!-- ===== PÁGINA: RESPONSÁVEIS ===== -->
         <div class="page-section" id="page-guardians">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2>Responsáveis</h2>
+            </div>
             <section class="guardians-container">
                 <div class="guardian-lock">
                     <div><strong>🔐 Acesso administrativo</strong><div style="font-size:.78rem;color:var(--text-light);font-weight:600;">Protege configurações e edição para evitar alterações acidentais.</div></div>
@@ -383,7 +386,6 @@
                 </div>
                 <div class="guardians-header admin-protected" hidden>
                     <div>
-                        <h3>👨‍👩‍👧 Responsáveis</h3>
                         <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 4px; font-weight: 600;">
                             Gerencie os contatos dos responsáveis para comunicação rápida.
                         </p>
@@ -401,8 +403,10 @@
 
         <!-- ===== PÁGINA: MÉDICO ===== -->
         <div class="page-section" id="page-medical">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2>Saúde e cuidados</h2>
+            </div>
             <section class="medical-container">
-                <h3>🏥 Saúde e cuidados</h3>
                 <p class="medical-subtitle">Informações opcionais do responsável, somente neste aparelho. Não entram na conta, nos convites nem no backup geral. Não informe CPF, endereço ou documentos.</p>
 
                 <form class="medical-form" id="medicalForm">
@@ -474,22 +478,34 @@
             </section>
         </div>
 
-        <section class="page-section" id="page-word-goals" aria-labelledby="wgTitle"><div class="bia-feature">
-<header><h2 id="wgTitle">🌱 Jardim da Bia</h2><p>Acompanhamento opcional do adulto, combinado com a Bia e a fono. Todas as formas de comunicação e de apoio têm valor.</p></header>
+        <section class="page-section" id="page-word-goals" aria-labelledby="wgTitle">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2 id="wgTitle">Jardim da Bia</h2>
+                <p>Acompanhamento opcional do adulto, combinado com a Bia e a fono. Todas as formas de comunicação e de apoio têm valor.</p>
+            </div>
+            <div class="bia-feature">
 <p id="wgStatus" class="bia-hint" role="status" aria-live="polite"></p>
 <div id="wgRoot"></div>
 <button type="button" class="wg-btn" id="wgSummaryToggle" aria-expanded="false" aria-controls="wgSummary">📋 Resumo para a fono</button>
 <section id="wgSummary" hidden aria-label="Resumo semanal para a fono"></section>
 </div></section>
-        <section class="page-section" id="page-routine"><div class="bia-feature">
-<header><h2>📅 Minha Rotina</h2><p>Um passo de cada vez, no meu tempo.</p></header>
+        <section class="page-section" id="page-routine">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2>Minha Rotina</h2>
+                <p>Um passo de cada vez, no meu tempo.</p>
+            </div>
+            <div class="bia-feature">
 <div class="bia-periods" id="biaRoutinePeriods" role="group" aria-label="Período da rotina"></div>
 <p id="biaRoutineNext" class="bia-hint" aria-live="polite"></p>
 <div id="biaRoutineList" class="bia-routine-list" aria-live="polite"></div>
 <div class="bia-manage"><button type="button" id="biaRoutineManage">🔐 Organizar atividades</button><p class="bia-hint">Para adicionar, excluir ou mudar a ordem, desbloqueie a administração nas Configurações.</p><div id="biaRoutineEditor" hidden><label>Atividade <input id="biaRoutineName" maxlength="60" placeholder="Ex.: Tomar café"></label><label>Ícone <select id="biaRoutineIcon"><option>🌞</option><option>🍽️</option><option>🪥</option><option>🎒</option><option>🎨</option><option>🛁</option><option>📚</option><option>🛏️</option><option>💧</option><option>🎵</option></select></label><label>Horário opcional <input type="time" id="biaRoutineTime"></label><button type="button" id="biaRoutineAdd">Adicionar atividade</button><p id="biaRoutineFeedback" role="status"></p></div></div>
 </div></section>
-        <section class="page-section" id="page-activities"><div class="bia-feature">
-<header><h2>🎵 Música e Atividades</h2><p>Explorar, desenhar e brincar sem pressa.</p></header>
+        <section class="page-section" id="page-activities">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2>Música e Atividades</h2>
+                <p>Explorar, desenhar e brincar sem pressa.</p>
+            </div>
+            <div class="bia-feature">
 <div class="bia-activity-tabs" role="group" aria-label="Escolher atividade"><button type="button" data-bia-activity="draw">🎨 Desenhar</button><button type="button" data-bia-activity="game">🧩 Jogo visual</button><button type="button" data-bia-activity="sounds">🎶 Sons e música</button><button type="button" data-bia-activity="garden">🌸 Jardim Musical</button><button type="button" data-bia-activity="colors">🎨 Formas e Cores</button></div>
 <div id="biaDraw" class="bia-activity-panel"><h3>Meu desenho</h3><p>Desenhe com o dedo ou mouse. Seu desenho não é enviado para nenhum servidor.</p><div class="bia-draw-controls"><label>Cor <input type="color" id="biaDrawColor" value="#e47ca9"></label><label>Traço <input type="range" id="biaDrawSize" min="2" max="24" value="6"></label><button type="button" id="biaDrawClear">Apagar desenho</button><button type="button" id="biaDrawSave">Salvar imagem</button><label>Ferramenta <select id="biaArtTool" aria-label="Ferramenta do Ateliê"><option value="pencil">✏️ Lápis</option><option value="flower">🌸 Flor</option><option value="butterfly">🦋 Borboleta</option><option value="star">⭐ Estrela</option><option value="heart">💗 Coração</option></select></label><label>Fundo <select id="biaArtBackground" aria-label="Cor de fundo do desenho"><option value="#ffffff">Branco</option><option value="#F7EEDB">Creme</option><option value="#F7DFE5">Rosa</option><option value="#DFEAF7">Azul</option></select></label><button type="button" id="biaArtApplyBackground">Aplicar fundo</button></div><canvas id="biaCanvas" width="800" height="420" aria-label="Área de desenho livre; use toque ou mouse"></canvas></div>
 <div id="biaGame" class="bia-activity-panel" hidden><h3>Encontre os pares</h3><p>Toque em duas figuras iguais. Sem cronômetro e sem pontuação negativa.</p><div id="biaGameGrid" class="bia-game-grid"></div><p id="biaGameStatus" role="status" aria-live="polite"></p><button type="button" id="biaGameRestart">Novo jogo</button></div>
@@ -497,7 +513,12 @@
 </div></section>
 <div id="biaGarden" class="bia-activity-panel" hidden><h3>🌸 Jardim Musical Sakura</h3><p>Toque em uma flor, borboleta ou estrela para ouvir uma nota suave. Nenhum som começa sozinho.</p><div class="bia-garden-grid" role="group" aria-label="Instrumentos do jardim"><button type="button" data-garden-note="261.63" aria-label="Flor rosa, nota dó">🌸<span>Flor rosa</span></button><button type="button" data-garden-note="293.66" aria-label="Borboleta, nota ré">🦋<span>Borboleta</span></button><button type="button" data-garden-note="329.63" aria-label="Flor amarela, nota mi">🌼<span>Flor amarela</span></button><button type="button" data-garden-note="349.23" aria-label="Folha, nota fá">🍃<span>Folha</span></button><button type="button" data-garden-note="392.00" aria-label="Estrela, nota sol">⭐<span>Estrela</span></button><button type="button" data-garden-note="440.00" aria-label="Flor branca, nota lá">🌷<span>Flor delicada</span></button></div><div class="bia-garden-controls"><label>Volume do jardim <input type="range" id="biaGardenVolume" min="0" max="30" value="10"></label><button type="button" id="biaGardenStop">⏹ Silenciar</button></div><p id="biaGardenStatus" role="status" aria-live="polite">Jardim silencioso.</p></div>
 <div id="biaColors" class="bia-activity-panel" hidden><h3>🔶 Formas e Cores</h3><p>Observe a figura e escolha a opção igual. Sem tempo limite ou penalização.</p><div class="bia-colors-target" id="biaColorsTarget" aria-live="polite"></div><div class="bia-colors-grid" id="biaColorsChoices" role="group" aria-label="Escolha a figura igual"></div><p id="biaColorsStatus" role="status" aria-live="polite"></p><button type="button" id="biaColorsNext">Outra figura</button></div>
-        <section class="page-section" id="page-assistant"><div class="bia-feature"><h2>🦋 Assistente Inteligente</h2><p>Random Forest + rede neural experimental. Sugestões não representam necessidades confirmadas. Você sempre escolhe o que comunicar.</p><div class="bia-assistant-summary" id="biaAssistantSummary" role="status" aria-live="polite">Aguardando interações de comunicação.</div><div class="bia-ai-controls"><p>Random Forest e rede neural local estão em observação: calculam resultados para comparação, sem substituir as frases apresentadas. A Neural API dos cartões é um componente separado.</p><p id="biaAiStats" role="status">Aguardando dados locais suficientes.</p><button type="button" id="biaAiClear">🔐 Apagar aprendizado local da IA</button><p id="biaAiClearFeedback" role="status"></p></div><section class="rf-evaluation-panel" aria-labelledby="rfTestTitle">
+        <section class="page-section" id="page-assistant">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2>Assistente Inteligente</h2>
+                <p>Random Forest + rede neural experimental. Sugestões não representam necessidades confirmadas. Você sempre escolhe o que comunicar.</p>
+            </div>
+            <div class="bia-feature"><div class="bia-assistant-summary" id="biaAssistantSummary" role="status" aria-live="polite">Aguardando interações de comunicação.</div><div class="bia-ai-controls"><p>Random Forest e rede neural local estão em observação: calculam resultados para comparação, sem substituir as frases apresentadas. A Neural API dos cartões é um componente separado.</p><p id="biaAiStats" role="status">Aguardando dados locais suficientes.</p><button type="button" id="biaAiClear">🔐 Apagar aprendizado local da IA</button><p id="biaAiClearFeedback" role="status"></p></div><section class="rf-evaluation-panel" aria-labelledby="rfTestTitle">
 <h3 id="rfTestTitle">Avaliação manual do Random Forest</h3>
 <p>Para testes feitos por você, separados do uso da Bia. As previsões são calculadas antes da escolha e reveladas depois. O teste não treina os modelos nem muda a ordem das frases.</p>
 <div class="rf-test-context"><label for="rfTestEnvironment">Ambiente do teste<select id="rfTestEnvironment"><option value="auto">Sem ambiente definido</option><option value="casa">Casa</option><option value="escola">Escola</option><option value="passeio">Passeio</option><option value="medico">Médico</option><option value="carro">Carro</option></select></label>
@@ -512,8 +533,11 @@
 <button type="button" data-page="my-communication">💬 Ir para Minha Comunicação</button><p class="bia-hint">Os modelos funcionam localmente, sem enviar histórico a serviços externos. A comunicação continua disponível sem IA.</p></div></section>
         <!-- ===== PÁGINA: CONFIGURAÇÕES ===== -->
         <div class="page-section" id="page-settings">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2>Apoio</h2>
+                <p>Escolha o que deseja ajustar.</p>
+            </div>
             <section class="settings-container">
-<h2>Apoio</h2><p class="settings-subtitle">Escolha o que deseja ajustar.</p>
 <div class="guardian-access-inline"><span id="adminAccessStatus" role="status">🔒 Administração bloqueada</span><button type="button" id="settingsAdminUnlock">🔐 Desbloquear administração</button></div>
 <details id="support-appearance" class="support-block" name="support-sections">
  <summary><span><strong>Aparência e acessibilidade</strong><small>Cores, texto, contraste e movimento.</small></span></summary>
@@ -791,8 +815,10 @@
 
 <!-- ===== PÁGINA: SOBRE ===== -->
         <div class="page-section" id="page-about">
+            <div class="sakura-board-hero sakura-page-banner">
+                <h2>Sobre a Jornada de Bia</h2>
+            </div>
             <section class="about-container">
-                <h3>🌻∞ Sobre a Jornada de Bia</h3>
                 <div class="about-content">
                     <p><strong>A Jornada de Bia</strong> é um aplicativo de comunicação acessível que utiliza <span class="highlight">Inteligência Artificial</span> para ajudar pessoas com dificuldades de comunicação.</p>
                     <br>
@@ -1029,10 +1055,10 @@
 
     <!-- ===== PÁGINA: MINHA COMUNICAÇÃO ===== -->
     <section class="page-section" id="page-my-communication" aria-labelledby="myCommunicationTitle">
-        <div class="page-header">
-            <h2 id="myCommunicationTitle">💬 Minha Comunicação</h2>
-            <p>Organize suas frases e categorias do seu jeito. Você e seu responsável podem personalizar este espaço.</p>
-        </div>
+        <div class="sakura-board-hero sakura-page-banner">
+                <h2 id="myCommunicationTitle">Minha Comunicação</h2>
+                <p>Organize suas frases e categorias do seu jeito. Você e seu responsável podem personalizar este espaço.</p>
+            </div>
         <section id="myCommMostUsed" class="my-comm-panel" aria-labelledby="myCommMostUsedTitle" hidden>
             <h3 id="myCommMostUsedTitle">Mais usados neste aparelho</h3>
             <p class="my-comm-helper">Atalhos para suas frases mais escolhidas. Todas continuam na lista abaixo.</p>
@@ -1087,13 +1113,10 @@
 
     <!-- ===== PAINEL DE EMOÇÕES ===== -->
     <section class="page-section emotions-page" id="page-emotions" aria-labelledby="emotionsTitle">
-        <div class="emotion-page-heading">
-            <div class="emotion-heading-art" aria-hidden="true">🌷</div>
-            <div><p class="emotion-eyebrow">MINHA VOZ, MEU SENTIR</p>
+        <div class="sakura-board-hero sakura-page-banner">
                 <h2 id="emotionsTitle">Como estou me sentindo?</h2>
                 <p>Escolha a emoção que representa como você está. Você pode mudar de ideia a qualquer momento.</p>
             </div>
-        </div>
         <div class="emotion-grid" id="emotionGrid" aria-label="Escolha uma emoção">
             <button class="emotion-card emotion-happy" type="button" data-emotion="feliz" data-phrase="Estou feliz">
                 <span class="emotion-illustration" aria-hidden="true"><svg viewBox="0 0 100 100"><path class="face-outline" d="M50 8 C75 7 91 26 91 50 C91 75 73 92 49 92 C25 92 8 74 9 49 C9 25 26 9 50 8Z"/><path class="face-feature" d="M31 42 Q35 35 40 42 M60 42 Q65 35 69 42 M34 60 Q50 78 67 59"/></svg></span>
