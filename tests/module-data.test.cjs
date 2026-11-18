@@ -26,3 +26,49 @@ test('exportação completa exclui saúde mesmo se o chamador a fornecer',async(
  const payload=await e.ctx.window.BackupService.export({symbolsData:[],guardians:[],medicalData:{gesture:'privado'}},{password:'test-only-password'});
  assert.equal(payload.data.medicalData,undefined);assert.equal(payload.data.symbolsData.length,0);
 });
+
+test('backup de saúde criptografa apenas o perfil de saúde e recusa arquivos de outro tipo', async () => {
+ const e = env();
+ const downloads = [];
+ const password = 'senha-ficticia-teste';
+ let blob;
+ Object.assign(e.ctx, {
+  JornadaModuleData: e.api,
+  TextEncoder, TextDecoder, Blob, btoa, atob, crypto: require('node:crypto').webcrypto,
+  URL: {createObjectURL(value) { blob = value; return 'blob:teste'; }, revokeObjectURL() {}},
+  setTimeout() {},
+  document: {createElement: () => ({click() { downloads.push({blob, name: this.download}); }})},
+  prompt: () => password
+ });
+ for (const name of ['backup-crypto', 'backup']) {
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../js', name + '.js'), 'utf8'), e.ctx);
+  e.ctx.BackupCrypto = e.ctx.window.BackupCrypto;
+ }
+ const service = e.ctx.window.BackupService;
+ const health = {
+  allergies: ['Alergia fictícia'], gesture: 'Gesto fictício', observations: 'Observação anterior',
+  sensoryPreferences: {sound: true, helps: ['Silêncio']}, updatedAt: '2026-11-18T16:00:00Z'
+ };
+ const data = {...health, guardians: ['Contato fora do backup'], history: ['Mensagem fora do backup']};
+ await service.exportHealth(data, password, () => false);
+ assert.equal(downloads.length, 0);
+ assert.equal(await service.exportHealth(data, password, () => true), true);
+ assert.match(downloads[0].name, /^jornada-bia-backup-saude-.*\.json$/);
+ const file = downloads[0].blob;
+ const text = await file.text();
+ assert.equal(JSON.parse(text).encrypted, true);
+ assert.doesNotMatch(text, /Gesto fictício|Alergia fictícia|Contato fora do backup/);
+ assert.deepEqual(JSON.parse(JSON.stringify(await service.readHealth(file, password))), health);
+ await assert.rejects(service.readHealth(file, 'outra-senha'));
+ await assert.rejects(service.readHealth(new Blob([JSON.stringify({type: 'health', data: health})]), password));
+ await assert.rejects(service.readAndValidate(file), /Tipo de backup inválido/);
+ await service.export({symbolsData: [], guardians: [], medicalData: health}, {password});
+ await assert.rejects(service.readHealth(downloads[1].blob, password), /Formato de backup de saúde inválido/);
+ assert.equal(e.storage.length, 0);
+});
+
+test('exclusão dos dados de saúde preserva preferências e relatos de outros módulos', () => {
+ const e = env({medicalData: '{}', theme: 'dark', 'jb_word_goals_v2': '{}', 'jornadaBia:myCommunicationData': '{}'});
+ assert.equal(e.ctx.window.StorageService.removeItem('medicalData'), true);
+ assert.deepEqual([...e.values.keys()], ['theme', 'jb_word_goals_v2', 'jornadaBia:myCommunicationData']);
+});
