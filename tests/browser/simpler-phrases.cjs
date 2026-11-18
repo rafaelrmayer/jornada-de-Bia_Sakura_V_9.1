@@ -6,7 +6,11 @@ let card={id,category_id:category,text:'Quero a mochila',image_ref:null,display_
 const ownerId='00000000-0000-4000-8000-000000000004',memberId='00000000-0000-4000-8000-000000000005',inviteId='00000000-0000-4000-8000-000000000006';
 let accountRole='owner',experimentAdmin=false;let invites=[],members=[{id:ownerId,user_id:ownerId,email:'owner@gmail.com',role:'owner'},{id:memberId,user_id:memberId,email:'guest@gmail.com',role:'viewer'}];
 const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'});
-await c.addInitScript(()=>{let config=null;window.google={accounts:{id:{initialize(value){config=value;window.__googleNonce=value.nonce;},renderButton(container){const button=document.createElement('button');button.type='button';button.id='fakeGoogleSignIn';button.textContent='Continuar com o Google (teste)';button.onclick=()=>config.callback({credential:'fictitious-google-token'});container.replaceChildren(button);},cancel(){},disableAutoSelect(){}}}};});
+await c.addInitScript(()=>{
+const voice={voiceURI:'local-test',name:'Voz local de teste',lang:'pt-BR',localService:true,default:true};
+Object.defineProperty(window,'SpeechSynthesisUtterance',{value:class{constructor(text){this.text=text;}},configurable:true});
+Object.defineProperty(window,'speechSynthesis',{value:{speaking:false,getVoices:()=>[voice],addEventListener(){},speak(u){queueMicrotask(()=>u.onend?.());},cancel(){},resume(){},pause(){}},configurable:true});
+let config=null;window.google={accounts:{id:{initialize(value){config=value;window.__googleNonce=value.nonce;},renderButton(container){const button=document.createElement('button');button.type='button';button.id='fakeGoogleSignIn';button.textContent='Continuar com o Google (teste)';button.onclick=()=>config.callback({credential:'fictitious-google-token'});container.replaceChildren(button);},cancel(){},disableAutoSelect(){}}}};});
 await c.route('**/*',async r=>{
 const url=new URL(r.request().url());
 if(url.origin===site)return r.continue();
@@ -168,6 +172,40 @@ await p.waitForFunction(()=>document.getElementById('experimentalCardsAdmin').hi
 assert.equal(await p.evaluate(()=>localStorage.getItem('bia-card-suggestion-mode')),'remote');
 await p.locator('#dataAccountLogout').click();assert.equal(await p.locator('#experimentalCardsAdmin').isVisible(),false);
 assert.equal(await p.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('fake-test-token')),false);
+// Comunicação única e atalhos de uso real, sem mudar a ordem da lista.
+await nav('settings');await p.locator('#voiceSelect').selectOption({label:'Voz local de teste (pt-BR)'});await nav('my-communication');
+assert.equal(await p.locator('.visual-bottom-nav [data-page="cards"]').count(),0);
+assert.equal(await p.locator('#page-cards').count(),0);
+assert.equal(await p.locator('#myCommMostUsed').isVisible(),false);
+for(const text of ['Quero descansar','Quero água']){
+ await p.locator('#myCommAddPhrase').click();await p.locator('#myCommPhraseText').fill(text);await p.locator('#myCommPhraseCategory').selectOption('Geral');await p.locator('#myCommPhraseForm button[type="submit"]').click();
+}
+await p.locator('#myCommAddSymbol').click();await p.locator('#symbolEmoji').fill('🎒');await p.locator('#symbolLabel').fill('Mochila pessoal');await p.locator('#symbolModalSave').click();
+assert((await p.locator('#homeQuickSymbolsGrid').textContent()).includes('Mochila pessoal'));
+const orderBefore=await p.evaluate(()=>JBCommunication.snapshot().phrases.map(p=>p.id));
+const water=await p.evaluate(()=>JBCommunication.snapshot().phrases.find(p=>p.text==='Quero água').id);
+const rest=await p.evaluate(()=>JBCommunication.snapshot().phrases.find(p=>p.text==='Quero descansar').id);
+await p.locator('#myCommPhraseList [data-speak="'+water+'"]').click();await p.locator('#myCommPhraseList [data-speak="'+water+'"]').click();await p.locator('#myCommPhraseList [data-speak="'+rest+'"]').click();
+assert.deepEqual(await p.locator('#myCommMostUsedGrid [data-speak]').evaluateAll(nodes=>nodes.map(n=>n.dataset.speak)),[water,rest]);
+assert.deepEqual(await p.evaluate(()=>JBCommunication.snapshot().phrases.map(p=>p.id)),orderBefore);
+assert(!(await p.locator('#page-my-communication').innerText()).includes('Quero jogar Zelda: Ocarina of Time.'));
+await p.evaluate(()=>showPage('cards'));assert.equal(await p.locator('#page-my-communication').isVisible(),true);
+// Prévia e cancelamento não aumentam uso; confirmação aumenta uma única vez.
+await nav('settings');await p.locator('#guidedVoiceEnabled').check();await nav('my-communication');
+const count=()=>p.evaluate(()=>JSON.parse(StorageService.getItem('phraseUsage'))['Quero água']);
+const prior=await count();await p.locator('#myCommMostUsedGrid [data-speak="'+water+'"]').click();await p.locator('#guidedVoiceListen').click();await p.locator('#guidedVoiceCancel').click();assert.equal(await count(),prior);
+await p.locator('#myCommMostUsedGrid [data-speak="'+water+'"]').click();await p.locator('#guidedVoiceConfirm').click();assert.equal(await count(),prior+1);
+await nav('settings');await p.locator('#guidedVoiceEnabled').uncheck();await nav('my-communication');
+await p.locator('#myCommPhraseList [data-delete="'+water+'"]').click();assert.equal(await p.locator('#myCommMostUsedGrid [data-speak="'+water+'"]').count(),0);
+await p.locator('#myCommOpenTrash').click();await p.locator('[data-restore-phrase="'+water+'"]').click();assert.equal(await p.locator('#myCommMostUsedGrid [data-speak="'+water+'"]').count(),1);
+assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+// O backup protegido mantém as contagens que alimentam os atalhos.
+await nav('settings');const usageDownloadPromise=p.waitForEvent('download');await p.locator('#exportDataBtn').click();const usageDownload=await usageDownloadPromise;
+const usageWrapper=JSON.parse(require('node:fs').readFileSync(await usageDownload.path(),'utf8'));
+const usageBackup=await p.evaluate(wrapper=>BackupService.readAndValidate(new File([JSON.stringify(wrapper)],'backup-teste.json',{type:'application/json'})),usageWrapper);
+assert.equal(usageBackup.data.phraseUsage['Quero água'],prior+1);
+await nav('my-communication');
+if(process.env.BIA_UNIFIED_SCREENSHOT)await p.locator('#page-my-communication').screenshot({path:process.env.BIA_UNIFIED_SCREENSHOT});
 assert.deepEqual(errors,[]);
 console.log('PASS: local trash, restore, cancel, failed write, reload, no learning changes, remote archive preserves local, recovery restores local trash in one action, generic import preserves local trash, mobile. API mocked; no production request.');await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});

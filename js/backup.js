@@ -24,6 +24,7 @@
     if (d.history && !Array.isArray(d.history)) throw new Error('Histórico inválido');
     if (d.favoriteIds && !Array.isArray(d.favoriteIds)) throw new Error('Favoritos inválidos');
     if (d.symbolUsage && typeof d.symbolUsage !== 'object') throw new Error('Uso de símbolos inválido');
+    if(d.phraseUsage!==undefined&&(!d.phraseUsage||typeof d.phraseUsage!=='object'||Array.isArray(d.phraseUsage)||Object.values(d.phraseUsage).some(n=>!Number.isSafeInteger(n)||n<0)))throw new Error('Uso de frases inválido');
     if(d.moduleData!==undefined)JornadaModuleData.validate(d.moduleData);
     return true;
   }

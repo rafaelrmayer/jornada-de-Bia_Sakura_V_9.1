@@ -118,6 +118,7 @@
     } catch (error) { el('neuralApiConfigStatus').textContent = error.message; }
   });
   el('neuralCardsSuggest').addEventListener('click', async () => {
+    if(!await root.JBExperimentAccess?.authorize?.())return;
     let base, mode='local';
     try { base=localStorage.getItem(key); mode=localStorage.getItem(modeKey)||'local'; } catch {}
     cancelUpdate();
@@ -143,12 +144,6 @@
       if(current===revision){activeRequest=null;el('neuralCardsSuggest').disabled=false;}
     }
   });
-  document.addEventListener('bia:pagechange', event => {
-    if (event.detail?.page !== 'cards') {if(activeRequest){cancelUpdate();status('Cartões disponíveis.');}return;}
-    let mode = 'local';
-    try { mode = localStorage.getItem(modeKey) || 'local'; } catch {}
-    // Entrar na página nunca inicia envio automático para um serviço externo.
-    if (mode !== 'remote') el('neuralCardsSuggest').click();
-  });
+  document.addEventListener('bia:pagechange',()=>{if(activeRequest)cancelUpdate();});
   render();
 })(typeof window === 'undefined' ? globalThis : window);
