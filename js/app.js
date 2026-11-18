@@ -2832,9 +2832,10 @@
 // ============================================
 (function initMyCommunication(){
     const STORE_KEY='myCommunicationData';
-    const defaults={phrases:[],categories:['Geral','Necessidades','Alimentação','Rotina','Sentimentos','Pessoas','Atividades'],favoriteSymbols:[]};
+    const defaults={phrases:[],trash:[],categories:['Geral','Necessidades','Alimentação','Rotina','Sentimentos','Pessoas','Atividades'],favoriteSymbols:[]};
     const read=()=>{try{return {...defaults,...JSON.parse(StorageService.getItem(STORE_KEY)||'{}')}}catch(e){return {...defaults}}};
     let data=read(), editingId=null, activeCategory='*';
+    if(!Array.isArray(data.trash))data.trash=[];
     // Recupera categorias associadas a frases antigas, evitando que fiquem invisíveis.
     data.phrases.forEach(p=>{const name=String(p.category||'Geral').trim()||'Geral';p.category=name;if(!data.categories.includes(name))data.categories.push(name);});
     let lastSavedRaw=StorageService.getItem(STORE_KEY);
@@ -2856,10 +2857,17 @@
         if(!list||!cats||!syms)return;
         syncCategorySelect();
         const visible=activeCategory==='*'?data.phrases:data.phrases.filter(p=>(p.category||'Geral')===activeCategory);
-        list.innerHTML=visible.length?visible.map(p=>`<article class="my-comm-item"><div class="my-comm-item-text"><strong>${safe(p.text)}</strong><small>${safe(p.category||'Geral')}</small></div><div class="my-comm-actions"><button type="button" data-speak="${safe(p.id)}" aria-label="Falar frase: ${safe(p.text)}">🔊</button><button type="button" data-edit="${safe(p.id)}" aria-label="Editar frase">✏️</button><button type="button" data-delete="${safe(p.id)}" aria-label="Excluir frase">🗑️</button></div></article>`).join(''):`<p class="my-comm-empty">${activeCategory==='*'?'Ainda não há frases personalizadas. Adicione a primeira!':`Ainda não há frases em “${safe(activeCategory)}”. Você pode adicionar uma nova frase nessa categoria.`}</p>`;
+        list.innerHTML=visible.length?visible.map(p=>`<article class="my-comm-item"><div class="my-comm-item-text"><strong>${safe(p.text)}</strong><small>${safe(p.category||'Geral')}</small></div><div class="my-comm-actions"><button type="button" data-speak="${safe(p.id)}" aria-label="Falar frase: ${safe(p.text)}">🔊</button><button type="button" data-edit="${safe(p.id)}" aria-label="Editar frase">✏️</button><button type="button" data-delete="${safe(p.id)}" aria-label="Mover frase para a lixeira">🗑️</button></div></article>`).join(''):`<p class="my-comm-empty">${activeCategory==='*'?'Ainda não há frases personalizadas. Adicione a primeira!':`Ainda não há frases em “${safe(activeCategory)}”. Você pode adicionar uma nova frase nessa categoria.`}</p>`;
         cats.innerHTML=data.categories.map(name=>{const count=data.phrases.filter(p=>(p.category||'Geral')===name).length;const selected=activeCategory===name;const removable=!['Geral','Necessidades','Alimentação','Rotina','Sentimentos','Pessoas','Atividades'].includes(name);return `<div class="my-comm-category-wrap"><button type="button" class="my-comm-category-card${selected?' is-active':''}" data-category="${safe(name)}" aria-pressed="${selected}"><span class="my-comm-category-emoji" aria-hidden="true">${categoryEmoji[name]||'✨'}</span><span class="my-comm-category-name">${safe(name)}</span><span class="my-comm-category-count">${count} ${count===1?'frase':'frases'}</span></button>${removable?`<button type="button" class="my-comm-category-remove" data-remove-category="${safe(name)}" aria-label="Excluir categoria ${safe(name)}">×</button>`:''}</div>`}).join('');
         const symbols=Array.isArray(symbolsData)?symbolsData:[];
         syms.innerHTML=symbols.map(s=>{const fav=data.favoriteSymbols.includes(String(s.id));return `<div class="my-comm-symbol"><span class="emoji">${safe(s.emoji||'🔹')}</span><strong>${safe(s.label||'Símbolo')}</strong><button type="button" data-favorite-symbol="${safe(s.id)}" aria-pressed="${fav}" aria-label="${fav?'Retirar':'Adicionar'} ${safe(s.label)} ${fav?'dos':'aos'} favoritos">${fav?'★ Favorito':'☆ Favoritar'}</button></div>`}).join('');
+        const filterStatus=el('myCommFilterStatus');if(filterStatus)filterStatus.textContent=activeCategory==='*'?'Todas as frases deste aparelho.':'Categoria: '+activeCategory;
+        const reset=el('myCommResetFilter');if(reset)reset.hidden=activeCategory==='*';
+        const trash=el('myCommTrashList');
+        if(trash)trash.innerHTML=data.trash.length?data.trash.map(p=>`<article class="my-comm-item"><div class="my-comm-item-text"><strong>${safe(p.text)}</strong><small>${safe(p.category||'Geral')}</small></div><button type="button" class="btn-secondary" data-restore-phrase="${safe(p.id)}">Restaurar</button></article>`).join(''):'<p>A lixeira está vazia.</p>';
+        const openTrash=el('myCommOpenTrash');if(openTrash)openTrash.textContent='Lixeira ('+data.trash.length+')';
+        const summary=el('myCommTrashSummary');if(summary)summary.textContent='Lixeira deste aparelho ('+data.trash.length+')';
+        const unlock=el('myCommTrashUnlock');if(unlock)unlock.hidden=!!window.SecurityService?.isUnlocked?.();
         const clearAll=el('myCommClearAll');if(clearAll)clearAll.disabled=data.phrases.length===0;
         const showAll=el('myCommShowAll'); if(showAll){showAll.classList.toggle('is-active',activeCategory==='*');showAll.textContent=activeCategory==='*'?'Todas as frases':'Ver todas as frases';}
     }
@@ -2868,17 +2876,21 @@
     el('myCommPhraseForm')?.addEventListener('submit',e=>{e.preventDefault();const text=el('myCommPhraseText').value.trim();if(!text)return;const category=el('myCommPhraseCategory').value||'Geral';if(editingId){const item=data.phrases.find(p=>p.id===editingId);if(item){item.text=text;item.category=category;}}else data.phrases.push({id:`phrase-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,text,category});activeCategory=category;save();el('myCommPhraseForm').hidden=true;editingId=null;render();});
     el('myCommCategoryForm')?.addEventListener('submit',e=>{e.preventDefault();const input=el('myCommCategoryName'),name=input.value.trim();if(!name)return;if(data.categories.some(c=>c.toLocaleLowerCase()===name.toLocaleLowerCase())){input.setCustomValidity('Essa categoria já existe.');input.reportValidity();return;}input.setCustomValidity('');data.categories.push(name);save();input.value='';activeCategory=name;render();});
     el('myCommShowAll')?.addEventListener('click',()=>{activeCategory='*';render();});
+    el('myCommResetFilter')?.addEventListener('click',()=>{activeCategory='*';render();});
+    el('myCommOpenTrash')?.addEventListener('click',()=>{el('myCommTrash').open=true;el('myCommTrashSummary').scrollIntoView({block:'center'});});
+    el('myCommTrashUnlock')?.addEventListener('click',async()=>{await window.requestGuardianUnlock?.();render();});
     el('myCommClearAll')?.addEventListener('click',()=>{
         const feedback=el('myCommClearStatus');
-        if(!window.SecurityService?.isUnlocked?.()){feedback.textContent='Desbloqueie a administração em Apoio para apagar todas as frases.';return;}
+        if(!window.SecurityService?.isUnlocked?.()){feedback.textContent='Desbloqueie a organização para mover todas as frases para a lixeira.';return;}
         if(!data.phrases.length)return;
-        const message='Apagar todas as '+data.phrases.length+' frases cadastradas neste navegador, de todas as categorias? O aprendizado dos modelos, categorias e favoritos serão preservados. Esta ação não pode ser desfeita.';
+        try{assertCloudState();}catch(error){feedback.textContent=error.message;return;}
+        const message='Mover as '+data.phrases.length+' frases deste aparelho para a lixeira? Você poderá restaurá-las. A conta online não será alterada.';
         if(!confirm(message))return;
-        const next={...data,phrases:[]};
-        if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false){feedback.textContent='Não foi possível apagar as frases neste navegador.';return;}
+        const next={...data,phrases:[],trash:[...(data.trash||[]),...data.phrases.map(p=>({...p,deletedAt:new Date().toISOString()}))]};
+        if(JSON.stringify(next).length>1000000||StorageService.setItem(STORE_KEY,JSON.stringify(next))===false){feedback.textContent='Não foi possível mover as frases. Elas foram preservadas.';return;}
         data=next;lastSavedRaw=JSON.stringify(next);editingId=null;activeCategory='*';el('myCommPhraseForm').hidden=true;
         render();
-        feedback.textContent='Todas as frases foram apagadas. O aprendizado, categorias e favoritos foram preservados.';
+        feedback.textContent='Frases movidas para a lixeira deste aparelho. Você pode restaurá-las abaixo.';
         el('myCommAddPhrase').focus();
     });
     document.addEventListener('click',e=>{
@@ -2888,7 +2900,25 @@
         const b=e.target.closest('button');if(!b)return;
         if(b.dataset.speak){const p=data.phrases.find(x=>x.id===b.dataset.speak);if(p)communicatePersonalPhrase(p.text);}
         if(b.dataset.edit){const p=data.phrases.find(x=>x.id===b.dataset.edit);if(p){editingId=p.id;el('myCommPhraseText').value=p.text;syncCategorySelect();el('myCommPhraseCategory').value=data.categories.includes(p.category)?p.category:'Geral';el('myCommPhraseForm').hidden=false;el('myCommPhraseText').focus();}}
-        if(b.dataset.delete){const p=data.phrases.find(x=>x.id===b.dataset.delete);if(p&&confirm(`Excluir a frase “${p.text}”?`)){data.phrases=data.phrases.filter(x=>x.id!==p.id);save();render();}}
+        if(b.dataset.delete||b.dataset.restorePhrase){
+            const feedback=el('myCommPhraseStatus');
+            if(!window.SecurityService?.isUnlocked?.()){feedback.textContent='Desbloqueie a organização para mover ou restaurar frases.';el('myCommTrash').open=true;render();return;}
+            try{
+                assertCloudState();
+                const restore=!!b.dataset.restorePhrase,id=restore?b.dataset.restorePhrase:b.dataset.delete;
+                const phrase=(restore?data.trash:data.phrases).find(x=>x.id===id);if(!phrase)return;
+                if(!restore&&!confirm(`Mover “${phrase.text}” para a lixeira deste aparelho? Você poderá restaurar. A conta online não será alterada.`))return;
+                const next=JSON.parse(JSON.stringify(data));
+                if(restore){
+                    if(!next.phrases.some(p=>p.id===id)){const {deletedAt,...saved}=phrase;next.phrases.push(saved);if(!next.categories.includes(saved.category||'Geral'))next.categories.push(saved.category||'Geral');}
+                    next.trash=next.trash.filter(p=>p.id!==id);
+                }else{next.phrases=next.phrases.filter(p=>p.id!==id);next.trash.push({...phrase,deletedAt:new Date().toISOString()});}
+                if(JSON.stringify(next).length>1000000||StorageService.setItem(STORE_KEY,JSON.stringify(next))===false)throw Error('Não foi possível salvar. As frases foram preservadas.');
+                data=next;lastSavedRaw=JSON.stringify(next);activeCategory='*';render();
+                feedback.textContent=restore?'Frase restaurada em Minhas frases.':'Frase movida para a lixeira deste aparelho.';
+                if(restore)el('myCommPhraseTitle').scrollIntoView({block:'center'});
+            }catch(error){feedback.textContent=error.message;}
+        }
         if(b.dataset.favoriteSymbol){const id=String(b.dataset.favoriteSymbol);data.favoriteSymbols=data.favoriteSymbols.includes(id)?data.favoriteSymbols.filter(x=>x!==id):[...data.favoriteSymbols,id];save();render();}
     });
     window.JBCommunication={
@@ -2924,7 +2954,7 @@
             if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false)throw Error('A frase foi enviada, mas a confirmação local não pôde ser salva. Tente novamente para conferir.');
             data=next;lastSavedRaw=JSON.stringify(next);
         },
-        importCloudCards(cards,catalog,familyId){
+        importCloudCards(cards,catalog,familyId,options={}){
             assertCloudState();
             if(!window.SecurityService?.isUnlocked?.())throw Error('Desbloqueie a administração.');
             const next=JSON.parse(JSON.stringify(data));let added=0,existing=0,categoriesAdded=0;
@@ -2936,6 +2966,14 @@
                 const remoteCategory=catalog.find(c=>c.id===card.category_id)?.name;
                 const category=next.categories.find(name=>name.normalize('NFC').trim().toLowerCase()===remoteCategory?.normalize('NFC').trim().toLowerCase());
                 if(!category)throw Error('Categoria desconhecida. Nada foi importado.');
+                const trashed=(next.trash||[]).find(p=>(p.cloudSources||[]).some(s=>s.family===familyId&&s.id===card.id)||(p.text===card.text&&(p.category||'Geral')===category));
+                if(trashed){
+                    if(options.restoreTrashed===true){
+                        if(!next.phrases.some(p=>p.id===trashed.id)){const {deletedAt,...restored}=trashed;next.phrases.push(restored);added++;}
+                        next.trash=next.trash.filter(p=>p.id!==trashed.id);
+                    }else existing++;
+                    continue;
+                }
                 if(next.phrases.some(p=>(p.cloudSources||[]).some(s=>s.family===familyId&&s.id===card.id))){existing++;continue;}
                 const same=next.phrases.find(p=>p.text===card.text&&(p.category||'Geral')===category);
                 const source={family:familyId,id:card.id};
@@ -2946,7 +2984,9 @@
             }
             if(JSON.stringify(next).length>1000000)throw Error('Limite local atingido. Exporte um backup antes de importar mais cartões.');
             if(StorageService.setItem(STORE_KEY,JSON.stringify(next))===false)throw Error('Não foi possível salvar a importação. As frases anteriores foram preservadas.');
-            data=next;lastSavedRaw=JSON.stringify(next);render();return {added,existing,categoriesAdded};
+            data=next;lastSavedRaw=JSON.stringify(next);activeCategory='*';render();
+            if(el('myCommPhraseStatus'))el('myCommPhraseStatus').textContent=added?'Frases disponíveis em Minhas frases neste aparelho.':'Lista conferida. Suas frases e a lixeira foram preservadas.';
+            return {added,existing,categoriesAdded};
         },
         addGardenWord(text){
             if(!window.SecurityService?.isUnlocked?.())return false;
