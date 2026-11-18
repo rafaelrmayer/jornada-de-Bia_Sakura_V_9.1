@@ -41,7 +41,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
     <link rel="stylesheet" href="css/guided-voice.css">
-    <link rel="stylesheet" href="css/sakura-board.css?v=phrase-tools">
+    <link rel="stylesheet" href="css/sakura-board.css?v=agora-depois">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -534,9 +534,24 @@
             </div>
             <div class="bia-feature">
 <div class="bia-periods" id="biaRoutinePeriods" role="group" aria-label="Período da rotina"></div>
-<p id="biaRoutineNext" class="bia-hint" aria-live="polite"></p>
+<div class="bia-routine-slots" role="group" aria-label="Agora e Depois">
+    <section><h3>Agora</h3><button id="biaRoutineNow" type="button"></button><button id="biaRoutineFinishNow" type="button">✓ Concluído</button></section>
+    <section><h3>Depois</h3><button id="biaRoutineLater" type="button"></button></section>
+</div>
+<p id="biaRoutineNext" class="bia-hint" role="status"></p>
+<div class="bia-routine-shortcuts" role="group" aria-label="Atalhos de comunicação">
+    <button id="biaRoutineHelp" type="button">🆘 Ajuda</button>
+    <button id="biaRoutinePause" type="button">⏸ Pausa</button>
+    <button id="biaRoutineRefuse" type="button">❌ Não quero</button>
+</div>
+<section id="biaRoutineSuggestion" class="bia-routine-suggestion" aria-labelledby="biaRoutineSuggestionTitle" hidden>
+    <h3 id="biaRoutineSuggestionTitle">Sugestão de rotina</h3>
+    <p id="biaRoutineSuggestionText"></p>
+    <button id="biaRoutineUseSuggestion" type="button">Colocar em Agora</button>
+    <button id="biaRoutineDismissSuggestion" type="button">Agora não</button>
+</section>
 <div id="biaRoutineList" class="bia-routine-list" aria-live="polite"></div>
-<div class="bia-manage"><button type="button" id="biaRoutineManage">🔐 Organizar atividades</button><p class="bia-hint">Para adicionar, excluir ou mudar a ordem, desbloqueie a administração nas Configurações.</p><div id="biaRoutineEditor" hidden><label>Atividade <input id="biaRoutineName" maxlength="60" placeholder="Ex.: Tomar café"></label><label>Ícone <select id="biaRoutineIcon"><option>🌞</option><option>🍽️</option><option>🪥</option><option>🎒</option><option>🎨</option><option>🛁</option><option>📚</option><option>🛏️</option><option>💧</option><option>🎵</option></select></label><label>Horário opcional <input type="time" id="biaRoutineTime"></label><button type="button" id="biaRoutineAdd">Adicionar atividade</button><p id="biaRoutineFeedback" role="status"></p></div></div>
+<div class="bia-manage"><button type="button" id="biaRoutineManage">🔐 Organizar atividades</button><p class="bia-hint">Para adicionar, excluir ou mudar a ordem, desbloqueie a administração nas Configurações.</p><div id="biaRoutineEditor" hidden><label>Atividade <input id="biaRoutineName" maxlength="60" placeholder="Ex.: Tomar café"></label><label>Ícone <select id="biaRoutineIcon"><option>🌞</option><option>🍽️</option><option>🪥</option><option>🎒</option><option>🎨</option><option>🛁</option><option>📚</option><option>🛏️</option><option>💧</option><option>🎵</option></select></label><label>Horário opcional <input type="time" id="biaRoutineTime"></label><button type="button" id="biaRoutineAdd">Adicionar atividade</button><p id="biaRoutineFeedback" role="status"></p><label><span><input type="checkbox" id="biaRoutineLearn"> Sugerir atividades por horário</span></label><p class="bia-hint">A opção vem ligada. O app usa os horários em que alguém marca as atividades como concluídas. As sugestões aparecem depois de pelo menos três dias com horários parecidos. Os registros ficam neste aparelho.</p></div></div>
 </div></section>
         <section class="page-section" id="page-activities">
             <div class="sakura-board-hero sakura-page-banner">
@@ -1247,7 +1262,7 @@
     <script src="js/card-model.js"></script>
     <script src="js/card-suggestions.js"></script>
     <script src="js/emotions.js"></script>
-    <script src="js/routine-activities.js"></script>
+    <script src="js/routine-activities.js?v=agora-depois"></script>
     <script src="js/experience.js"></script>
     <script src="js/sakura-activities-v9.js"></script>
     <script src="js/sakura-ui.js"></script>
