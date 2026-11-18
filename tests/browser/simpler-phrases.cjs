@@ -95,7 +95,7 @@ await p.evaluate(()=>setGuardianMode(true));await c.setOffline(true);const befor
 await p.locator('[data-restore-phrase]').click();assert.equal(await p.evaluate(()=>JBCommunication.snapshot().phrases.length),1);
 assert.equal(requests.length,beforeOffline);await c.setOffline(false);
 // Servidor restaurado + falha local: não anunciar sucesso e permitir recuperar de novo.
-await nav('settings');await p.locator('#dataAccountAdvanced').evaluate(el=>el.open=true);await p.locator('#dataAccountTrash').click();
+await nav('settings');if(await p.locator('#dataAccountForm').isVisible()){await p.locator('#dataAccountEmail').fill('test@example.com');await p.locator('#dataAccountPassword').fill('abc123');await p.locator('#dataAccountSubmit').click();await p.locator('#dataAccountConnected').waitFor({state:'visible'});}await p.locator('#dataAccountAdvanced').evaluate(el=>el.open=true);await p.locator('#dataAccountTrash').click();
 await p.locator('#dataAccountDifferences details > summary').click();await p.getByRole('button',{name:'Arquivar somente na conta',exact:true}).click();
 await p.waitForFunction(()=>document.getElementById('dataAccountStatus').textContent.includes('Cópia arquivada'));
 await p.evaluate(()=>{window.__saveOriginal=StorageService.setItem;StorageService.setItem=()=>false;});
