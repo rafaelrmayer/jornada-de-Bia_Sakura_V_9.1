@@ -2364,6 +2364,8 @@
             [avatar,preview].forEach(el=>{ if(!el)return; el.replaceChildren(); if(childProfile.photo && /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(childProfile.photo) && childProfile.photo.length <= 3*1024*1024){ const img=document.createElement('img'); img.src=childProfile.photo; img.alt=`Foto de ${name}`; el.appendChild(img); } else { el.textContent='🌻'; } });
             const g=document.getElementById('childGreeting'); if(g) g.textContent=greeting;
             const hg=document.getElementById('headerGreeting'); if(hg) hg.textContent=`Oi, ${name}`;
+            const homeGreeting = document.getElementById('homeGreeting');
+            if (homeGreeting) homeGreeting.textContent = `Oi, ${name}!`;
             const np=document.getElementById('profileNamePreview'); if(np) np.textContent=name;
             const ni=document.getElementById('childName'); if(ni) ni.value=childProfile.name||'';
             const gi=document.getElementById('childGreetingInput'); if(gi) gi.value=childProfile.greeting||'';
@@ -2378,59 +2380,84 @@
             if (!requireAdminAccess()) return; childProfile={name:'Bia',greeting:'Olá! 🌻 Vamos conversar?',photo:''}; StorageService.setItem('childProfile',JSON.stringify(childProfile)); renderChildProfile(); showToast('↩️ Perfil restaurado'); }
         function handleChildPhoto(e){
             if (!requireAdminAccess()) return; const file=e.target.files?.[0]; if(!file)return; if(file.size>2*1024*1024){showToast('⚠️ Escolha uma foto de até 2 MB');return;} const r=new FileReader(); r.onload=()=>{childProfile.photo=r.result; StorageService.setItem('childProfile',JSON.stringify(childProfile));renderChildProfile();showToast('📷 Foto atualizada')}; r.readAsDataURL(file); }
-        function selectIntent(intent){
-            selectedIntent=intent;
-            StorageService.setItem('selectedIntent',intent);
-            document.querySelectorAll('.intent-btn').forEach(b=>b.classList.toggle('active',b.dataset.intent===intent));
+        const intentCards = {
+            quero: [
+                [2276, 'Quero água.'], [2746, 'Quero ouvir música.'], [6537, 'Quero brincar.'],
+                ['🍎', 'Quero comer.'], ['🏠', 'Quero ir para casa.'], ['➕', 'Quero mais.'],
+                ['❌', 'Não quero.']
+            ],
+            preciso: [
+                [7171, 'Preciso de ajuda.'], [15814, 'Preciso ir ao banheiro.'], [36109, 'Preciso de uma pausa.'],
+                ['❤️', 'Quero meu responsável.'], ['🤕', 'Estou com dor.'],
+                ['🌙', 'Preciso de um lugar tranquilo.'], ['🚪', 'Preciso sair daqui.']
+            ],
+            sentindo: [
+                [9907, 'Estou feliz.'], [35545, 'Estou triste.'], [35537, 'Estou cansado.'],
+                ['😡', 'Estou bravo.'], ['😨', 'Estou com medo.'], ['🤕', 'Estou com dor.']
+            ]
+        };
+        const intentButtons = [...document.querySelectorAll('#intentCategories [data-intent]')];
+        const intentPanel = document.getElementById('intentExpansion');
+        const intentSuggestions = document.getElementById('intentSuggestions');
+        const intentPhrase = document.getElementById('intentPhrase');
+        const intentClear = document.getElementById('intentClearBtn');
+        const intentSpeak = document.getElementById('intentSpeakBtn');
+        let activeIntentButton = null;
+        let activeIntentCard = null;
 
-            const suggestionMaps={
-              quero:[['💧','Quero água.'],['🍎','Quero comer.'],['🧸','Quero brincar.'],['🏠','Quero ir para casa.'],['➕','Quero mais.'],['❌','Não quero.']],
-              preciso:[['🆘','Preciso de ajuda.'],['❤️','Quero meu responsável.'],['🤕','Estou com dor.'],['🚽','Preciso ir ao banheiro.'],['🌙','Preciso de um lugar tranquilo.'],['🚪','Preciso sair daqui.']],
-              sentindo:[['😊','Estou feliz.'],['😢','Estou triste.'],['😡','Estou bravo.'],['😴','Estou cansado.'],['😨','Estou com medo.'],['🤕','Estou com dor.']],
-              lugar:[['🏠','Quero ir para casa.'],['🚽','Quero ir ao banheiro.'],['🚪','Quero sair.'],['👨‍👩‍👧','Onde está minha família?']]
-            };
-            const titleMap={quero:'💙 O que você quer?',preciso:'🆘 O que você precisa?',sentindo:'😊 Como você está?',lugar:'📍 Onde você quer ir?'};
-            const expansion=document.getElementById('intentExpansion');
-            const suggestions=document.getElementById('intentSuggestions');
-            const title=document.getElementById('intentExpansionTitle');
-            const hint=document.getElementById('intentExpansionHint');
-            if(!expansion||!suggestions)return;
-            const items=suggestionMaps[intent]||[];
-            if(title) title.textContent=titleMap[intent]||INTENT_LABELS[intent]||'Escolha uma opção';
-            if(hint) hint.textContent='Sugestões para você';
-            suggestions.innerHTML=items.map(([emoji,text],i)=>`<button class="intent-suggestion" type="button" data-index="${i}" aria-label="${escapeHtml(text)}"><span>${escapeHtml(emoji)}</span><strong>${escapeHtml(text)}</strong></button>`).join('');
-            suggestions.querySelectorAll('.intent-suggestion').forEach(btn=>btn.addEventListener('click',()=>{
-                const item=items[Number(btn.dataset.index)];
-                if(!item)return;
-                const text=item[1];
-                speakText(text);
-                recordPhraseUse(text);
-                predictor.recordPhrase(text);
-                playClickSound();
-                if(navigator.vibrate)navigator.vibrate(10);
+        function setIntentPhrase(card) {
+            activeIntentCard?.setAttribute('aria-pressed', 'false');
+            activeIntentCard = card;
+            activeIntentCard?.setAttribute('aria-pressed', 'true');
+            intentPhrase.textContent = card?.dataset.phrase || 'Toque em um cartão.';
+            intentClear.disabled = !card;
+            intentSpeak.disabled = !card;
+        }
+
+        function renderIntentCards(button) {
+            if (activeIntentButton === button && !intentPanel.hidden) return;
+            activeIntentButton?.setAttribute('aria-expanded', 'false');
+            activeIntentButton = button;
+            button.setAttribute('aria-expanded', 'true');
+            intentSuggestions.setAttribute('aria-label', `Cartões da categoria ${button.textContent.trim()}`);
+            setIntentPhrase(null);
+            intentSuggestions.replaceChildren(...intentCards[button.dataset.intent].map(([symbol, text]) => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.dataset.phrase = text;
+                card.setAttribute('aria-pressed', 'false');
+                const pictogram = document.createElement(typeof symbol === 'number' ? 'img' : 'span');
+                pictogram.className = 'sakura-board-pictogram';
+                if (typeof symbol === 'number') {
+                    pictogram.src = `assets/arasaac/${symbol}.png`;
+                    pictogram.alt = '';
+                } else {
+                    pictogram.textContent = symbol;
+                    pictogram.setAttribute('aria-hidden', 'true');
+                }
+                const label = document.createElement('span');
+                label.textContent = text;
+                card.append(pictogram, label);
+                card.addEventListener('click', () => {
+                    setIntentPhrase(card);
+                    speakText(text);
+                    recordPhraseUse(text);
+                    predictor.recordPhrase(text);
+                    playClickSound();
+                    navigator.vibrate?.(10);
+                });
+                return card;
             }));
-            expansion.hidden=false;
-            expansion.classList.remove('is-closing');
-            document.getElementById('page-home')?.classList.add('intent-compact');
-            document.querySelectorAll('#intentGrid [data-intent]').forEach(btn=>{
-                btn.setAttribute('aria-expanded',String(btn.dataset.intent===intent));
-                btn.setAttribute('aria-controls','intentExpansion');
-            });
-            requestAnimationFrame(()=>expansion.classList.add('is-open'));
+            intentPanel.hidden = false;
         }
 
-        function collapseIntentExpansion(){
-            const expansion=document.getElementById('intentExpansion');
-            if(!expansion)return;
-            expansion.classList.remove('is-open');
-            expansion.classList.add('is-closing');
-            document.getElementById('page-home')?.classList.remove('intent-compact');
-            document.querySelectorAll('#intentGrid [data-intent]').forEach(btn=>{
-                btn.setAttribute('aria-expanded','false');
-            });
-            setTimeout(()=>{ if(!expansion.classList.contains('is-open')) expansion.hidden=true; },180);
-            document.querySelectorAll('.intent-btn').forEach(b=>b.classList.remove('active'));
+        function collapseIntentExpansion() {
+            intentPanel.hidden = true;
+            activeIntentButton?.setAttribute('aria-expanded', 'false');
+            activeIntentButton?.focus();
+            setIntentPhrase(null);
         }
+
         function recordPhraseUse(text){
             const key='phraseUsage'; const data=JSON.parse(StorageService.getItem(key)||'{}'); const count=data[text]; Object.defineProperty(data,text,{value:Math.min((Number.isSafeInteger(count)&&count>=0?count:0)+1,Number.MAX_SAFE_INTEGER),enumerable:true,writable:true,configurable:true}); if(StorageService.setItem(key,JSON.stringify(data))!==false)document.dispatchEvent(new CustomEvent('bia:phrase-usage-changed'));
         }
@@ -2688,8 +2715,20 @@
         // ============================================
         // V18: EVENTOS
         // ============================================
-        document.querySelectorAll('.intent-btn').forEach(btn=>btn.addEventListener('click',()=>selectIntent(btn.dataset.intent)));
-        document.getElementById('intentCollapseBtn')?.addEventListener('click',collapseIntentExpansion);
+        intentButtons.forEach(button => button.addEventListener('click', () => {
+            selectedIntent = button.dataset.intent;
+            StorageService.setItem('selectedIntent', selectedIntent);
+            renderIntentCards(button);
+        }));
+        renderIntentCards(intentButtons.find(button => button.dataset.intent === selectedIntent) || intentButtons[0]);
+        intentClear.addEventListener('click', () => {
+            activeIntentCard?.focus();
+            setIntentPhrase(null);
+        });
+        intentSpeak.addEventListener('click', () => {
+            if (activeIntentCard) speakText(activeIntentCard.dataset.phrase);
+        });
+        document.getElementById('intentCollapseBtn').addEventListener('click', collapseIntentExpansion);
         // V31: construtor de frase fechado por padrão
         function toggleHomePhraseBuilder(force){
             const home=document.getElementById('page-home');
@@ -2713,8 +2752,6 @@
             if(label) label.textContent=open?'Fechar construtor':'Construa sua frase';
             if(open){
                 setTimeout(()=>document.getElementById('homeSymbolsBuilder')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
-            }else{
-                document.getElementById('intentExpansion')?.setAttribute('hidden','');
             }
             playClickSound();
         }
@@ -2731,7 +2768,7 @@
         document.getElementById('phraseBuilderToggle')?.addEventListener('click',()=>toggleHomePhraseBuilder());
         document.getElementById('phraseBuilderClose')?.addEventListener('click',()=>toggleHomePhraseBuilder(false));
 
-        document.getElementById('hereBtn')?.addEventListener('click',()=>{ selectedIntent=''; StorageService.removeItem('selectedIntent'); document.querySelectorAll('.intent-btn').forEach(b=>b.classList.remove('active')); speakText('Eu estou aqui.'); recordPhraseUse('Eu estou aqui.'); predictor.recordPhrase('Eu estou aqui.'); playClickSound(); if(navigator.vibrate)navigator.vibrate(12); });
+        document.getElementById('hereBtn')?.addEventListener('click',()=>{ selectedIntent=''; StorageService.removeItem('selectedIntent'); speakText('Eu estou aqui.'); recordPhraseUse('Eu estou aqui.'); predictor.recordPhrase('Eu estou aqui.'); playClickSound(); if(navigator.vibrate)navigator.vibrate(12); });
         document.querySelectorAll('.comm-btn').forEach(btn=>btn.addEventListener('click',()=>openHub(btn.dataset.hub)));
         document.getElementById('speakAdaptiveBtn')?.addEventListener('click',speakAdaptivePhrase);
         document.getElementById('sosBtn')?.addEventListener('click',emergencyHelp);
@@ -2754,7 +2791,6 @@
         renderChildProfile();
         renderContextualQuickPhrases();
         if(activeHub) openHub(activeHub);
-        if(selectedIntent) document.querySelector(`.intent-btn[data-intent="${selectedIntent}"]`)?.classList.remove('active');
 
         // ============================================
         // INICIALIZAÇÃO
