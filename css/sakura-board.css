@@ -413,3 +413,30 @@ html.bia-a11y-touch .sakura-board :is(.sakura-board-categories, .sakura-board-ca
     .sakura-board-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .sakura-board-actions button { padding-inline: .25rem; font-size: .9rem; }
 }
+
+.bia-routine-slots,
+.bia-routine-shortcuts {
+    display: grid;
+    gap: .65rem;
+    margin-block: .8rem;
+}
+
+.bia-routine-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.bia-routine-shortcuts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.bia-routine-slots section,
+.bia-routine-suggestion {
+    padding: .85rem;
+    border: 1px solid var(--friendly-line);
+    border-radius: 1rem;
+    background: var(--friendly-soft);
+    color: var(--friendly-ink);
+    overflow-wrap: anywhere;
+}
+
+.bia-routine-slots section { text-align: center; }
+.bia-routine-slots button { margin-block: .35rem; width: 100%; }
+.bia-routine-shortcuts button { padding-inline: .2rem; }
+.bia-routine-slot-icon { display: block; font-size: 2rem; }
+.bia-routine-suggestion { margin-bottom: 1rem; }
+.bia-routine-suggestion[hidden] { display: none; }
