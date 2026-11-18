@@ -347,3 +347,69 @@ html.bia-a11y-touch .sakura-board :is(.sakura-board-categories, .sakura-board-ca
     .sakura-board-phrase { grid-template-columns: minmax(0, 1fr); }
     .sakura-board-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+.sakura-board-help,
+.sakura-builder-modifiers {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(.35rem, 2vw, .7rem);
+    margin-block: .75rem;
+}
+
+.sakura-board-help button,
+.sakura-builder-modifiers button {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: .25rem .4rem;
+    min-height: 2.75rem;
+    padding: .4rem .25rem;
+    font-size: .9rem;
+}
+
+.sakura-board-help .sakura-board-pictogram {
+    width: 1.65rem;
+    font-size: .95rem;
+}
+
+.sakura-board-help button[aria-pressed="true"] {
+    border-color: var(--board-accent);
+    background: var(--friendly-selected);
+}
+
+.sakura-builder-modifiers button {
+    border: 1px solid var(--friendly-line);
+    border-radius: .75rem;
+    background: var(--friendly-paper);
+    color: var(--friendly-ink);
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.sakura-builder-preview {
+    flex: 0 0 100%;
+    margin: .35rem 0 0;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+#undoBuilderSymbol:disabled { opacity: .55; cursor: default; }
+
+.sakura-support-contact {
+    margin-top: 1.5rem;
+    overflow-wrap: anywhere;
+}
+
+.sakura-support-contact a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: inherit;
+    text-decoration: underline;
+}
+
+@media (max-width: 34rem) {
+    .sakura-board-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .sakura-board-actions button { padding-inline: .25rem; font-size: .9rem; }
+}

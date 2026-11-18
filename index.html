@@ -41,7 +41,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💙</text></svg>">
     <link rel="stylesheet" href="css/guided-voice.css">
-    <link rel="stylesheet" href="css/sakura-board.css?v=visual-categories">
+    <link rel="stylesheet" href="css/sakura-board.css?v=phrase-tools">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -122,6 +122,11 @@
                         <span>Como estou</span>
                     </button>
                 </div>
+                <div class="sakura-board-help" role="group" aria-label="Atalhos de comunicação">
+                    <button data-board-help data-phrase="Preciso de ajuda." type="button" aria-pressed="false"><img class="sakura-board-pictogram" src="assets/arasaac/7171.png" alt="">Ajuda</button>
+                    <button data-board-help data-phrase="Preciso de uma pausa." type="button" aria-pressed="false"><img class="sakura-board-pictogram" src="assets/arasaac/36109.png" alt="">Pausa</button>
+                    <button data-board-help data-phrase="Não quero." type="button" aria-pressed="false"><span class="sakura-board-pictogram" aria-hidden="true">❌</span>Não quero</button>
+                </div>
                 <div class="sakura-board-panel" id="intentExpansion" hidden>
                     <div class="sakura-board-phrase" role="group" aria-label="Sua frase">
                         <div class="sakura-board-phrase-content">
@@ -133,6 +138,7 @@
                         </div>
                         <div class="sakura-board-actions">
                             <button id="intentClearBtn" type="button" disabled>Limpar</button>
+                            <button id="intentCorrectBtn" type="button" disabled><span aria-hidden="true">↶</span> Não era isso</button>
                             <button class="sakura-board-speak" id="intentSpeakBtn" type="button" disabled>Ouvir frase</button>
                         </div>
                     </div>
@@ -163,7 +169,7 @@
             </section>
             <!-- Construtor de frase: fechado por padrão para reduzir estímulos -->
             <section class="phrase-builder-entry" aria-label="Construir uma frase">
-                <button class="phrase-builder-toggle" id="phraseBuilderToggle" type="button" aria-expanded="false" aria-controls="phraseBuilderContent">
+                <button class="phrase-builder-toggle" id="phraseBuilderToggle" type="button" aria-expanded="false" aria-controls="homeSymbolsBuilder homeFeedbackBuilder">
                     <span class="phrase-builder-icon">💬</span>
                     <span><strong id="phraseBuilderLabel">Construa sua frase</strong><small>Escolha símbolos quando quiser</small></span>
                     <span class="phrase-builder-arrow" aria-hidden="true">›</span>
@@ -234,6 +240,11 @@
                     <h2>🔣 Símbolos</h2>
                     <span class="see-all" id="toggleSymbolsView" role="button" tabindex="0">Mostrar todos</span>
                 </div>
+                <div class="sakura-builder-modifiers" role="group" aria-label="Palavras para combinar">
+                    <button type="button" data-builder-modifier="modifier-more"><span aria-hidden="true">➕</span> <span class="builder-modifier-label">Mais</span></button>
+                    <button type="button" data-builder-modifier="modifier-no"><span aria-hidden="true">❌</span> <span class="builder-modifier-label">Não</span></button>
+                    <button type="button" data-builder-modifier="modifier-now"><span aria-hidden="true">⏱️</span> <span class="builder-modifier-label">Agora</span></button>
+                </div>
                 <div class="symbols-grid" id="symbolsGrid" role="grid"></div>
             </section>
 
@@ -287,6 +298,7 @@
                     </div>
                     <div class="feedback-actions">
                         <button id="speakBtn" class="action-btn" aria-label="Falar mensagem atual">🔊 Falar</button>
+                        <button id="undoBuilderSymbol" class="action-btn" type="button" disabled><span aria-hidden="true">↶</span> Tirar último símbolo</button>
                         <button id="clearBtn" class="action-btn" aria-label="Limpar mensagem">🗑️ Limpar</button>
                         <button id="saveBtn" class="action-btn" aria-label="Salvar mensagem">💾 Salvar</button>
                         <button id="whatsappContactBtn" class="action-btn whatsapp-contact-btn" aria-label="Contatar responsável via WhatsApp">
@@ -836,6 +848,10 @@
                         </button>
                     </div>
                 </div></details>
+    <section class="sakura-support-contact" aria-labelledby="supportContactTitle">
+        <h3 id="supportContactTitle">Contato</h3>
+        <a href="mailto:rafael10mayer@gmail.com">rafael10mayer@gmail.com</a>
+    </section>
 </section>
         </div>
 
@@ -863,7 +879,6 @@
                     </p>
                     <div class="about-dev">
                         <p>👨‍💻 <strong>Desenvolvedor:</strong> Rafael Ricardo Mayer</p>
-                        <p>📧 <span class="dev-email">rafael10mayer@gmail.com</span></p>
                         <p>📱 <span style="color: var(--text-light); font-weight: 600;">v29.0.0 - Modo sensorial personalizado</span></p>
                     </div>
                 </div>
@@ -1195,13 +1210,9 @@
     <!-- ===== FOOTER ===== -->
     <footer role="contentinfo">
         <div class="footer-content">
-            <p>&copy; 2026 Jornada de Bia - Todos os direitos reservados</p>
-            <p class="footer-dev">
-                Desenvolvido por <strong>Rafael Ricardo Mayer</strong>
-                <span class="footer-email">📧 rafael10mayer@gmail.com</span>
-            </p>
             <p class="footer-motto">“Comunicação é amor, e o amor é infinito.” 🌻∞</p>
             <p class="footer-version">🌸∞ Sakura — V9.5.3</p>
+            <p class="footer-dev">Desenvolvido por <strong>Rafael Ricardo Mayer</strong></p>
         </div>
     </footer>
 
@@ -1230,7 +1241,7 @@
     <script src="js/neural-assistant.js"></script>
     <script src="js/rf-evaluation.js"></script>
     <script src="js/communication-usage.js"></script>
-    <script src="js/app.js?v=health-backup-2"></script>
+    <script src="js/app.js?v=phrase-tools"></script>
     <script src="js/rf-evaluation-ui.js"></script>
     <script src="js/card-model-data.js"></script>
     <script src="js/card-model.js"></script>
