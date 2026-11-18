@@ -30,7 +30,7 @@
   }
   window.BackupService = {
     async export(data, opts={}) {
-      const clean = opts.configurationOnly ? Object.fromEntries(Object.entries(data).filter(([k])=>CONFIG_KEYS.has(k))) : data;
+      const clean = opts.configurationOnly ? Object.fromEntries(Object.entries(data).filter(([k])=>CONFIG_KEYS.has(k))) : Object.fromEntries(Object.entries(data).filter(([k])=>k!=='medicalData'));
       const body = JSON.stringify(clean);
       const payload = { app:'A Jornada de Bia', appVersion:'31.1.0', backupVersion:BACKUP_VERSION, type:opts.configurationOnly?'configuration':'full', exportedAt:new Date().toISOString(), data:clean };
       payload.integrity = await digest(JSON.stringify(payload));
@@ -61,6 +61,7 @@
         if (!Array.isArray(p.data.symbolsData)) throw new Error('Configuração inválida');
         p.data=Object.fromEntries(Object.entries(p.data).filter(([key])=>CONFIG_KEYS.has(key)));
       } else { validateData(p.data); }
+      delete p.data.medicalData; // Saúde não é transportada nem por backups antigos.
       return p;
     },
     validateData

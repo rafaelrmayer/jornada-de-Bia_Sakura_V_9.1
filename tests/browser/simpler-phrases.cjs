@@ -42,6 +42,26 @@ return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(
 const p=await c.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept());await p.goto(site);await p.waitForFunction(()=>window.JBCommunication);
 await p.evaluate(()=>{sessionStorage.setItem('jornadaGuardianUnlocked','true');setGuardianMode(true);});
 const nav=async(name,group='account')=>{await p.locator('.visual-bottom-nav [data-page="'+name+'"]').click();if(name==='settings'&&group&&!(await p.locator('#support-'+group).evaluate(n=>n.open)))await p.locator('#support-'+group+' > summary').click();};
+// Saúde local: campos opcionais, prévia opt-in e bloqueio independente de conta.
+await nav('medical');
+assert.equal(await p.locator('#medSignal').inputValue(),'');
+await p.locator('#medSignal').fill('Aponta quando sente desconforto');
+await p.locator('#medGesture').fill('Aponta para a cabeça');
+await p.locator('#medMeaning').fill('Pode indicar dor de cabeça, segundo o responsável');
+await p.locator('#medSensoryHelps').fill('Silêncio e pausas');
+await p.locator('#medicalSaveBtn').click();
+assert.match(await p.locator('#medicalUpdated').innerText(),/Última atualização/);
+assert.equal(await p.evaluate(()=>JSON.parse(StorageService.getItem('medicalData')).gesture),'Aponta para a cabeça');
+await nav('word-goals');await p.locator('#wgSummaryToggle').click();
+await p.getByRole('button',{name:'Revisar resumo para PDF ou WhatsApp'}).click();
+assert.equal(await p.locator('.wg-review input:checked').count(),0);
+assert.equal(await p.locator('.wg-review textarea').inputValue().then(t=>t.includes('Aponta para a cabeça')),false);
+await p.locator('.wg-review label').filter({hasText:'Qual é o gesto'}).locator('input').check();
+assert.match(await p.locator('.wg-review textarea').inputValue(),/Aponta para a cabeça/);
+await p.evaluate(()=>setGuardianMode(false));
+assert.equal(await p.locator('.wg-review').count(),0);
+assert.deepEqual(await p.evaluate(()=>JBHealthCare.getFields()),[]);
+await p.evaluate(()=>setGuardianMode(true));
 await nav('settings',null);
 assert.equal(await p.locator('.support-block').count(),4);assert.equal(await p.locator('.support-block[open]').count(),0);
 assert.equal(await p.locator('#clearAllDataBtn').isVisible(),false);

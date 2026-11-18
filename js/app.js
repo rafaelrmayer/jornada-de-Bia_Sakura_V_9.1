@@ -68,7 +68,6 @@
         // DADOS MÉDICOS (NOVA VERSÃO)
         // ============================================
         const defaultMedical = {
-            healthPlan: '',
             supportLevel: '',
             allergies: [],
             observations: '',
@@ -841,22 +840,30 @@
         // ============================================
 
         function renderMedical() {
-            document.getElementById('medHealthPlan').value = medicalData.healthPlan || '';
+
             document.getElementById('medSupportLevel').value = medicalData.supportLevel || '';
             document.getElementById('medAllergies').value = Array.isArray(medicalData.allergies) ? medicalData.allergies.join(', ') : (medicalData.allergies || '');
-            document.getElementById('medObservations').value = medicalData.observations || '';
+            for(const [id,key] of [['medSignal','signal'],['medGesture','gesture'],['medMeaning','meaning'],['medSensoryBothers','sensoryBothers'],['medSensoryHelps','sensoryHelps'],['medCare','care']])document.getElementById(id).value=medicalData[key]||'';
+            document.getElementById('medicalUpdated').textContent=medicalData.updatedAt?'Última atualização pelo responsável: '+new Date(medicalData.updatedAt).toLocaleString('pt-BR'):'Ainda não revisado pelo responsável.';
             const sp = medicalData.sensoryPreferences || {};
             ['sound','light','touch','smells','crowds','fabrics'].forEach(k => { const el=document.getElementById('sens'+k.charAt(0).toUpperCase()+k.slice(1)); if(el) el.checked=!!sp[k]; });
             const helps = Array.isArray(sp.helps) ? sp.helps : [];
             document.querySelectorAll('.sensHelp').forEach(el => { el.checked = helps.includes(el.value); });
         }
 
+        window.JBHealthCare={getFields(){
+            if(!guardianUnlocked||!SecurityService.isUnlocked())return [];
+            const sp=medicalData.sensoryPreferences||{};
+            const senses=[['sound','Sons'],['light','Luzes'],['touch','Contato físico'],['smells','Cheiros'],['crowds','Ambientes cheios'],['fabrics','Tecidos/roupas']].filter(([k])=>sp[k]).map(([,label])=>label);
+            return [['allergies','Alergias',Array.isArray(medicalData.allergies)?medicalData.allergies.join(', '):medicalData.allergies],['supportLevel','Nível de suporte informado',medicalData.supportLevel],['signal','Como sinaliza',medicalData.signal],['gesture','Qual é o gesto',medicalData.gesture],['meaning','Significado segundo o responsável',medicalData.meaning],['sensoryBothers','O que incomoda',[senses.join(', '),medicalData.sensoryBothers].filter(Boolean).join(' — ')],['sensoryHelps','O que ajuda',[...(Array.isArray(sp.helps)?sp.helps:[]),medicalData.sensoryHelps].filter(Boolean).join(' — ')],['care','Cuidados no atendimento',medicalData.care],['updatedAt','Atualizado pelo responsável',medicalData.updatedAt?new Date(medicalData.updatedAt).toLocaleString('pt-BR'):'']].filter(([, ,value])=>typeof value==='string'&&value.trim()).map(([key,label,value])=>({key,label,value}));
+        }};
+
         function saveMedicalData() {
             if (!requireAdminAccess()) return;
-            const healthPlan = document.getElementById('medHealthPlan').value.trim();
+
             const supportLevel = document.getElementById('medSupportLevel').value;
             const allergies = document.getElementById('medAllergies').value.split(',').map(v => v.trim()).filter(Boolean);
-            const observations = document.getElementById('medObservations').value.trim();
+
             const sensoryPreferences = {
                 sound: !!document.getElementById('sensSound')?.checked,
                 light: !!document.getElementById('sensLight')?.checked,
@@ -866,8 +873,10 @@
                 fabrics: !!document.getElementById('sensFabrics')?.checked,
                 helps: Array.from(document.querySelectorAll('.sensHelp:checked')).map(el => el.value)
             };
-            medicalData = { healthPlan, supportLevel, allergies, observations, sensoryPreferences };
-            StorageService.setItem('medicalData', JSON.stringify(medicalData));
+            const details=Object.fromEntries([['medSignal','signal'],['medGesture','gesture'],['medMeaning','meaning'],['medSensoryBothers','sensoryBothers'],['medSensoryHelps','sensoryHelps'],['medCare','care']].map(([id,key])=>[key,document.getElementById(id).value.trim().slice(0,1000)]));
+            const nextMedical={supportLevel,allergies,sensoryPreferences,...details,updatedAt:new Date().toISOString()};
+            if(!StorageService.setItem('medicalData', JSON.stringify(nextMedical))){showToast('Não foi possível salvar neste aparelho.');return;}
+            medicalData=nextMedical;
             playSuccessSound();
             showToast('✅ Informações médicas salvas com sucesso!');
             renderMedical();
@@ -2448,7 +2457,7 @@
         function rateAI(kind){ aiFeedback[kind]=(aiFeedback[kind]||0)+1; StorageService.setItem('aiFeedback',JSON.stringify(aiFeedback)); showToast(kind==='like'?'👍 Obrigado! Vou valorizar esse tipo de sugestão.':'👎 Obrigado! Vou evitar esse tipo de sugestão.'); }
         function collectBackupData() {
             return {
-                    symbolsData, guardians, medicalData, history, favoriteIds, symbolUsage, childProfile, aiFeedback,
+                    symbolsData, guardians, history, favoriteIds, symbolUsage, childProfile, aiFeedback,
                     voiceRate, voicePitch, autoSpeak, theme: StorageService.getItem('theme'),
                     predictorData: JSON.parse(StorageService.getItem('predictorData') || '{\"sequences\":[],\"frequency\":{}}'),
                     predictivePhraseData: JSON.parse(StorageService.getItem('predictivePhraseData') || '{}'),
@@ -2487,7 +2496,7 @@
                     if(!Array.isArray(d.guardians)) throw new Error('Backup inválido');
                     StorageService.setItem('guardians',JSON.stringify(d.guardians));
                 }
-                if(d.medicalData)StorageService.setItem('medicalData',JSON.stringify(d.medicalData));
+                // Saúde é exclusiva deste aparelho; backups antigos não a sobrescrevem.
                 if(d.history)StorageService.setItem('symbolHistory',JSON.stringify(Array.isArray(d.history)?d.history.slice(-50):[]));
                 if(d.favoriteIds)StorageService.setItem('favoriteIds',JSON.stringify(Array.isArray(d.favoriteIds)?d.favoriteIds:[]));
                 if(d.symbolUsage)StorageService.setItem('symbolUsage',JSON.stringify(d.symbolUsage));
