@@ -15,3 +15,14 @@ test('preferência de voz guiada entra no backup protegido e na limpeza geral',(
  assert.equal(e.storage.getItem('bia-guided-voice-v1'),null);
  assert.equal(e.storage.getItem('unrelated'),'preservar');
 });
+
+test('backup legado não transporta saúde para a restauração',async()=>{
+ const service=backupService(),text=JSON.stringify({type:'full',backupVersion:3,data:{symbolsData:[],guardians:[],medicalData:{allergies:['teste']}}});
+ const result=await service.readAndValidate({size:text.length,text:async()=>text});assert.equal(result.data.medicalData,undefined);
+});
+test('exportação completa exclui saúde mesmo se o chamador a fornecer',async()=>{
+ const e=env();Object.assign(e.ctx,{JornadaModuleData:e.api,TextEncoder,crypto:require('node:crypto').webcrypto,Blob,URL:{createObjectURL:()=> 'blob:test',revokeObjectURL(){}},setTimeout(){},document:{createElement:()=>({click(){}})},BackupCrypto:{encrypt:async p=>({encrypted:true})}});
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/backup.js'),'utf8'),e.ctx);
+ const payload=await e.ctx.window.BackupService.export({symbolsData:[],guardians:[],medicalData:{gesture:'privado'}},{password:'test-only-password'});
+ assert.equal(payload.data.medicalData,undefined);assert.equal(payload.data.symbolsData.length,0);
+});

@@ -21,6 +21,17 @@
   if(dialog)dialog.remove();dialog=el('dialog',undefined,'wg-review');
   dialog.append(el('h2','Revise antes de compartilhar'),el('p','O texto pode conter informações pessoais. Escolha com quem compartilhar.'));
   const visual=window.JBWordReport.build(range,data,state);dialog.append(visual);
+  const selection=el('fieldset'),legend=el('legend','Adicionar informações de saúde (opcional)');selection.append(legend,el('p','Selecione apenas o necessário. A cópia exportada ficará fora do controle do aplicativo.'));
+  const healthPreview=el('section',undefined,'wr-section');healthPreview.hidden=true;
+  const baseText=text,checks=[];
+  const updateHealth=()=>{
+   healthPreview.replaceChildren();const fields=window.JBHealthCare?.getFields()||[],chosen=fields.filter(f=>checks.some(c=>c.key===f.key&&c.input.checked));
+   healthPreview.hidden=!chosen.length;
+   if(chosen.length){healthPreview.append(el('h2','Saúde e cuidados — relato do responsável'));for(const f of chosen)healthPreview.append(el('h3',f.label),el('p',f.value));}
+   text=baseText+(chosen.length?'\n\nSaúde e cuidados — relato do responsável\n'+chosen.map(f=>f.label+': '+f.value).join('\n'):'');preview.value=text;
+  };
+  for(const field of window.JBHealthCare?.getFields()||[]){const label=el('label'),input=el('input');input.type='checkbox';input.onchange=updateHealth;checks.push({key:field.key,input});label.append(input,document.createTextNode(' '+field.label));selection.append(label);}
+  if(checks.length)dialog.append(selection);visual.append(healthPreview);
   const textDetails=el('details');textDetails.append(el('summary','Ver texto para WhatsApp'));
   const preview=el('textarea');preview.readOnly=true;preview.value=text;preview.rows=18;preview.setAttribute('aria-label','Prévia do resumo');textDetails.append(preview);dialog.append(textDetails);
   dialog.append(button('Salvar PDF / Imprimir',()=>{if(!goals.allowed())return;dialog.close();const paper=visual.cloneNode(true);paper.id='wgPrintReport';document.body.append(paper);document.body.classList.add('wg-printing');const clean=()=>{paper.remove();document.body.classList.remove('wg-printing');window.removeEventListener('afterprint',clean);};window.addEventListener('afterprint',clean);try{window.print();}catch{clean();}}),
@@ -38,5 +49,6 @@
    button('Revisar resumo para PDF ou WhatsApp',()=>{const snapshot=goals.getState(),counts=lib.aggregate(snapshot,range);review(report(range,counts,snapshot),range,counts,snapshot);}));
  }
  toggle.onclick=()=>{if(!goals.allowed())return;host.hidden=!host.hidden;toggle.setAttribute('aria-expanded',String(!host.hidden));if(!host.hidden)render();};
+ document.addEventListener('bia:admin-access-changed',()=>{if(!goals.allowed())render();});
  goals.onChange(()=>{if(!host.hidden)render();});document.addEventListener('jornadaBia:sessionExpired',render);
 })();

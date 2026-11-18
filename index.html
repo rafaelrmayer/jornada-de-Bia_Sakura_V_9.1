@@ -69,7 +69,7 @@
             <button class="nav-item" data-page="activities">🎵 Música e Atividades</button>
             <button class="nav-item" data-page="assistant">🦋 Assistente Inteligente</button>
             <button class="nav-item" data-page="emotions">🌷 Emoções</button>
-            <button class="nav-item" data-page="medical">🏥 Médico</button>
+            <button class="nav-item" data-page="medical">🏥 Saúde e cuidados</button>
             <button class="nav-item" data-page="sensory-crisis">🌸 Modo Calmo</button>
             <button class="nav-item" data-page="settings">⚙️ Configurações e apoio</button>
             <button class="nav-item" data-page="about">ℹ️ Sobre</button>
@@ -82,7 +82,7 @@
         <button class="nav-item" data-page="routine" type="button"><span>📅</span><small>Rotina</small></button>
         <button class="nav-item" data-page="activities" type="button"><span>🎵</span><small>Música</small></button>
         <button class="nav-item" data-page="word-goals" type="button"><span>🌷</span><small>Jardim da Bia</small></button>
-        <button class="nav-item" data-page="medical" type="button"><span>🏥</span><small>Médico</small></button>
+        <button class="nav-item" data-page="medical" type="button"><span>🏥</span><small>Saúde e cuidados</small></button>
         <button class="nav-item" data-page="sensory-crisis" type="button"><span>🌸</span><small>Modo Calmo</small></button>
         <button class="nav-item" data-page="settings" type="button"><span>⚙</span><small>Apoio</small></button>
     </nav>
@@ -379,26 +379,15 @@
         <!-- ===== PÁGINA: MÉDICO ===== -->
         <div class="page-section" id="page-medical">
             <section class="medical-container">
-                <h3>🏥 Informações Médicas</h3>
-                <p class="medical-subtitle">Gerencie as informações de saúde para emergências e cuidados.</p>
+                <h3>🏥 Saúde e cuidados</h3>
+                <p class="medical-subtitle">Informações opcionais do responsável, somente neste aparelho. Não entram na conta, nos convites nem no backup geral. Não informe CPF, endereço ou documentos.</p>
 
                 <form class="medical-form" id="medicalForm">
                     <div class="medical-section-title">🩺 Informações principais</div>
-                    <!-- Plano de Saúde -->
-                    <div class="medical-field">
-                        <label for="medHealthPlan">Plano de Saúde</label>
-                        <div class="field-input-group">
-                            <input type="text" id="medHealthPlan" placeholder="Ex.: Unimed">
-                            <button type="button" class="field-select-btn" onclick="openHealthPlanSelector()" aria-label="Selecionar plano de saúde">
-                                Selecionar
-                            </button>
-                        </div>
-                    </div>
-
                     <div class="medical-section-title">🧩 Suporte e desenvolvimento</div>
                     <!-- Grau de suporte -->
                     <div class="medical-field">
-                        <label for="medSupportLevel">Grau de suporte (TEA)</label>
+                        <label for="medSupportLevel">Nível de suporte do autismo (opcional)</label>
                         <div class="field-input-group">
                             <select id="medSupportLevel" aria-label="Selecionar grau de suporte">
                                 <option value="">Não informado</option>
@@ -407,7 +396,7 @@
                                 <option value="Nível 3">Nível 3 — necessidade de suporte muito substancial</option>
                             </select>
                         </div>
-                        <div class="medical-support-note">Informação para referência dos responsáveis e atendimento. Não substitui avaliação profissional.</div>
+                        <div class="medical-support-note">Informado pelo responsável. Não determina automaticamente necessidades ou cuidados e não substitui avaliação profissional.</div>
                     </div>
 
                     <div class="medical-section-title">⚠️ Segurança e cuidados</div>
@@ -446,15 +435,14 @@
                         </div>
                     </div>
 
-                    <div class="medical-section-title">📋 Observações importantes</div>
-                    <!-- Observações -->
-                    <div class="medical-field">
-                        <label for="medObservations">Observações importantes</label>
-                        <div class="field-input-group">
-                            <textarea id="medObservations" placeholder="Informações relevantes" rows="3"></textarea>
-                        </div>
-                    </div>
-
+                    <div class="medical-section-title">💬 Comunicação e cuidados</div>
+<div class="medical-field"><label for="medSignal">Como ela sinaliza dor ou desconforto</label><textarea id="medSignal" rows="3" maxlength="1000" placeholder="Ex.: aponta, muda a expressão ou procura alguém."></textarea></div>
+<div class="medical-field"><label for="medGesture">Qual é o gesto?</label><textarea id="medGesture" rows="3" maxlength="1000" placeholder="Descreva o gesto observado."></textarea></div>
+<div class="medical-field"><label for="medMeaning">O que isso costuma significar, segundo o responsável?</label><textarea id="medMeaning" rows="3" maxlength="1000" placeholder="O significado pode variar conforme o contexto."></textarea></div>
+<div class="medical-field"><label for="medSensoryBothers">O que incomoda</label><textarea id="medSensoryBothers" rows="3" maxlength="1000" placeholder="Luzes, ruídos, toque ou outras situações."></textarea></div>
+<div class="medical-field"><label for="medSensoryHelps">O que ajuda</label><textarea id="medSensoryHelps" rows="3" maxlength="1000" placeholder="Pausas, silêncio, objeto familiar ou outras preferências."></textarea></div>
+<div class="medical-field"><label for="medCare">O que ajuda no atendimento</label><textarea id="medCare" rows="3" maxlength="1000" placeholder="Ex.: explicar antes de tocar e permitir pausas."></textarea></div>
+<p id="medicalUpdated" role="status"></p>
                     <!-- Botão Salvar -->
                     <button type="button" class="medical-save-btn" id="medicalSaveBtn">
                         💾 Salvar
