@@ -43,6 +43,7 @@
     <link rel="stylesheet" href="css/guided-voice.css">
     <link rel="stylesheet" href="css/sakura-board.css?v=agora-depois">
     <link rel="stylesheet" href="css/theme-contrast.css">
+    <link rel="stylesheet" href="css/arasaac.css">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -833,7 +834,7 @@
                     <p>Por padrão, as sugestões são calculadas neste aparelho, sem enviar contexto à API. Desbloqueie a administração para mudar. No modo API externa, ao solicitar sugestões, enviamos somente o período do dia e o último cartão deste painel escolhido nesta sessão. Sem nome ou histórico de frases.</p>
                     <form id="neuralApiForm"><fieldset id="experimentConfigFields" disabled>
                         <label for="neuralCardsMode">Onde calcular as sugestões</label>
-                        <select id="neuralCardsMode"><option value="local">Neste aparelho (sem API)</option><option value="remote">API externa (HTTPS)</option></select>
+                        <select id="neuralCardsMode"><option value="local">Neste aparelho (sem API)</option><option value="remote">Rede neural — API externa (HTTPS)</option><option value="rf-remote">Random Forest — API externa experimental</option></select>
                         <label for="neuralApiUrl">Endereço HTTPS (somente para API externa)</label>
                         <input id="neuralApiUrl" type="url" placeholder="https://sua-api.example" autocomplete="off">
                         <button type="submit" class="btn-secondary">Salvar conexão</button>
@@ -1034,6 +1035,14 @@
                     </div>
                 </div>
                 
+                <section id="arasaacPicker" aria-labelledby="arasaacTitle">
+<h4 id="arasaacTitle">Imagem ARASAAC (opcional)</h4>
+<p>A busca envia a palavra digitada ao ARASAAC. Use termos como “água” ou “brincar”, sem nomes nem dados pessoais. Buscar exige internet; a imagem escolhida fica neste aparelho depois de salvar.</p>
+<label for="arasaacQuery">Buscar pictograma em português</label><input id="arasaacQuery" type="search" maxlength="60" autocomplete="off" placeholder="Ex.: água">
+<button id="arasaacSearch" type="button">Buscar imagens</button><p id="arasaacStatus" role="status" aria-live="polite"></p><div id="arasaacResults" aria-label="Pictogramas encontrados"></div>
+<div id="arasaacSelected"></div><button id="arasaacRemove" type="button">Usar somente emoji</button>
+<p>Pictogramas: Sergio Palao / ARASAAC, Governo de Aragão. <a href="https://arasaac.org/terms-of-use" target="_blank" rel="noopener noreferrer">Condições de uso</a> · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.pt-br" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0</a> (uso não comercial; adaptações com a mesma licença).</p>
+</section>
                 <div class="form-group">
                     <label for="symbolLabel">Nome *</label>
                     <input type="text" id="symbolLabel" placeholder="Ex: Pizza" required aria-required="true">
@@ -1240,7 +1249,8 @@
     <script src="js/neural-assistant.js"></script>
     <script src="js/rf-evaluation.js"></script>
     <script src="js/communication-usage.js"></script>
-    <script src="js/app.js?v=sanitization"></script>
+    <script src="js/arasaac.js"></script>
+    <script src="js/app.js?v=arasaac"></script>
     <script src="js/rf-evaluation-ui.js"></script>
     <script src="js/card-model-data.js"></script>
     <script src="js/card-model.js"></script>

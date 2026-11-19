@@ -47,3 +47,14 @@ test('falha de ambos propaga erro para preservar cartões já exibidos',async()=
  await assert.rejects(resolveOrder({remote:true,base:'https://api.example',period:1,last:null,local:()=>{throw Error('modelo ausente');},fetcher:async()=>({ok:false})}));
  await assert.rejects(resolveOrder({remote:false,period:1,last:null,local:()=>[1,1,2,3,4]}));
 });
+
+test('Random Forest usa endpoint separado e valida modelo, votos e catálogo',async()=>{
+ const rf=()=>({...payload(),model:'cards-rf-demo',version:'1.0.0',score_kind:'tree_vote_fraction',cards:payload().cards.map((c,i)=>({...c,score:i===0?1:0}))});
+ let called;const result=await request('https://api.example','manha',null,async(url,opts)=>{called=url;assert.deepEqual(JSON.parse(opts.body),{period:'manha',last_activity:null});return {ok:true,json:async()=>rf()}},5000,undefined,'cards-rf-demo');
+ assert.equal(called,'https://api.example/v1/cards/random-forest/suggestions');assert.deepEqual(result,[1,4,2,0,3]);
+ assert.throws(()=>validate(payload(),'cards-rf-demo'));const bad=rf();bad.cards[0].score=2;assert.throws(()=>validate(bad,'cards-rf-demo'));
+});
+test('RF indisponível preserva alternativa local sem reenviar histórico',async()=>{
+ const result=await resolveOrder({model:'cards-rf-demo',remote:true,base:'https://api.example',period:0,last:null,local,fetcher:async()=>({ok:false})});
+ assert.equal(result.source,'local');assert.deepEqual(result.order,local());
+});
