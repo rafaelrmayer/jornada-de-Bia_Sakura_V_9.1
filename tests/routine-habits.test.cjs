@@ -37,7 +37,7 @@ test('sugestões vêm ligadas nos dados novos e antigos e respeitam a opção de
     const setup = source.slice(source.indexOf('const defaults'), source.indexOf('let period'));
     for (const [saved, expected] of [[null, true], [{items: []}, true], [{items: [], learnTimes: false}, false]]) {
         const setting = vm.runInNewContext(setup + '\nstate.learnTimes', {
-            Date, KEY: 'bia-routine-sakura-v1', dayKey: () => '2026-11-18', localStorage: {getItem: () => JSON.stringify(saved)}
+            Date, periods:['Manhã','Tarde','Noite'], KEY: 'bia-routine-sakura-v1', dayKey: () => '2026-11-18', localStorage: {getItem: () => JSON.stringify(saved)}
         });
         assert.equal(setting, expected);
     }

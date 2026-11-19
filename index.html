@@ -551,6 +551,7 @@
     <button id="biaRoutineDismissSuggestion" type="button">Agora não</button>
 </section>
 <div id="biaRoutineList" class="bia-routine-list" aria-live="polite"></div>
+<p id="biaRoutineSaveStatus" class="bia-hint" role="status" aria-live="polite"></p>
 <div class="bia-manage"><button type="button" id="biaRoutineManage">🔐 Organizar atividades</button><p class="bia-hint">Para adicionar, excluir ou mudar a ordem, desbloqueie a administração nas Configurações.</p><div id="biaRoutineEditor" hidden><label>Atividade <input id="biaRoutineName" maxlength="60" placeholder="Ex.: Tomar café"></label><label>Ícone <select id="biaRoutineIcon"><option>🌞</option><option>🍽️</option><option>🪥</option><option>🎒</option><option>🎨</option><option>🛁</option><option>📚</option><option>🛏️</option><option>💧</option><option>🎵</option></select></label><label>Horário opcional <input type="time" id="biaRoutineTime"></label><button type="button" id="biaRoutineAdd">Adicionar atividade</button><p id="biaRoutineFeedback" role="status"></p><label><span><input type="checkbox" id="biaRoutineLearn"> Sugerir atividades por horário</span></label><p class="bia-hint">A opção vem ligada. O app usa os horários em que alguém marca as atividades como concluídas. As sugestões aparecem depois de pelo menos três dias com horários parecidos. Os registros ficam neste aparelho.</p></div></div>
 </div></section>
         <section class="page-section" id="page-activities">
@@ -1262,7 +1263,7 @@
     <script src="js/card-model.js"></script>
     <script src="js/card-suggestions.js"></script>
     <script src="js/emotions.js"></script>
-    <script src="js/routine-activities.js?v=agora-depois"></script>
+    <script src="js/routine-activities.js?v=safe-save"></script>
     <script src="js/experience.js"></script>
     <script src="js/sakura-activities-v9.js"></script>
     <script src="js/sakura-ui.js"></script>

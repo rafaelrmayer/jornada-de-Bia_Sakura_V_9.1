@@ -43,31 +43,55 @@ const defaults = [
     ['Manhã','🌞','Acordar'], ['Manhã','🍽️','Tomar café'], ['Manhã','🪥','Escovar os dentes'],
     ['Tarde','🎨','Brincar'], ['Noite','🛏️','Descansar']
 ].map(([period,icon,name],i) => ({id:'sample'+i,period,icon,name,time:'',done:false}));
-let state;
-try { state = JSON.parse(localStorage.getItem(KEY)); } catch { /* Use a rotina inicial. */ }
-if (!Array.isArray(state?.items)) state = {date: dayKey(new Date()), items: defaults};
-if (!Array.isArray(state.completions)) state.completions = [];
-if (typeof state.learnTimes !== 'boolean') state.learnTimes = true;
-
+let state, savedRaw, readFailed=false;
+function normalize(raw) {
+    const value=raw===null?{date:dayKey(new Date()),items:defaults}:JSON.parse(raw);
+    if(!value||!Array.isArray(value.items)||value.items.some(item=>!item||typeof item.id!=='string'||typeof item.name!=='string'||!periods.includes(item.period)))throw Error('Rotina inválida');
+    if(!Array.isArray(value.completions))value.completions=[];
+    if(typeof value.learnTimes!=='boolean')value.learnTimes=true;
+    return value;
+}
+try { savedRaw=localStorage.getItem(KEY);state=normalize(savedRaw); }
+catch { readFailed=true;state=normalize(null); }
 let period = currentPeriod(), edit = false, suggestion;
 const dismissed = new Set();
-
-function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); }
-    catch { window.showToast?.('Não foi possível salvar a rotina neste aparelho.'); }
+let routineWriting=false;
+const feedback=message=>{$('biaRoutineSaveStatus').textContent=message;};
+function resetDay(next) {
+    const now=new Date(),date=dayKey(now);
+    if(next.date===date)return;
+    next.date=date;next.items.forEach(item=>item.done=false);
+    next.priorityId=null;next.pausedId=null;
+    next.completions=recentCompletions(next.completions,now);
 }
-
+async function commit(change,{restricted=false,notice='Rotina salva neste aparelho.'}={}) {
+    if(routineWriting)return false;
+    routineWriting=true;
+    const write=()=>{
+        if(restricted&&!admin())return false;
+        if(readFailed){feedback('Não foi possível ler a rotina. Nenhuma alteração foi salva. Reabra o aplicativo e confira o armazenamento.');return false;}
+        try {
+            const current=localStorage.getItem(KEY);
+            if(current!==savedRaw){
+                state=normalize(current);savedRaw=current;
+                feedback('A rotina mudou em outra aba. A versão atual foi carregada. Confira e tente novamente; o texto digitado foi mantido.');
+                render();return false;
+            }
+            const next=JSON.parse(JSON.stringify(state)),newDay=next.date!==dayKey(new Date());resetDay(next);change(next);
+            const encoded=JSON.stringify(next);
+            localStorage.setItem(KEY,encoded);
+            state=next;savedRaw=encoded;if(newDay)dismissed.clear();feedback(notice);render();return true;
+        }catch{feedback('Não foi possível salvar a rotina neste aparelho. Nada foi alterado; o texto digitado foi mantido.');render();return false;}
+    };
+    try {
+        // Serializa gravações entre abas em navegadores com Web Locks.
+        return await (navigator.locks?.request?navigator.locks.request('bia-routine-write',write):write());
+    }catch{feedback('Não foi possível salvar a rotina. Tente novamente.');return false;}
+    finally{routineWriting=false;}
+}
 function checkDay() {
-    const now = new Date(), date = dayKey(now);
-    if (state.date === date) return false;
-    state.date = date;
-    for (const item of state.items) item.done = false;
-    state.priorityId = null;
-    state.pausedId = null;
-    state.completions = recentCompletions(state.completions, now);
-    dismissed.clear();
-    save();
-    return true;
+    if(state.date===dayKey(new Date()))return;
+    return commit(()=>{}, {notice:'Rotina preparada para hoje.'});
 }
 
 function pending(items) {
@@ -78,19 +102,15 @@ function pending(items) {
 
 function say(text) { window.speakText?.(text); }
 
-function complete(item) {
-    checkDay();
-    item.done = !item.done;
-    state.completions = state.completions.filter(event => event?.id !== item.id || event.date !== state.date);
-    if (item.done && state.learnTimes) {
-        const now = new Date();
-        state.completions.push({id: item.id, date: state.date, minute: minuteOf(now)});
-        state.completions = recentCompletions(state.completions, now);
-    }
-    if (item.id === state.priorityId) state.priorityId = null;
-    if (item.id === state.pausedId) state.pausedId = null;
-    save();
-    render();
+async function complete(item) {
+    await commit(next=>{
+        const target=next.items.find(entry=>entry.id===item.id);if(!target)return;
+        target.done=!target.done;
+        next.completions=next.completions.filter(event=>event?.id!==target.id||event.date!==next.date);
+        if(target.done&&next.learnTimes){const now=new Date();next.completions.push({id:target.id,date:next.date,minute:minuteOf(now)});next.completions=recentCompletions(next.completions,now);}
+        if(next.priorityId===target.id)next.priorityId=null;
+        if(next.pausedId===target.id)next.pausedId=null;
+    });
 }
 
 function renderSuggestion() {
@@ -108,7 +128,6 @@ function itemSuggestionText({item, minute, days}) {
 }
 
 function render(notice = '') {
-    checkDay();
     const tabs = $('biaRoutinePeriods'), list = $('biaRoutineList');
     tabs.replaceChildren(); list.replaceChildren();
     for (const name of periods) {
@@ -135,14 +154,14 @@ function render(notice = '') {
     const paused = !!now && state.pausedId === now.id;
     $('biaRoutineNext').textContent = paused ? 'Em pausa. A atividade continua aqui.' : !now ? 'Sem atividades pendentes neste período.' : notice;
     $('biaRoutineFinishNow').disabled = !now;
-    $('biaRoutineFinishNow').onclick = () => {
+    $('biaRoutineFinishNow').onclick = async () => {
         if (!now) return;
-        complete(now);
+        await complete(now);
         if ($('biaRoutineFinishNow').disabled) tabs.children[periods.indexOf(period)].focus();
     };
     $('biaRoutinePause').textContent = paused ? '▶ Retomar' : '⏸ Pausa';
-    $('biaRoutinePause').onclick = () => {
-        if (now) { state.pausedId = paused ? null : now.id; save(); render(); }
+    $('biaRoutinePause').onclick = async () => {
+        if (now) await commit(next=>{next.pausedId=paused?null:now.id;});
         if (!paused) say('Preciso de uma pausa.');
     };
 
@@ -160,22 +179,19 @@ function render(notice = '') {
         const actions = make('div');
         actions.className = 'bia-actions';
         actions.append(btn(item.done ? '↩ Desmarcar' : '✓ Concluído', () => complete(item)));
-        if (!item.done) actions.append(btn('Adiar', () => {
-            state.items.splice(state.items.indexOf(item),1);
-            state.items.push(item);
-            if (state.priorityId === item.id) state.priorityId = null;
-            if (state.pausedId === item.id) state.pausedId = null;
-            save(); render('A ordem da rotina mudou.');
-        }));
+        if (!item.done) actions.append(btn('Adiar', () => commit(next=>{
+            const index=next.items.findIndex(entry=>entry.id===item.id);if(index<0)return;
+            next.items.push(...next.items.splice(index,1));
+            if(next.priorityId===item.id)next.priorityId=null;
+            if(next.pausedId===item.id)next.pausedId=null;
+        },{notice:'A ordem da rotina mudou.'})));
         if (edit && admin()) {
             const up = btn('↑', () => move(item,-1)), down = btn('↓', () => move(item,1));
             up.setAttribute('aria-label','Subir '+item.name);
             down.setAttribute('aria-label','Descer '+item.name);
             actions.append(up, down, btn('Excluir', () => {
                 if (!admin() || !confirm('Excluir atividade?')) return;
-                state.items = state.items.filter(x => x !== item);
-                state.completions = state.completions.filter(event => event?.id !== item.id);
-                save(); render();
+                commit(next=>{next.items=next.items.filter(x=>x.id!==item.id);next.completions=next.completions.filter(event=>event?.id!==item.id);},{restricted:true});
             }));
         }
         card.append(icon,info,actions); list.append(card);
@@ -184,13 +200,12 @@ function render(notice = '') {
 }
 
 function move(item,direction) {
-    if (!admin()) return;
-    const items = state.items.filter(x => x.period === period);
-    const other = items[items.indexOf(item)+direction];
-    if (!other) return;
-    const a = state.items.indexOf(item), b = state.items.indexOf(other);
-    [state.items[a],state.items[b]] = [state.items[b],state.items[a]];
-    save(); render();
+    return commit(next=>{
+        const items=next.items.filter(x=>x.period===period),index=items.findIndex(x=>x.id===item.id),other=items[index+direction];
+        if(index<0||!other)return;
+        const a=next.items.findIndex(x=>x.id===item.id),b=next.items.findIndex(x=>x.id===other.id);
+        [next.items[a],next.items[b]]=[next.items[b],next.items[a]];
+    },{restricted:true});
 }
 
 $('biaRoutineManage').onclick = async () => {
@@ -198,25 +213,23 @@ $('biaRoutineManage').onclick = async () => {
     edit = !edit;
     render();
 };
-$('biaRoutineAdd').onclick = () => {
-    if (!admin()) { edit=false; render(); return; }
-    const name = $('biaRoutineName').value.trim();
-    if (!name) { $('biaRoutineFeedback').textContent='Informe o nome da atividade.'; return; }
-    state.items.push({id: 'task'+Date.now(),period,name:name.slice(0,60),icon:$('biaRoutineIcon').value,time:$('biaRoutineTime').value,done:false});
-    $('biaRoutineName').value=''; $('biaRoutineTime').value=''; save(); render();
+$('biaRoutineAdd').onclick = async () => {
+    if(!admin()){edit=false;render();return;}
+    const name=$('biaRoutineName').value.trim(),time=$('biaRoutineTime').value,icon=$('biaRoutineIcon').value,taskPeriod=period;
+    if(!name){feedback('Informe o nome da atividade.');return;}
+    if(await commit(next=>next.items.push({id:crypto.randomUUID(),period:taskPeriod,name:name.slice(0,60),icon,time,done:false}),{restricted:true})){
+        if($('biaRoutineName').value.trim()===name)$('biaRoutineName').value='';
+        if($('biaRoutineTime').value===time)$('biaRoutineTime').value='';
+    }
 };
 $('biaRoutineLearn').onchange = event => {
-    if (!admin()) { render(); return; }
-    state.learnTimes = event.target.checked;
-    save(); renderSuggestion();
+    const enabled=event.target.checked;
+    commit(next=>{next.learnTimes=enabled;},{restricted:true}).then(()=>render());
 };
-$('biaRoutineUseSuggestion').onclick = () => {
-    if (!suggestion || !admin()) return;
-    state.priorityId = suggestion.item.id;
-    state.pausedId = null;
-    dismissed.add(suggestion.item.id);
-    save(); render('A ordem da rotina mudou para hoje.');
-    $('biaRoutineNow').focus();
+$('biaRoutineUseSuggestion').onclick = async () => {
+    if(!suggestion||!admin())return;
+    const id=suggestion.item.id;
+    if(await commit(next=>{next.priorityId=id;next.pausedId=null;},{restricted:true,notice:'A ordem da rotina mudou para hoje.'})){dismissed.add(id);render();$('biaRoutineNow').focus();}
 };
 $('biaRoutineDismissSuggestion').onclick = () => {
     if (!suggestion) return;
@@ -227,15 +240,15 @@ $('biaRoutineDismissSuggestion').onclick = () => {
 $('biaRoutineHelp').onclick = () => say('Preciso de ajuda.');
 $('biaRoutineRefuse').onclick = () => say('Não quero.');
 document.addEventListener('bia:pagechange', event => {
-    if (event.detail?.page === 'routine') { period = currentPeriod(); render(); }
+    if (event.detail?.page === 'routine') { period = currentPeriod(); render();checkDay(); }
 });
 document.addEventListener('bia:admin-access-changed', () => render());
 setInterval(() => {
     if (!$('page-routine').classList.contains('active')) return;
-    if (checkDay()) { period = currentPeriod(); render(); }
+    if(state.date!==dayKey(new Date())){period=currentPeriod();checkDay();}
     else renderSuggestion();
 },60000);
-render();
+render();checkDay();
 // Desenho livre: toque, mouse, exportação PNG.
 const canvas=$('biaCanvas'),ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);let drawing=false,last;
 const point=e=>{const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)*canvas.width/r.width,(e.clientY-r.top)*canvas.height/r.height];};
