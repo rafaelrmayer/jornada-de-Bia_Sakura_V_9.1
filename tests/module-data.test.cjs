@@ -72,3 +72,11 @@ test('exclusão dos dados de saúde preserva preferências e relatos de outros m
  assert.equal(e.ctx.window.StorageService.removeItem('medicalData'), true);
  assert.deepEqual([...e.values.keys()], ['theme', 'jb_word_goals_v2', 'jornadaBia:myCommunicationData']);
 });
+
+test('backup em processamento não baixa arquivo se a sessão foi bloqueada',async()=>{
+ const e=env();let downloads=0,allowed=true;
+ Object.assign(e.ctx,{JornadaModuleData:e.api,TextEncoder,crypto:require('node:crypto').webcrypto,Blob,URL:{createObjectURL:()=> 'blob:test',revokeObjectURL(){}},setTimeout(){},document:{createElement:()=>({click(){downloads++}})},BackupCrypto:{encrypt:async()=>{allowed=false;return {encrypted:true}}}});
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/backup.js'),'utf8'),e.ctx);
+ const result=await e.ctx.window.BackupService.export({symbolsData:[],guardians:[]},{password:'senha-ficticia-teste',canDownload:()=>allowed});
+ assert.equal(result,null);assert.equal(downloads,0);
+});
