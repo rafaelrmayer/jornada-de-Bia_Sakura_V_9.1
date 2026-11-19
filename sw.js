@@ -1,4 +1,4 @@
-const CACHE = 'jornada-bia-sakura-v9-6-63';
+const CACHE = 'jornada-bia-sakura-v9-6-64';
 const CORE = [
   './',
   './index.html', './css/theme-contrast.css',
@@ -27,9 +27,9 @@ const CORE = [
   './js/rf-evaluation.js',
   './js/rf-evaluation-ui.js',
   './js/backup-crypto.js',
-  './js/backup.js?v=health-backup-2',
+  './js/backup.js?v=sanitization',
   './js/security-advanced.js',
-  './js/sakura-ui.js', './js/random-forest.js', './js/neural-assistant.js', './js/app.js?v=phrase-tools', './js/routine-activities.js?v=safe-save', './js/experience.js', './js/sakura-activities-v9.js', './js/sakura-habits-v9-2.js',
+  './js/sakura-ui.js', './js/random-forest.js', './js/neural-assistant.js', './js/app.js?v=sanitization', './js/routine-activities.js?v=safe-save', './js/experience.js', './js/sakura-activities-v9.js', './js/sakura-habits-v9-2.js',
   './manifest.json',
   './icon.svg', './icons/zen-sakura-logo.svg', './assets/sakura-prototipo.png', './assets/zen-landscape.svg',
   './icons/zen-heart.svg', './icons/zen-hands.svg', './icons/zen-smile.svg', './icons/zen-heart-rays.svg', './icons/chat.svg',

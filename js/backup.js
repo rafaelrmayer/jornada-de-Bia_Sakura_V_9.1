@@ -8,7 +8,6 @@
   const HEALTH_TEXT_FIELDS = ['healthPlan','supportLevel','observations','signal','gesture','meaning','sensoryBothers','sensoryHelps','care','updatedAt'];
   const SENSORY_FLAGS = ['sound','light','touch','smells','crowds','fabrics'];
   const CONFIG_KEYS = new Set(['symbolsData','voiceRate','voicePitch','autoSpeak','theme']);
-  const safeJson = v => { try { return JSON.parse(v); } catch { return null; } };
 
   async function digest(text) {
     const data = new TextEncoder().encode(text);
@@ -93,12 +92,12 @@
     },
     async export(data, opts={}) {
       const clean = opts.configurationOnly ? Object.fromEntries(Object.entries(data).filter(([k])=>CONFIG_KEYS.has(k))) : Object.fromEntries(Object.entries(data).filter(([k])=>k!=='medicalData'));
-      const body = JSON.stringify(clean);
       const payload = { app:'A Jornada de Bia', appVersion:'31.1.0', backupVersion:BACKUP_VERSION, type:opts.configurationOnly?'configuration':'full', exportedAt:new Date().toISOString(), data:clean };
       payload.integrity = await digest(JSON.stringify(payload));
       if (typeof opts.password !== 'string' || opts.password.length < 8) throw new Error('Backup protegido exige uma senha com pelo menos 8 caracteres');
       const text=JSON.stringify(await BackupCrypto.encrypt(payload, opts.password),null,2);
       const suffix=opts.preImport?'pre-import':(opts.configurationOnly?'config':'completo');
+      if(opts.canDownload&&!opts.canDownload())return null;
       download(text, `jornada-bia-backup-${suffix}-${new Date().toISOString().slice(0,10)}.json`);
       return payload;
     },

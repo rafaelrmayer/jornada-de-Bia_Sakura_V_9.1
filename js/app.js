@@ -53,14 +53,20 @@
             { id: 'objetos', emoji: '🎨', label: 'Objetos' },
         ];
 
+        function readStored(key,fallback) {
+            const value=StorageService.getJSON(key,null);
+            const valid=Array.isArray(fallback)?Array.isArray(value):value&&typeof value==='object'&&!Array.isArray(value);
+            return valid?value:JSON.parse(JSON.stringify(fallback));
+        }
+
         // Carrega símbolos do localStorage ou usa os padrão
-        let symbolsData = JSON.parse(StorageService.getItem('symbolsData') || JSON.stringify(defaultSymbols));
+        let symbolsData = readStored('symbolsData',defaultSymbols);
 
         // ============================================
         // DADOS DOS RESPONSÁVEIS (COMEÇA VAZIO)
         // ============================================
         const defaultGuardians = [];
-        let guardians = JSON.parse(StorageService.getItem('guardians') || JSON.stringify(defaultGuardians));
+        let guardians = readStored('guardians',defaultGuardians);
         let editingGuardianId = null;
         let editingSymbolId = null;
 
@@ -76,23 +82,6 @@
                 helps: []
             }
         };
-
-        const healthPlanOptions = [
-            'Unimed',
-            'Amil',
-            'Bradesco Saúde',
-            'SulAmérica',
-            'NotreDame Intermédica',
-            'Hapvida',
-            'GNDI',
-            'Golden Cross',
-            'Medial Saúde',
-            'Biovida',
-            'Real Saúde',
-            'Santa Helena',
-            'Nenhum plano de saúde',
-            'Outro'
-        ];
 
         const allergiesOptions = [
             'Nenhuma alergia conhecida',
@@ -204,7 +193,7 @@
                 const i=document.getElementById('learningInteractions');if(i)i.textContent=this.interactions;
                 const q=document.getElementById('learningSequences');if(q)q.textContent=this.sequences.length;
                 const ph=document.getElementById('learningPhrases');if(ph)ph.textContent=this.getPhraseStats().reduce((a,b)=>a+b[1],0);
-                const fb=JSON.parse(StorageService.getItem('aiFeedback')||'{}');const total=(fb.like||0)+(fb.dislike||0);const pct=total?Math.round((fb.like||0)/total*100):0;const f=document.getElementById('learningFeedback');if(f)f.textContent=pct+'%';
+                const fb=readStored('aiFeedback',{});const total=(fb.like||0)+(fb.dislike||0);const pct=total?Math.round((fb.like||0)/total*100):0;const f=document.getElementById('learningFeedback');if(f)f.textContent=pct+'%';
                 const top=document.getElementById('learningTopList');if(top){const arr=this.getTopSymbols(6);top.innerHTML=arr.length?arr.map(s=>`<span class="learning-chip">${escapeHtml(s.emoji)} ${escapeHtml(s.label)}</span>`).join(''):'<span style="font-size:.78rem;color:var(--text-light);font-weight:600;">Ainda aprendendo seus padrões…</span>';}
             }
         }
@@ -429,7 +418,7 @@
             intentLabel(){return {quero:'Quero algo',sentindo:'Como estou',lugar:'Onde/ir',ajuda:'Preciso de ajuda'}[selectedIntent]||'Comunicação';}
             envKey(){return this.environment==='auto' ? (contextAnalyzer.analyzeContext(selectedSymbols)?.context||'auto') : this.environment;}
             contextKey(){return [this.envKey(),this.timeBucket(),selectedIntent||'nenhuma'].join('|');}
-            recentPhrase(){const usage=JSON.parse(StorageService.getItem('phraseUsage')||'{}');const arr=Object.entries(usage).sort((a,b)=>b[1]-a[1]);return arr[0]?.[0]||'Ainda aprendendo';}
+            recentPhrase(){let usage={};try{const saved=JSON.parse(StorageService.getItem('phraseUsage')||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))usage=saved;}catch{};const arr=Object.entries(usage).sort((a,b)=>b[1]-a[1]);return arr[0]?.[0]||'Ainda aprendendo';}
             trainingRecords(){return window.JornadaContextRecords?.trainingRecords(this.stats)||{};}
             learnedCount(){return Object.values(this.trainingRecords()).reduce((sum,row)=>sum+row.count,0)}
             candidateRows(){
@@ -531,7 +520,7 @@
         // ESTADO DO APP
         // ============================================
         let selectedSymbols = [];
-        let history = JSON.parse(StorageService.getItem('symbolHistory') || '[]');
+        let history = readStored('symbolHistory',[]);
         let currentCategory = 'all';
         let speechSynthesisEnabled = 'speechSynthesis' in window;
         let currentPage = 'home';
@@ -552,7 +541,8 @@
         let voicePitch = 1.0;
         let autoSpeak = false;
         let guardianUnlocked = SecurityService.isUnlocked();
-        let favoriteIds = JSON.parse(StorageService.getItem('favoriteIds') || '[]');
+        let guardianAccessRevision=0;
+        let favoriteIds = readStored('favoriteIds',[]);
         const QUICK_PHRASES = [
             {text:'Eu quero água', ids:['water']},
             {text:'Eu quero comer', ids:['food']},
@@ -561,14 +551,13 @@
             {text:'Preciso de ajuda', ids:['help']},
             {text:'Quero ir para casa', ids:['home']}
         ];
-        let childProfile = JSON.parse(StorageService.getItem('childProfile') || '{"name":"Bia","greeting":"Olá! 🌻 Vamos conversar?","photo":""}');
+        let childProfile = readStored('childProfile',{name:'Bia',greeting:'Olá! 🌻 Vamos conversar?',photo:''});
         let selectedIntent = StorageService.getItem('selectedIntent') || '';
         let activeHub = StorageService.getItem('activeHub') || '';
-        let symbolUsage = JSON.parse(StorageService.getItem('symbolUsage') || '{}');
-        let aiFeedback = JSON.parse(StorageService.getItem('aiFeedback') || '{"like":0,"dislike":0}');
+        let symbolUsage = readStored('symbolUsage',{});
+        let aiFeedback = readStored('aiFeedback',{like:0,dislike:0});
         const INTENT_LABELS = {quero:'💙 Quero', preciso:'🆘 Preciso', sentindo:'😊 Como estou', lugar:'📍 Onde / ir', ajuda:'🆘 Preciso de ajuda'};
 
-        let selectedHealthPlan = '';
         let selectedAllergies = [];
         let sensoryModeActive = false;
 
@@ -609,9 +598,7 @@
         const symbolModalSave = document.getElementById('symbolModalSave');
         const editSymbolCount = document.getElementById('editSymbolCount');
         const medicalSaveBtn = document.getElementById('medicalSaveBtn');
-        const healthPlanModal = document.getElementById('healthPlanModal');
         const allergiesModal = document.getElementById('allergiesModal');
-        const healthPlanList = document.getElementById('healthPlanList');
         const allergiesList = document.getElementById('allergiesList');
         const quickPhrasesGrid = document.getElementById('quickPhrasesGrid');
         const favoritesGrid = document.getElementById('favoritesGrid');
@@ -917,54 +904,8 @@
             renderMedical();
         }
 
-        function openHealthPlanSelector() {
-            selectedHealthPlan = document.getElementById('medHealthPlan').value || '';
-            document.getElementById('healthPlanSearch').value = '';
-            healthPlanList.innerHTML = '';
-            
-            healthPlanOptions.forEach(option => {
-                const div = document.createElement('div');
-                div.className = 'selector-option' + (option === selectedHealthPlan ? ' selected' : '');
-                div.innerHTML = `
-                    <span>${option}</span>
-                    <span class="option-check">✅</span>
-                `;
-                div.onclick = () => selectHealthPlanOption(option);
-                healthPlanList.appendChild(div);
-            });
-            
-            healthPlanModal.classList.add('active');
-        }
-
-        function selectHealthPlanOption(option) {
-            selectedHealthPlan = option;
-            document.querySelectorAll('#healthPlanList .selector-option').forEach(el => {
-                el.classList.toggle('selected', el.textContent.trim() === option);
-            });
-        }
-
-        function filterHealthPlans() {
-            const search = document.getElementById('healthPlanSearch').value.toLowerCase();
-            const options = document.querySelectorAll('#healthPlanList .selector-option');
-            options.forEach(opt => {
-                const text = opt.textContent.toLowerCase();
-                opt.style.display = text.includes(search) ? 'flex' : 'none';
-            });
-        }
-
-        function selectHealthPlan() {
-            if (selectedHealthPlan) {
-                document.getElementById('medHealthPlan').value = selectedHealthPlan;
-            }
-            closeHealthPlanModal();
-            playClickSound();
-        }
-
-        function closeHealthPlanModal() {
-            healthPlanModal.classList.remove('active');
-        }
-
         function openAllergiesSelector() {
+            if(!requireAdminAccess())return;
             const current = document.getElementById('medAllergies').value || '';
             selectedAllergies = current.split(',').map(v => v.trim()).filter(Boolean);
             document.getElementById('allergiesSearch').value = '';
@@ -987,6 +928,7 @@
         }
 
         function selectAllergiesOption(option) {
+            if(!requireAdminAccess())return;
             if (option === 'Nenhuma alergia conhecida') {
                 selectedAllergies = ['Nenhuma alergia conhecida'];
             } else {
@@ -1009,6 +951,7 @@
         }
 
         function selectAllergies() {
+            if(!requireAdminAccess())return;
             document.getElementById('medAllergies').value = selectedAllergies.join(', ');
             closeAllergiesModal();
             playClickSound();
@@ -2152,13 +2095,13 @@
         // ============================================
         // EXPORTA FUNÇÕES PARA O WINDOW (onclick)
         // ============================================
-        window.openHealthPlanSelector = openHealthPlanSelector;
+
         window.openAllergiesSelector = openAllergiesSelector;
-        window.closeHealthPlanModal = closeHealthPlanModal;
+
         window.closeAllergiesModal = closeAllergiesModal;
-        window.selectHealthPlan = selectHealthPlan;
+
         window.selectAllergies = selectAllergies;
-        window.filterHealthPlans = filterHealthPlans;
+
         window.filterAllergies = filterAllergies;
         window.contactGuardian = contactGuardian;
         window.sendQuickMessageToSelected = sendQuickMessageToSelected;
@@ -2410,7 +2353,6 @@
                 closeGuardianModal();
                 closeContactModal();
                 closeSymbolModal();
-                closeHealthPlanModal();
                 closeAllergiesModal();
             }
             if (e.key === 'Enter' && document.getElementById('guardianModal').classList.contains('active')) {
@@ -2430,9 +2372,6 @@
         fabMain.addEventListener('click', toggleFab);
 
         // Modais médicos
-        document.getElementById('healthPlanModal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) closeHealthPlanModal();
-        });
         document.getElementById('allergiesModal').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) closeAllergiesModal();
         });
@@ -2612,7 +2551,7 @@
         }
 
         function recordPhraseUse(text){
-            const key='phraseUsage'; const data=JSON.parse(StorageService.getItem(key)||'{}'); const count=data[text]; Object.defineProperty(data,text,{value:Math.min((Number.isSafeInteger(count)&&count>=0?count:0)+1,Number.MAX_SAFE_INTEGER),enumerable:true,writable:true,configurable:true}); if(StorageService.setItem(key,JSON.stringify(data))!==false)document.dispatchEvent(new CustomEvent('bia:phrase-usage-changed'));
+            const key='phraseUsage'; const data=readStored(key,{}); const count=data[text]; Object.defineProperty(data,text,{value:Math.min((Number.isSafeInteger(count)&&count>=0?count:0)+1,Number.MAX_SAFE_INTEGER),enumerable:true,writable:true,configurable:true}); if(StorageService.setItem(key,JSON.stringify(data))!==false)document.dispatchEvent(new CustomEvent('bia:phrase-usage-changed'));
         }
         function communicatePersonalPhrase(text) {
             const phrase=String(text||'').trim();
@@ -2650,11 +2589,12 @@
         }
         async function exportBackup(options = {}) {
             if (!requireAdminAccess()) return;
+            const revision=guardianAccessRevision,canContinue=()=>guardianUnlocked&&SecurityService.isUnlocked()&&revision===guardianAccessRevision;
             try {
                 const payload = collectBackupData();
                 const password = prompt('Crie uma senha para proteger este backup (mínimo 8 caracteres):');
                 if(password === null) return;
-                await BackupService.export(payload, { configurationOnly: !!options.configurationOnly, password });
+                if(!await BackupService.export(payload, { configurationOnly: !!options.configurationOnly, password,canDownload:canContinue }))return;
                 const backupStatus=document.getElementById('backupLocalStatus');if(backupStatus)backupStatus.textContent='Arquivo de backup gerado. Guarde a senha separadamente.';
                 showToast(options.configurationOnly ? '⬇️ Backup de configuração exportado' : '⬇️ Backup completo exportado');
             } catch (err) { console.error(err);const backupStatus=document.getElementById('backupLocalStatus');if(backupStatus)backupStatus.textContent='Não foi possível gerar o backup. Confira a senha e tente novamente.'; showToast('❌ Não foi possível exportar o backup'); }
@@ -2662,13 +2602,15 @@
 
         async function importBackupFile(e){
             if (!requireAdminAccess()) return;
+            const revision=guardianAccessRevision,canContinue=()=>guardianUnlocked&&SecurityService.isUnlocked()&&revision===guardianAccessRevision;
             const file=e.target.files?.[0]; if(!file)return;
             try {
                 const p=await BackupService.readAndValidate(file);
+                if(!canContinue())return;
                 const preImportPassword = prompt('Crie uma senha para o backup de segurança antes da importação (mínimo 8 caracteres):');
                 if (preImportPassword === null) { showToast('Importação cancelada'); return; }
                 if (preImportPassword.length < 8) { showToast('A senha deve ter pelo menos 8 caracteres'); return; }
-                await BackupService.export(collectBackupData(), { preImport: true, password: preImportPassword });
+                if(!await BackupService.export(collectBackupData(), { preImport: true, password: preImportPassword,canDownload:canContinue })||!canContinue())return;
                 const d=p.data;
                 if(!Array.isArray(d.symbolsData)) throw new Error('Backup inválido');
                 StorageService.setItem('symbolsData',JSON.stringify(d.symbolsData));
@@ -2737,7 +2679,9 @@
         }
 
         function setGuardianMode(unlocked) {
+            if(guardianUnlocked!==unlocked)guardianAccessRevision++;
             guardianUnlocked = unlocked;
+            if(!unlocked){closeAllergiesModal();selectedAllergies=[];document.getElementById('allergiesSearch').value='';allergiesList.replaceChildren();}
             SecurityService.setSessionUnlocked(unlocked);
             if (guardianModeBtn) guardianModeBtn.textContent = unlocked ? '🔒 Bloquear' : '🔓 Desbloquear';
             const adminBtn = document.getElementById('settingsAdminUnlock');
@@ -2851,7 +2795,7 @@
         function renderContextualQuickPhrases(){
             const grid=document.getElementById('quickPhrasesGrid'); if(!grid)return;
             const base=getContextualPhrases();
-            const usage=JSON.parse(StorageService.getItem('phraseUsage')||'{}');
+            const usage=readStored('phraseUsage',{});
             const merged=[...base,...QUICK_PHRASES.map(x=>x.text)];
             const unique=[...new Set(merged)].sort((a,b)=>(usage[b]||0)-(usage[a]||0)).slice(0,8);
             grid.innerHTML=unique.map(t=>`<button class="quick-phrase-btn" type="button" data-phrase="${escapeHtml(t)}">${escapeHtml(t)}<small>Toque para falar</small></button>`).join('');
@@ -3089,7 +3033,7 @@
     }
     function renderMostUsedPhrases(){
         const section=el('myCommMostUsed'),grid=el('myCommMostUsedGrid');if(!section||!grid)return;
-        let usage={};try{usage=JSON.parse(StorageService.getItem('phraseUsage')||'{}');}catch{}
+        let usage={};try{usage=readStored('phraseUsage',{});}catch{}
         const items=window.JBCommunicationUsage?.mostUsed(data.phrases,usage)||[];
         const focused=document.activeElement?.closest('#myCommMostUsedGrid [data-speak]')?.dataset.speak;
         section.hidden=!items.length;

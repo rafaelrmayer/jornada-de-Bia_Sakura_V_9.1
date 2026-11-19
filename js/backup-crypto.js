@@ -3,7 +3,11 @@
   'use strict';
   const ITERATIONS = 250000;
   const enc = new TextEncoder(), dec = new TextDecoder();
-  const b64 = bytes => btoa(String.fromCharCode(...bytes));
+  const b64 = bytes => {
+    const chunks=[];
+    for(let offset=0;offset<bytes.length;offset+=32768)chunks.push(String.fromCharCode(...bytes.subarray(offset,offset+32768)));
+    return btoa(chunks.join(''));
+  };
   const bytes = text => Uint8Array.from(atob(text), c => c.charCodeAt(0));
   async function key(password, salt) {
     const material = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
