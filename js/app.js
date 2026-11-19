@@ -2509,6 +2509,7 @@
             activeIntentButton?.setAttribute('aria-expanded', 'false');
             activeIntentButton = button;
             button.setAttribute('aria-expanded', 'true');
+            intentSuggestions.hidden=false;intentMore.hidden=false;
             intentSuggestions.setAttribute('aria-label', `Cartões da categoria ${button.textContent.trim()}`);
             const cards = intentCards[button.dataset.intent].map(([symbol, text, labelText]) => {
                 const card = document.createElement('button');
@@ -2553,10 +2554,11 @@
             navigator.vibrate?.(10);
         }
 
-        function collapseIntentExpansion() {
+        function collapseIntentExpansion(returnFocus=true) {
             intentPanel.hidden = true;
             activeIntentButton?.setAttribute('aria-expanded', 'false');
-            activeIntentButton?.focus();
+            if(returnFocus)(activeIntentButton||activeIntentCard)?.focus();
+            activeIntentButton=null;showAdditionalIntentCards(false);
             setIntentPhrase(null);
         }
 
@@ -2826,9 +2828,10 @@
             intentButtons.forEach(button => button.addEventListener('click', () => {
                 selectedIntent = button.dataset.intent;
                 StorageService.setItem('selectedIntent', selectedIntent);
-                renderIntentCards(button);
+                if(activeIntentButton===button&&!intentPanel.hidden&&!intentSuggestions.hidden)collapseIntentExpansion();else renderIntentCards(button);
             }));
-            renderIntentCards(intentButtons.find(button => button.dataset.intent === selectedIntent) || intentButtons[0]);
+            collapseIntentExpansion(false);
+            document.addEventListener('bia:pagechange',event=>{if(event.detail?.page==='home')collapseIntentExpansion(false);});
             intentClear.addEventListener('click', () => {
                 if (activeIntentCard?.isConnected && !activeIntentCard.closest('[hidden]')) {
                     activeIntentCard.focus();
@@ -2845,7 +2848,7 @@
         }
         const boardHelp = document.querySelectorAll('[data-board-help]');
         boardHelp.forEach(card => card.addEventListener('click', () => {
-            if (intentPanel.hidden) renderIntentCards(activeIntentButton || intentButtons[0]);
+            if(intentPanel.hidden){intentPanel.hidden=false;intentSuggestions.hidden=true;showAdditionalIntentCards(false);intentMore.hidden=true;}
             chooseIntentCard(card);
         }));
         document.getElementById('intentCorrectBtn')?.addEventListener('click', () => {

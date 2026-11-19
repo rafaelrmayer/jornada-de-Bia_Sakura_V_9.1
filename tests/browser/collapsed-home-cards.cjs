@@ -1,0 +1,12 @@
+const{chromium}=require('playwright'),assert=require('node:assert/strict');
+(async()=>{const b=await chromium.launch({executablePath:process.env.BIA_CHROMIUM_PATH||undefined,args:['--no-sandbox']});try{
+const site=process.env.BIA_TEST_SITE||'http://127.0.0.1:8152',c=await b.newContext({viewport:{width:390,height:900},serviceWorkers:'block'});await c.route('**/*',r=>r.request().url().startsWith(site)?r.continue():r.abort());await c.addInitScript(()=>localStorage.setItem('selectedIntent','sentindo'));
+const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(site);await p.waitForFunction(()=>window.JBCommunication);
+const closed=async()=>{assert.equal(await p.locator('#intentExpansion').isVisible(),false);assert.equal(await p.locator('#intentCategories [aria-expanded="true"]').count(),0);};
+await closed();await p.locator('[data-intent="quero"]').click();assert.equal(await p.locator('#intentSuggestions button:visible').count(),3);assert.equal(await p.locator('#intentAdditionalCards').isVisible(),false);
+await p.locator('#intentMoreBtn').click();assert.equal(await p.locator('#intentAdditionalCards').isVisible(),true);await p.locator('[data-intent="quero"]').click();await closed();
+await p.locator('[data-intent="preciso"]').click();assert.equal(await p.locator('#intentSuggestions button:visible').count(),3);await p.locator('.visual-bottom-nav [data-page="my-communication"]').click();await p.locator('.visual-bottom-nav [data-page="home"]').click();await closed();
+await p.locator('[data-board-help]').first().click();assert.equal(await p.locator('#intentPhrase').innerText(),'Preciso de ajuda.');assert.equal(await p.locator('#intentSuggestions button:visible').count(),0);assert.equal(await p.locator('#intentMoreBtn').isVisible(),false);await p.locator('#intentCollapseBtn').click();await closed();assert.equal(await p.evaluate(()=>document.activeElement===document.querySelector('[data-board-help]')),true);
+await p.locator('[data-intent="sentindo"]').click();assert.equal(await p.locator('#intentSuggestions button:visible').count(),3);assert.equal(await p.locator('#intentMoreBtn').isVisible(),true);await p.reload();await p.waitForFunction(()=>window.JBCommunication);await closed();assert.deepEqual(errors,[]);
+console.log('PASS: initial/reloaded home stays collapsed despite saved category; explicit category, more cards, toggle, navigation return and independent help shortcuts work.');
+}finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});

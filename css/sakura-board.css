@@ -440,3 +440,6 @@ html.bia-a11y-touch .sakura-board :is(.sakura-board-categories, .sakura-board-ca
 .bia-routine-slot-icon { display: block; font-size: 2rem; }
 .bia-routine-suggestion { margin-bottom: 1rem; }
 .bia-routine-suggestion[hidden] { display: none; }
+
+/* Respeitar o estado recolhido também nos painéis que usam display:grid. */
+.sakura-board [hidden]{display:none!important}
