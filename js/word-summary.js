@@ -26,14 +26,25 @@
   const baseText=text,checks=[];
   const updateHealth=()=>{
    healthPreview.replaceChildren();const fields=window.JBHealthCare?.getFields()||[],chosen=fields.filter(f=>checks.some(c=>c.key===f.key&&c.input.checked));
-   healthPreview.hidden=!chosen.length;
-   if(chosen.length){healthPreview.append(el('h2','Saúde e cuidados — relato do responsável'));for(const f of chosen)healthPreview.append(el('h3',f.label),el('p',f.value));}
-   text=baseText+(chosen.length?'\n\nSaúde e cuidados — relato do responsável\n'+chosen.map(f=>f.label+': '+f.value).join('\n'):'');preview.value=text;
+   const support=chosen.find(field=>field.key==='supportLevel'),otherFields=chosen.filter(field=>field.key!=='supportLevel');
+   const supportLevel=visual.querySelector('.wr-support-level');
+   const supportText=support ? 'Nível de suporte do autismo (informado pelo responsável): '+support.value : '';
+   supportLevel.textContent=supportText;supportLevel.hidden=!support;
+   healthPreview.hidden=!otherFields.length;
+   if(otherFields.length){
+    healthPreview.append(el('h2','Saúde e cuidados — relato do responsável'));
+    for(const field of otherFields)healthPreview.append(el('h3',field.label),el('p',field.value));
+   }
+   const identification=['Nome: ________________________________________','Idade: __________'];
+   if(supportText)identification.push(supportText);
+   text=identification.join('\n')+'\n\n'+baseText
+    +(otherFields.length?'\n\nSaúde e cuidados — relato do responsável\n'+otherFields.map(field=>field.label+': '+field.value).join('\n'):'');
+   preview.value=text;
   };
   for(const field of window.JBHealthCare?.getFields()||[]){const label=el('label'),input=el('input');input.type='checkbox';input.onchange=updateHealth;checks.push({key:field.key,input});label.append(input,document.createTextNode(' '+field.label));selection.append(label);}
   if(checks.length)dialog.append(selection);visual.append(healthPreview);
   const textDetails=el('details');textDetails.append(el('summary','Ver texto para WhatsApp'));
-  const preview=el('textarea');preview.readOnly=true;preview.value=text;preview.rows=18;preview.setAttribute('aria-label','Prévia do resumo');textDetails.append(preview);dialog.append(textDetails);
+  const preview=el('textarea');preview.readOnly=true;preview.rows=18;preview.setAttribute('aria-label','Prévia do resumo');textDetails.append(preview);dialog.append(textDetails);updateHealth();
   dialog.append(button('Salvar PDF / Imprimir',()=>{if(!goals.allowed())return;dialog.close();const paper=visual.cloneNode(true);paper.id='wgPrintReport';document.body.append(paper);document.body.classList.add('wg-printing');const clean=()=>{paper.remove();document.body.classList.remove('wg-printing');window.removeEventListener('afterprint',clean);};window.addEventListener('afterprint',clean);try{window.print();}catch{clean();}}),
    button('Abrir WhatsApp',()=>{if(goals.allowed())window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener,noreferrer');}),
    button('Voltar',()=>dialog.close()));document.body.append(dialog);dialog.showModal();

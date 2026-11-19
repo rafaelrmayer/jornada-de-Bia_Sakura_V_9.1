@@ -58,6 +58,12 @@
 html body .wg-report .wr-header{position:static!important;inset:auto!important;transform:none!important;display:block!important;width:auto!important;height:auto!important;min-height:0!important;z-index:auto!important;background:transparent!important;color:#2d3c35!important;padding:0!important;margin:0 0 18px!important;box-shadow:none!important;border:0!important}
 .wr-eyebrow{font-size:10px;font-weight:700;letter-spacing:1.5px;color:#52675b}
 .wr-period{color:#52675b}
+.wr-identification{margin:14px 0 12px;max-width:36rem}
+.wg-report .wr-identification :is(.wr-identification-name,.wr-identification-age){display:flex;align-items:baseline;gap:.5em;margin:8px 0;min-height:1.5em}
+.wr-write-line{flex:1 1 auto;border-bottom:1px solid currentColor;min-width:1.5em}
+.wr-identification-age .wr-write-line{flex-grow:0;flex-basis:7em}
+.wr-support-level[hidden]{display:none!important}
+
 .wr-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .wr-metric{background:#fff;border:1px solid #e6ede7;border-radius:18px;padding:15px 12px;box-shadow:0 2px 0 #29423405}
 .wr-metric strong{display:block;font-size:28px;color:#2d3c35;line-height:1.2;margin-bottom:6px}

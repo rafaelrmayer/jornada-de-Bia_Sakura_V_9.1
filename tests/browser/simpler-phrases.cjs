@@ -46,6 +46,7 @@ const nav=async(name,group='account')=>{await p.locator('.visual-bottom-nav [dat
 await nav('medical');
 assert.equal(await p.locator('#medSignal').inputValue(),'');
 await p.locator('#medSignal').fill('Aponta quando sente desconforto');
+await p.locator('#medSupportLevel').selectOption('Nível 2');
 await p.locator('#medGesture').fill('Aponta para a cabeça');
 await p.locator('#medMeaning').fill('Pode indicar dor de cabeça, segundo o responsável');
 await p.locator('#medSensoryHelps').fill('Silêncio e pausas');
@@ -55,6 +56,17 @@ assert.equal(await p.evaluate(()=>JSON.parse(StorageService.getItem('medicalData
 await nav('word-goals');await p.locator('#wgSummaryToggle').click();
 await p.getByRole('button',{name:'Revisar resumo para PDF ou WhatsApp'}).click();
 assert.equal(await p.locator('.wg-review input:checked').count(),0);
+assert.equal(await p.locator('.wg-review .wr-header .wr-identification-name').innerText(),'Nome:');
+assert.equal(await p.locator('.wg-review .wr-header .wr-identification-age').innerText(),'Idade:');
+assert.equal(await p.locator('.wg-review .wr-header .wr-support-level').isVisible(),false);
+assert.match(await p.locator('.wg-review textarea').inputValue(),/^Nome: _+\nIdade: _+\n/);
+const supportOption=p.locator('.wg-review label').filter({hasText:'Nível de suporte informado'}).locator('input');
+await supportOption.check();
+assert.equal(await p.locator('.wg-review .wr-header .wr-support-level').innerText(),'Nível de suporte do autismo (informado pelo responsável): Nível 2');
+assert.match(await p.locator('.wg-review textarea').inputValue(),/^Nome: _+\nIdade: _+\nNível de suporte do autismo .*: Nível 2\n/);
+await supportOption.uncheck();
+assert.equal(await p.locator('.wg-review .wr-header .wr-support-level').isVisible(),false);
+
 assert.equal(await p.locator('.wg-review textarea').inputValue().then(t=>t.includes('Aponta para a cabeça')),false);
 await p.locator('.wg-review label').filter({hasText:'Qual é o gesto'}).locator('input').check();
 assert.match(await p.locator('.wg-review textarea').inputValue(),/Aponta para a cabeça/);
