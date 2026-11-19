@@ -4,44 +4,46 @@
   const PHRASES = ['Quero comer.', 'Quero jogar Zelda: Ocarina of Time.', 'Quero descansar.', 'Quero desenhar.', 'Quero ouvir uma história.'];
   const ICONS = ['🍽️', '🎮', '🛋️', '🎨', '📖'];
   const FIXED = ['Quero outra coisa.', 'Não quero agora.'];
-  function endpoint(value) {
+  function endpoint(value,model='cards-demo') {
     const url = new URL(value);
     if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) throw new Error('Use um endereço HTTPS sem credenciais, parâmetros ou fragmentos.');
-    return url.href.replace(/\/$/, '') + '/v1/cards/suggestions';
+    if(!['cards-demo','cards-rf-demo'].includes(model))throw new Error('Modelo incompatível.');
+    return url.href.replace(/\/$/, '') + (model==='cards-rf-demo'?'/v1/cards/random-forest/suggestions':'/v1/cards/suggestions');
   }
-  function validate(data) {
-    if (data?.model !== 'cards-demo' || data.experimental !== true || data.synthetic_data !== true ||
+  function validate(data,model='cards-demo') {
+    if (data?.model !== model || data.experimental !== true || data.synthetic_data !== true ||
         !Array.isArray(data.cards) || data.cards.length !== 5 ||
         new Set(data.cards.map(c => c?.id)).size !== 5 ||
         !data.cards.every(c => Number.isInteger(c?.id) && c.id >= 0 && c.id < 5 && PHRASES[c.id] === c.phrase) ||
         JSON.stringify(data.fixed_options) !== JSON.stringify(FIXED)) throw new Error('Resposta incompatível.');
+    if(model==='cards-rf-demo'&&(data.version!=='1.0.0'||data.score_kind!=='tree_vote_fraction'||!data.cards.every(c=>Number.isFinite(c.score)&&c.score>=0&&c.score<=1)))throw new Error('Resposta RF incompatível.');
     return data.cards.map(c => c.id);
   }
-  async function request(base, period, last, fetcher = root.fetch.bind(root), timeout = 5000, signal) {
+  async function request(base, period, last, fetcher = root.fetch.bind(root), timeout = 5000, signal,model='cards-demo') {
     const controller = new AbortController();
     const abort = () => controller.abort();
     if (signal?.aborted) abort();
     signal?.addEventListener('abort', abort, {once:true});
     const timer = setTimeout(abort, timeout);
     try {
-      const response = await fetcher(endpoint(base), {
+      const response = await fetcher(endpoint(base,model), {
         method: 'POST', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({period, last_activity: last}), signal: controller.signal
       });
       if (!response.ok) throw new Error('API indisponível.');
-      return validate(await response.json());
+      return validate(await response.json(),model);
     } finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
   }
   function validateOrder(order) {
     if (!Array.isArray(order) || order.length !== 5 || new Set(order).size !== 5 || !order.every(id=>Number.isInteger(id)&&id>=0&&id<5)) throw new Error('Ordem local incompatível.');
     return order;
   }
-  async function resolveOrder({base, period, last, remote, online=true, local, fetcher, timeout=5000, signal}) {
+  async function resolveOrder({base, period, last, remote, online=true, local, fetcher, timeout=5000, signal,model='cards-demo'}) {
     if (signal?.aborted) throw new Error('Atualização cancelada.');
     if (remote && base && online) {
       try {
-        const order = await request(base, ['manha','tarde','noite'][period], last, fetcher, timeout, signal);
+        const order = await request(base, ['manha','tarde','noite'][period], last, fetcher, timeout, signal,model);
         if (signal?.aborted) throw new Error('Atualização cancelada.');
         return {order, source:'remote'};
       } catch (error) { if (signal?.aborted) throw error; }
@@ -95,7 +97,7 @@
   });
   try {
     el('neuralApiUrl').value = localStorage.getItem(key) || '';
-    el('neuralCardsMode').value = localStorage.getItem(modeKey) === 'remote' ? 'remote' : 'local';
+    el('neuralCardsMode').value = ['remote','rf-remote'].includes(localStorage.getItem(modeKey))?localStorage.getItem(modeKey):'local';
   } catch {}
   el('neuralApiForm').addEventListener('submit', async event => {
     event.preventDefault();
@@ -108,7 +110,7 @@
     const value = el('neuralApiUrl').value.trim();
     try {
       const mode = el('neuralCardsMode').value;
-      if (mode === 'remote') endpoint(value);
+      if (['remote','rf-remote'].includes(mode))endpoint(value,mode==='rf-remote'?'cards-rf-demo':'cards-demo');
       localStorage.setItem(modeKey, mode);
       if (value) localStorage.setItem(key, value); else localStorage.removeItem(key);
       cancelUpdate();
@@ -127,9 +129,9 @@
     const hour=new Date().getHours();const period=hour<12?0:hour<18?1:2;
     const snapshotLast=last;
     el('neuralCardsSuggest').disabled=true;
-    status(mode==='remote'?'Atualizando cartões…':'Processando neste aparelho…');
+    status(mode!=='local'?'Atualizando cartões…':'Processando neste aparelho…');
     try {
-      const result=await resolveOrder({base,period,last:snapshotLast,remote:mode==='remote',online:root.navigator?.onLine!==false,signal:controller.signal,
+      const result=await resolveOrder({base,period,last:snapshotLast,remote:mode!=='local',model:mode==='rf-remote'?'cards-rf-demo':'cards-demo',online:root.navigator?.onLine!==false,signal:controller.signal,
         local:()=>{
           if(JSON.stringify(root.BiaCardModel?.phrases)!==JSON.stringify(PHRASES))throw new Error('Cartões incompatíveis.');
           return root.BiaCardInference.order(root.BiaCardModel,period,snapshotLast);
@@ -137,13 +139,14 @@
       if(current!==revision)return;
       order=result.order;render();
       el('neuralCardsStatus').dataset.source=result.source;
-      status(result.source==='remote'?'Cartões atualizados pelo servidor.':mode==='remote'?'Usando processamento neste aparelho.':'Cartões atualizados neste aparelho.');
+      status(result.source==='remote'?'Cartões atualizados pelo servidor.':mode!=='local'?'API indisponível. Usando a ordenação local existente.':'Cartões atualizados neste aparelho.');
     } catch {
       if(current===revision){el('neuralCardsStatus').dataset.source='preserved';status('Cartões mantidos. Você pode continuar escolhendo.');}
     } finally {
       if(current===revision){activeRequest=null;el('neuralCardsSuggest').disabled=false;}
     }
   });
+  document.addEventListener('bia:admin-access-changed',()=>{if(!root.SecurityService?.isUnlocked?.())cancelUpdate();});
   document.addEventListener('bia:pagechange',()=>{if(activeRequest)cancelUpdate();});
   render();
 })(typeof window === 'undefined' ? globalThis : window);

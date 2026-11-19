@@ -18,3 +18,7 @@ Os pictogramas e a prancha visual são disponibilizados sob [CC BY-NC-SA 4.0](ht
 | [9907.png](https://arasaac.org/pictograms/9907) | Feliz |
 | [35537.png](https://arasaac.org/pictograms/35537) | Cansado |
 | [35545.png](https://arasaac.org/pictograms/35545) | Triste |
+
+## Busca de novos pictogramas
+
+A criação de símbolos também permite consultar o catálogo público e guardar uma cópia PNG escolhida pelo responsável. Essas imagens não são adicionadas ao repositório: ficam nos dados locais do símbolo, com ID, origem, autoria e licença, e acompanham o backup protegido por arquivo. Aplicam-se as mesmas condições de uso e atribuição. Veja [ARASAAC_E_API_DE_SUGESTOES.md](../../ARASAAC_E_API_DE_SUGESTOES.md).

@@ -1,0 +1,13 @@
+#arasaacPicker{margin:16px 0;padding:14px;border:1px solid var(--friendly-line);border-radius:14px;background:var(--friendly-paper);color:var(--friendly-ink)}
+#arasaacPicker p{color:inherit!important;font-size:.9rem}
+#arasaacPicker button{min-height:48px;border:1px solid var(--friendly-line);border-radius:12px;padding:10px;background:var(--friendly-soft);color:var(--friendly-ink);font:inherit;cursor:pointer}
+#arasaacQuery{width:100%;box-sizing:border-box;min-height:48px;margin:8px 0;background:var(--friendly-soft);color:var(--friendly-ink)}
+#arasaacResults{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;max-height:300px;overflow:auto}
+#arasaacResults button{display:flex;flex-direction:column;align-items:center;gap:5px;overflow-wrap:anywhere}
+#arasaacResults img,#arasaacSelected img{width:64px;height:64px;object-fit:contain;background:#fff;border-radius:8px}
+#arasaacSelected{display:flex;align-items:center;gap:10px;margin:12px 0}
+.symbol-pictogram{width:1.5em;height:1.5em;max-width:100%;object-fit:contain;background:#fff;border-radius:10px;vertical-align:middle}
+#arasaacPicker :focus-visible{outline:3px solid currentColor;outline-offset:3px}
+/* O formulário cresce com a busca e precisa rolar dentro da janela. */
+html body #symbolModal{z-index:10020!important;overflow:auto}
+html body #symbolModal .symbol-modal-content{max-height:calc(100dvh - 48px);overflow-y:auto;box-sizing:border-box;background:var(--friendly-paper);color:var(--friendly-ink)}

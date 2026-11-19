@@ -4,6 +4,7 @@ const browser=await chromium.launch({executablePath:process.env.BIA_CHROMIUM_PAT
 const site=process.env.BIA_TEST_SITE||'http://127.0.0.1:8129',family='00000000-0000-4000-8000-000000000001',category='00000000-0000-4000-8000-000000000002',id='00000000-0000-4000-8000-000000000003';
 let card={id,category_id:category,text:'Quero a mochila',image_ref:null,display_order:0,created_at:'2026-11-18T12:00:00Z',updated_at:'2026-11-18T12:00:00Z',deleted_at:null};const requests=[];const catalog=[{id:category,name:'Geral'}];
 const ownerId='00000000-0000-4000-8000-000000000004',memberId='00000000-0000-4000-8000-000000000005',inviteId='00000000-0000-4000-8000-000000000006';
+let rfRequests=0,rfFail=false;
 let accountRole='owner',experimentAdmin=false,multipleFamilies=false;let invites=[],members=[{id:ownerId,user_id:ownerId,email:'owner@gmail.com',role:'owner'},{id:memberId,user_id:memberId,email:'guest@gmail.com',role:'viewer'}];
 const c=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'});
 await c.addInitScript(()=>{
@@ -14,6 +15,14 @@ let config=null;window.google={accounts:{id:{initialize(value){config=value;wind
 await c.route('**/*',async r=>{
 const url=new URL(r.request().url());
 if(url.origin===site)return r.continue();
+if(url.hostname==='api.example.test'){
+ const headers={'access-control-allow-origin':site,'access-control-allow-methods':'POST','access-control-allow-headers':'content-type'};
+ if(r.request().method()==='OPTIONS')return r.fulfill({status:200,headers,body:''});
+ assert.equal(url.pathname,'/v1/cards/random-forest/suggestions');rfRequests++;
+ assert.deepEqual(Object.keys(JSON.parse(r.request().postData())).sort(),['last_activity','period']);
+ const phrases=['Quero comer.','Quero jogar Zelda: Ocarina of Time.','Quero descansar.','Quero desenhar.','Quero ouvir uma história.'];
+ return r.fulfill({status:rfFail?503:200,headers,contentType:'application/json',body:JSON.stringify({model:'cards-rf-demo',version:'1.0.0',score_kind:'tree_vote_fraction',experimental:true,synthetic_data:true,cards:[3,0,1,2,4].map((id,i)=>({id,phrase:phrases[id],score:i===0?1:0})),fixed_options:['Quero outra coisa.','Não quero agora.']})});
+}
 if(url.hostname!=='jornada-de-bia-data-api.onrender.com')return r.abort();
 const path=url.pathname;requests.push(r.request().method()+' '+path);let body;
 if(path==='/openapi.json')body={paths:Object.fromEntries(['/v1/family-invitations/accept','/v1/family-members','/v1/family-categories','/v1/auth/families','/v1/card-trash','/v1/cards/{card_id}/archive','/v1/cards/{card_id}/restore'].map(x=>[x,{}])),components:{schemas:{CardCreate:{properties:{client_id:{}}}}}};
@@ -214,10 +223,13 @@ await p.locator('#supportMoreOptions > summary').click();assert.equal(await p.lo
 await p.locator('#neuralCardsMode').selectOption('remote');await p.locator('#neuralApiUrl').fill('https://api.example.test');
 await p.locator('#neuralApiForm button[type="submit"]').click();
 await p.waitForFunction(()=>localStorage.getItem('bia-card-suggestion-mode')==='remote');
+await p.locator('#neuralCardsMode').selectOption('rf-remote');await p.locator('#neuralApiForm button[type="submit"]').click();await p.waitForFunction(()=>localStorage.getItem('bia-card-suggestion-mode')==='rf-remote');assert.equal(rfRequests,0);
+await p.getByText('Testar a demonstração',{exact:true}).click();await p.locator('#neuralCardsSuggest').click();await p.waitForFunction(()=>document.getElementById('neuralCardsStatus').dataset.source==='remote');assert.equal(await p.locator('#neuralCards button').first().getAttribute('data-card-id'),'3');
+rfFail=true;await p.locator('#neuralCardsSuggest').click();await p.waitForFunction(()=>document.getElementById('neuralCardsStatus').dataset.source==='local');assert.equal(rfRequests,2);
 experimentAdmin=false;
 await p.locator('#neuralCardsMode').selectOption('local');await p.locator('#neuralApiForm button[type="submit"]').click();
 await p.waitForFunction(()=>document.getElementById('experimentalCardsAdmin').hidden);
-assert.equal(await p.evaluate(()=>localStorage.getItem('bia-card-suggestion-mode')),'remote');
+assert.equal(await p.evaluate(()=>localStorage.getItem('bia-card-suggestion-mode')),'rf-remote');
 await p.locator('#dataAccountLogout').click();assert.equal(await p.locator('#experimentalCardsAdmin').isVisible(),false);
 assert.equal(await p.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('fake-test-token')),false);
 // Comunicação única e atalhos de uso real, sem mudar a ordem da lista.

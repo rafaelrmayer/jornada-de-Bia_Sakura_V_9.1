@@ -194,7 +194,7 @@
                 const q=document.getElementById('learningSequences');if(q)q.textContent=this.sequences.length;
                 const ph=document.getElementById('learningPhrases');if(ph)ph.textContent=this.getPhraseStats().reduce((a,b)=>a+b[1],0);
                 const fb=readStored('aiFeedback',{});const total=(fb.like||0)+(fb.dislike||0);const pct=total?Math.round((fb.like||0)/total*100):0;const f=document.getElementById('learningFeedback');if(f)f.textContent=pct+'%';
-                const top=document.getElementById('learningTopList');if(top){const arr=this.getTopSymbols(6);top.innerHTML=arr.length?arr.map(s=>`<span class="learning-chip">${escapeHtml(s.emoji)} ${escapeHtml(s.label)}</span>`).join(''):'<span style="font-size:.78rem;color:var(--text-light);font-weight:600;">Ainda aprendendo seus padrões…</span>';}
+                const top=document.getElementById('learningTopList');if(top){const arr=this.getTopSymbols(6);top.innerHTML=arr.length?arr.map(s=>`<span class="learning-chip">${symbolVisual(s)} ${escapeHtml(s.label)}</span>`).join(''):'<span style="font-size:.78rem;color:var(--text-light);font-weight:600;">Ainda aprendendo seus padrões…</span>';}
             }
         }
 
@@ -1068,7 +1068,7 @@
                     card.style.animationDelay = `${index * 0.025}s`;
                     const emoji = document.createElement('span');
                     emoji.className = 'emoji symbol-illustration';
-                    emoji.textContent = symbol.emoji || '🔣';
+                    emoji.innerHTML = symbolVisual(symbol);
                     const label = document.createElement('span');
                     label.className = 'label';
                     label.textContent = symbol.label || 'Símbolo';
@@ -1090,6 +1090,11 @@
             if (count) count.textContent = `${totalShown} cartões · até 15 por categoria`;
         }
 
+        function symbolVisual(symbol) {
+            const picture=window.JBArasaac?.validPicture(symbol?.pictogram);
+            return picture?`<img class="symbol-pictogram" src="${picture.image}" alt="">`:escapeHtml(symbol?.emoji||'🔣');
+        }
+
         function renderSymbols() {
             const filtered = currentCategory === 'all' ? symbolsData : symbolsData.filter(s => s.category === currentCategory);
             const displayData = showAllSymbols ? filtered : filtered.slice(0, 12);
@@ -1104,7 +1109,7 @@
                 card.setAttribute('tabindex', '0');
                 card.setAttribute('aria-label', `Adicionar símbolo ${symbol.label}`);
                 card.innerHTML = `
-                    <span class="emoji symbol-illustration">${escapeHtml(symbol.emoji)}</span>
+                    <span class="emoji symbol-illustration">${symbolVisual(symbol)}</span>
                     <span class="label">${escapeHtml(symbol.label)}</span>
                     <span class="category-badge">${escapeHtml(symbol.category)}</span>
                 `;
@@ -1138,7 +1143,7 @@
                 const item = document.createElement('div');
                 item.className = 'edit-symbol-item';
                 item.innerHTML = `
-                    <span class="emoji symbol-illustration">${escapeHtml(symbol.emoji)}</span>
+                    <span class="emoji symbol-illustration">${symbolVisual(symbol)}</span>
                     <span class="label">${escapeHtml(symbol.label)}</span>
                     <span class="category-badge">${escapeHtml(symbol.category)}</span>
                     <div class="edit-actions">
@@ -1179,7 +1184,7 @@
             }
             const context = contextAnalyzer.analyzeContext(selectedSymbols);
             let feedbackHTML = selectedSymbols.map(s => 
-                `<span class="symbol-item">${escapeHtml(s.emoji)} ${escapeHtml(s.label)}</span>`
+                `<span class="symbol-item">${symbolVisual(s)} ${escapeHtml(s.label)}</span>`
             ).join('');
             if (context && context.confidence > 0.35) {
                 feedbackHTML += `<span class="context-indicator">📌 ${escapeHtml(context.context)}</span>`;
@@ -1512,7 +1517,8 @@
                 id: Date.now(),
                 text: text,
                 emojis: emojis,
-                symbols: [...selectedSymbols],
+                // O PNG existe uma vez em symbolsData; não duplicá-lo em cada mensagem.
+                symbols: selectedSymbols.map(({pictogram,...symbol})=>symbol),
                 timestamp: new Date().toLocaleString('pt-BR')
             };
             history.unshift(entry);
@@ -1542,7 +1548,7 @@
                         const id = parseInt(item.dataset.id);
                         const entry = history.find(h => h.id === id);
                         if (entry) {
-                            selectedSymbols = [...entry.symbols];
+                            selectedSymbols = entry.symbols.map(symbol=>({...symbol,pictogram:symbolsData.find(current=>current.id===symbol.id&&current.label===symbol.label)?.pictogram||symbol.pictogram}));
                             updateFeedback();
                             updateSuggestions();
                             speakMessage();
@@ -1555,7 +1561,7 @@
                             const id = parseInt(item.dataset.id);
                             const entry = history.find(h => h.id === id);
                             if (entry) {
-                                selectedSymbols = [...entry.symbols];
+                                selectedSymbols = entry.symbols.map(symbol=>({...symbol,pictogram:symbolsData.find(current=>current.id===symbol.id&&current.label===symbol.label)?.pictogram||symbol.pictogram}));
                                 updateFeedback();
                                 updateSuggestions();
                                 speakMessage();
@@ -1986,6 +1992,7 @@
         function openAddSymbol() {
             if (!requireAdminAccess()) return;
             editingSymbolId = null;
+            window.JBArasaac?.reset();
             document.getElementById('symbolModalTitle').textContent = '➕ Adicionar Símbolo';
             document.getElementById('symbolModalSubtitle').textContent = 'Preencha os dados do novo símbolo';
             document.getElementById('symbolEmoji').value = '';
@@ -2000,6 +2007,7 @@
             const symbol = symbolsData.find(s => s.id === id);
             if (!symbol) return;
             editingSymbolId = id;
+            window.JBArasaac?.reset(symbol.pictogram);
             document.getElementById('symbolModalTitle').textContent = '✏️ Editar Símbolo';
             document.getElementById('symbolModalSubtitle').textContent = 'Atualize os dados do símbolo';
             document.getElementById('symbolEmoji').value = symbol.emoji || '';
@@ -2017,7 +2025,9 @@
 
         function saveSymbol() {
             if (!requireAdminAccess()) return;
-            const emoji = document.getElementById('symbolEmoji').value.trim();
+            if(window.JBArasaac?.isPreparing()){showToast('Aguarde a imagem terminar de carregar.');return;}
+            const pictogram=window.JBArasaac?.getSelected()||null;
+            const emoji = document.getElementById('symbolEmoji').value.trim()||(pictogram?'🖼️':'');
             const label = document.getElementById('symbolLabel').value.trim();
             const category = document.getElementById('symbolCategory').value;
             if (!emoji) {
@@ -2032,7 +2042,6 @@
                 document.getElementById('symbolLabel').focus();
                 return;
             }
-            const currentSymbol = editingSymbolId ? symbolsData.find(s => s.id === editingSymbolId) : null;
             const targetCategoryCount = symbolsData.filter(s => s.category === category && s.id !== editingSymbolId).length;
             if (targetCategoryCount >= 15) {
                 playErrorSound();
@@ -2040,20 +2049,11 @@
                 document.getElementById('symbolCategory').focus();
                 return;
             }
-            if (editingSymbolId) {
-                const index = symbolsData.findIndex(s => s.id === editingSymbolId);
-                if (index !== -1) {
-                    symbolsData[index] = { ...symbolsData[index], emoji, label, category };
-                }
-                playSuccessSound();
-                showToast('✅ Símbolo atualizado com sucesso!');
-            } else {
-                const newId = label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') + '_' + Date.now();
-                symbolsData.push({ id: newId, emoji, label, category, custom: true });
-                playSuccessSound();
-                showToast('✅ Símbolo adicionado com sucesso!');
-            }
-            StorageService.setItem('symbolsData', JSON.stringify(symbolsData));
+            const next=symbolsData.map(item=>({...item}));
+            if(editingSymbolId){const index=next.findIndex(s=>s.id===editingSymbolId);if(index<0)return;next[index]={...next[index],emoji,label,category,pictogram};}
+            else{const newId='symbol_'+crypto.randomUUID();next.push({id:newId,emoji,label,category,pictogram,custom:true});}
+            if(!StorageService.setItem('symbolsData',JSON.stringify(next))){showToast('Não foi possível salvar o símbolo. A imagem e os campos foram mantidos para tentar novamente.');return;}
+            symbolsData=next;playSuccessSound();showToast('✅ Símbolo salvo neste aparelho.');
             predictor.cleanOrphanReferences();
             renderSymbols();
             renderCategories();
@@ -2219,6 +2219,7 @@
         symbolEmojiGrid.addEventListener('click', (event) => {
             const option = event.target.closest('[data-emoji]');
             if (!option) return;
+            window.JBArasaac?.reset();
             symbolEmojiInput.value = option.dataset.emoji;
             symbolEmojiInput.dispatchEvent(new Event('input', { bubbles: true }));
             setEmojiPickerOpen(false);
@@ -2358,7 +2359,7 @@
             if (e.key === 'Enter' && document.getElementById('guardianModal').classList.contains('active')) {
                 saveGuardian();
             }
-            if (e.key === 'Enter' && symbolModal.classList.contains('active')) {
+            if (e.key === 'Enter' && symbolModal.classList.contains('active')&&!e.target.closest('#arasaacPicker')) {
                 saveSymbol();
             }
             if (e.key === 'Escape') clearMessage();
@@ -3051,7 +3052,7 @@
         list.innerHTML=visible.length?visible.map(p=>`<article class="my-comm-item"><div class="my-comm-item-text"><strong>${safe(p.text)}</strong><small>${safe(p.category||'Geral')}</small></div><div class="my-comm-actions"><button type="button" data-speak="${safe(p.id)}" aria-label="Falar frase: ${safe(p.text)}">🔊</button><button type="button" data-edit="${safe(p.id)}" aria-label="Editar frase">✏️</button><button type="button" data-delete="${safe(p.id)}" aria-label="Mover frase para a lixeira">🗑️</button></div></article>`).join(''):`<p class="my-comm-empty">${activeCategory==='*'?'Ainda não há frases personalizadas. Adicione a primeira!':`Ainda não há frases em “${safe(activeCategory)}”. Você pode adicionar uma nova frase nessa categoria.`}</p>`;
         cats.innerHTML=data.categories.map(name=>{const count=data.phrases.filter(p=>(p.category||'Geral')===name).length;const selected=activeCategory===name;const removable=!['Geral','Necessidades','Alimentação','Rotina','Sentimentos','Pessoas','Atividades'].includes(name);return `<div class="my-comm-category-wrap"><button type="button" class="my-comm-category-card${selected?' is-active':''}" data-category="${safe(name)}" aria-pressed="${selected}"><span class="my-comm-category-emoji" aria-hidden="true">${categoryEmoji[name]||'✨'}</span><span class="my-comm-category-name">${safe(name)}</span><span class="my-comm-category-count">${count} ${count===1?'frase':'frases'}</span></button>${removable?`<button type="button" class="my-comm-category-remove" data-remove-category="${safe(name)}" aria-label="Excluir categoria ${safe(name)}">×</button>`:''}</div>`}).join('');
         const symbols=Array.isArray(symbolsData)?symbolsData:[];
-        syms.innerHTML=symbols.map(s=>{const fav=data.favoriteSymbols.includes(String(s.id));return `<div class="my-comm-symbol"><span class="emoji">${safe(s.emoji||'🔹')}</span><strong>${safe(s.label||'Símbolo')}</strong><button type="button" data-favorite-symbol="${safe(s.id)}" aria-pressed="${fav}" aria-label="${fav?'Retirar':'Adicionar'} ${safe(s.label)} ${fav?'dos':'aos'} favoritos">${fav?'★ Favorito':'☆ Favoritar'}</button></div>`}).join('');
+        syms.innerHTML=symbols.map(s=>{const fav=data.favoriteSymbols.includes(String(s.id));return `<div class="my-comm-symbol"><span class="emoji">${symbolVisual(s)}</span><strong>${safe(s.label||'Símbolo')}</strong><button type="button" data-favorite-symbol="${safe(s.id)}" aria-pressed="${fav}" aria-label="${fav?'Retirar':'Adicionar'} ${safe(s.label)} ${fav?'dos':'aos'} favoritos">${fav?'★ Favorito':'☆ Favoritar'}</button></div>`}).join('');
         const filterStatus=el('myCommFilterStatus');if(filterStatus)filterStatus.textContent=activeCategory==='*'?'Todas as frases deste aparelho.':'Categoria: '+activeCategory;
         const reset=el('myCommResetFilter');if(reset)reset.hidden=activeCategory==='*';
         const trash=el('myCommTrashList');
