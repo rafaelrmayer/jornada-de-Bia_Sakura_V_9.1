@@ -263,6 +263,7 @@
                 if (!symbols.length) return null;
                 const labels = symbols.map(symbol => String(symbol.label || '').trim()).filter(Boolean);
                 const normalized = label => label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                if(normalized(labels[0]||'')==='eu'&&labels.length>1&&labels.slice(1).some(label=>['quero','nao quero'].includes(normalized(label)))){const result=this.generatePhrase(symbols.slice(1));const rest=result.text.replace(/^Eu /,'');return {...result,text:'Eu '+rest.charAt(0).toLowerCase()+rest.slice(1),symbols,emojis:symbols.map(s=>s.emoji).join(' ')};}
                 const isModifier = label => ['mais', 'nao', 'nao quero', 'agora'].includes(normalized(label));
                 const modifiers = new Set(labels.filter(isModifier).map(normalized));
                 const terms = labels.filter(label => !isModifier(label));
@@ -319,6 +320,7 @@
                     if (['comer', 'comida', 'fome', 'com fome'].includes(first)) return `Eu quero comer ${labels[1]}.`;
                     if (['dor', 'doi'].includes(first)) return `Estou com dor em ${labels[1]}.`;
                     if (first === 'quero' && ['agua', 'beber agua'].includes(words[1])) return 'Eu quero água.';
+                    if(first==='quero')return 'Eu quero '+labels[1]+'.';
                 }
                 return labels.join(' ');
             }
@@ -1021,19 +1023,14 @@
         function renderHomeQuickSymbols() {
             if (!homeQuickSymbolsGrid) return;
             homeQuickSymbolsGrid.replaceChildren();
-            const defaultIds = new Set(defaultSymbols.map(symbol => symbol.id));
-            const customOrLegacy = symbol => Boolean(symbol.custom) || !defaultIds.has(symbol.id);
             const categoryList = categories.filter(category => category.id !== 'all');
             let totalShown = 0;
 
             categoryList.forEach(category => {
                 const inCategory = symbolsData.filter(symbol => symbol.category === category.id);
                 if (!inCategory.length) return;
-                // Até 15 cartões por categoria; prioriza os personalizados/recém-criados.
-                const ordered = [
-                    ...inCategory.filter(customOrLegacy).slice().reverse(),
-                    ...inCategory.filter(symbol => !customOrLegacy(symbol))
-                ].slice(0, 15);
+                // Ordem de cadastro estável; novos cartões entram ao final.
+                const ordered = inCategory.slice(0,15);
                 if (!ordered.length) return;
 
                 const group = document.createElement('section');
@@ -1130,6 +1127,7 @@
             });
 
             renderHomeQuickSymbols();
+            window.JBPictogramBoard?.refresh();
             toggleSymbolsView.textContent = showAllSymbols ? 'Mostrar menos' : 'Mostrar todos';
             toggleSymbolsView.style.display = filtered.length > 12 ? 'block' : 'none';
             
@@ -1175,6 +1173,7 @@
         }
 
         function updateFeedback() {
+            document.dispatchEvent(new Event('bia:composition-changed'));
             if (selectedSymbols.length === 0) {
                 feedbackDisplay.removeAttribute('aria-label');
                 feedbackDisplay.innerHTML = `<p class="feedback-placeholder">🌻 Toque em um símbolo para começar</p>`;
@@ -1319,6 +1318,15 @@
                 });
             });
         }
+
+        const boardStarters=[{id:'board-eu',label:'Eu',emoji:'🙋'},{id:'board-quero',label:'Quero',emoji:'💬',boardImage:'assets/arasaac/5441.png'},{id:'modifier-more',label:'Mais',emoji:'➕'},{id:'modifier-no',label:'Não',emoji:'❌'},{id:'modifier-now',label:'Agora',emoji:'⏱️'}];
+        window.JBPictogramBridge={
+            snapshot(){return {symbols:symbolsData.map(s=>({...s})),categories:categories.filter(c=>c.id!=='all').map(c=>({...c})),selected:selectedSymbols.map(s=>({...s})),text:phraseGenerator.generatePhrase(selectedSymbols)?.text||''};},
+            add(id){const symbol=boardStarters.find(s=>s.id===id)||symbolsData.find(s=>String(s.id)===String(id));if(!symbol)return;selectedSymbols.push(symbol);updateFeedback();},
+            undo(){stopCurrentSpeech();selectedSymbols.pop();updateFeedback();updateSuggestions();renderPredictivePhrases();},
+            clear(){stopCurrentSpeech();clearMessage();},
+            speak(){if(!selectedSymbols.length)return;const text=phraseGenerator.generatePhrase(selectedSymbols)?.text||'';speakMessage();recordPhraseUse(text);}
+        };
 
         function speakMessage() {
             if (selectedSymbols.length === 0) { 
@@ -1495,6 +1503,7 @@
         }
 
         function clearMessage() {
+            document.dispatchEvent(new Event('bia:composition-reset'));
             if (selectedSymbols.length === 0) return;
             selectedSymbols = [];
             updateFeedback();
@@ -3061,6 +3070,7 @@
         const summary=el('myCommTrashSummary');if(summary)summary.textContent='Lixeira deste aparelho ('+data.trash.length+')';
         const unlock=el('myCommTrashUnlock');if(unlock)unlock.hidden=!!window.SecurityService?.isUnlocked?.();
         const clearAll=el('myCommClearAll');if(clearAll)clearAll.disabled=data.phrases.length===0;
+        document.dispatchEvent(new Event('bia:personal-content-changed'));
         const showAll=el('myCommShowAll'); if(showAll){showAll.classList.toggle('is-active',activeCategory==='*');showAll.textContent=activeCategory==='*'?'Todas as frases':'Ver todas as frases';}
     }
     el('myCommAddSymbol')?.addEventListener('click',()=>openAddSymbol());
@@ -3112,9 +3122,21 @@
                 if(restore)el('myCommPhraseTitle').scrollIntoView({block:'center'});
             }catch(error){feedback.textContent=error.message;}
         }
-        if(b.dataset.favoriteSymbol){const id=String(b.dataset.favoriteSymbol);data.favoriteSymbols=data.favoriteSymbols.includes(id)?data.favoriteSymbols.filter(x=>x!==id):[...data.favoriteSymbols,id];save();render();}
+        if(b.dataset.favoriteSymbol){
+            try{assertCloudState();const id=String(b.dataset.favoriteSymbol),next=JSON.parse(JSON.stringify(data));next.favoriteSymbols=next.favoriteSymbols.includes(id)?next.favoriteSymbols.filter(x=>x!==id):[...next.favoriteSymbols,id];const raw=JSON.stringify(next);if(StorageService.setItem(STORE_KEY,raw)===false)throw Error('Não foi possível guardar os favoritos. Tente novamente.');data=next;lastSavedRaw=raw;render();}
+            catch(error){el('pictogramStatus').textContent=error.message;}
+        }
     });
     window.JBCommunication={
+        favoriteSymbolIds(){return Array.isArray(data.favoriteSymbols)?data.favoriteSymbols.slice():[];},
+        saveComposedPhrase(text){
+            assertCloudState();text=String(text||'').trim();if(!text||text.length>240)throw Error('A frase precisa ter entre 1 e 240 caracteres. A mensagem foi preservada.');
+            const existing=data.phrases.find(p=>p.text.trim()===text);if(existing){activeCategory=existing.category||'Geral';render();return {added:false};}
+            const next=JSON.parse(JSON.stringify(data));if(!next.categories.includes('Geral'))next.categories.push('Geral');
+            next.phrases.push({id:'phrase-'+crypto.randomUUID(),text,category:'Geral'});
+            const raw=JSON.stringify(next);if(StorageService.setItem(STORE_KEY,raw)===false)throw Error('Não foi possível guardar a frase. A mensagem foi preservada para tentar novamente.');
+            data=next;lastSavedRaw=raw;activeCategory='Geral';render();return {added:true};
+        },
         snapshot(){assertCloudState();return JSON.parse(JSON.stringify(data));},
         applyCloudEdit(original,card,category,familyId){
             assertCloudState();

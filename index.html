@@ -44,6 +44,7 @@
     <link rel="stylesheet" href="css/sakura-board.css?v=agora-depois">
     <link rel="stylesheet" href="css/theme-contrast.css">
     <link rel="stylesheet" href="css/arasaac.css">
+    <link rel="stylesheet" href="css/pictogram-board.css">
 </head>
 <body>
     <a class="skip-link" href="#mainContent">Pular para o conteúdo principal</a>
@@ -1108,6 +1109,14 @@
                 <h2 id="myCommunicationTitle">Minha Comunicação</h2>
                 <p>Organize suas frases e categorias do seu jeito. Você e seu responsável podem personalizar este espaço.</p>
             </div>
+        <section id="pictogramBoard" class="my-comm-panel" aria-labelledby="pictogramBoardTitle">
+<div class="section-header"><h3 id="pictogramBoardTitle">Montar uma mensagem</h3><button id="pictogramOpenReady" type="button">Usar uma frase pronta</button></div><p>Escolha imagens e palavras. Elas ficam na faixa abaixo; ouça quando terminar.</p>
+<div class="pictogram-message"><ol id="pictogramSequence" aria-label="Símbolos escolhidos na ordem"></ol><p id="pictogramSentence" role="status" aria-live="polite" aria-atomic="true"></p><div class="pictogram-actions"><button id="pictogramSpeak" type="button" disabled>🔊 Ouvir mensagem</button><button id="pictogramUndo" type="button" disabled>↶ Tirar último</button><button id="pictogramClear" type="button" disabled>Limpar</button><button id="pictogramSave" type="button" disabled>Guardar como frase pronta</button></div><p id="pictogramStatus" role="status"></p></div>
+<h4>Meus favoritos</h4><p id="pictogramFavoritesEmpty">Marque os cartões que quer encontrar aqui com facilidade.</p><div id="pictogramFavorites" class="pictogram-grid" role="group" aria-label="Símbolos favoritos"></div><button id="pictogramManageFavorites" type="button">Escolher favoritos</button>
+<h4>Palavras para combinar</h4><div id="pictogramStarters" class="pictogram-grid" role="group" aria-label="Palavras para montar a mensagem"></div>
+<h4>Escolha um assunto</h4><div id="pictogramCategories" role="group" aria-label="Assuntos da prancha"></div><div id="pictogramCards" class="pictogram-grid" role="group" aria-label="Cartões para montar a mensagem"></div>
+<p>Os cartões mantêm a ordem. As sugestões não mudam esta prancha.</p><p class="pictogram-credit">Pictogramas: Sergio Palao / <a href="https://arasaac.org/terms-of-use" target="_blank" rel="noopener noreferrer">ARASAAC</a>, Governo de Aragão — <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.pt-br" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0</a>.</p>
+</section>
         <section id="myCommMostUsed" class="my-comm-panel" aria-labelledby="myCommMostUsedTitle" hidden>
             <h3 id="myCommMostUsedTitle">Mais usados neste aparelho</h3>
             <p class="my-comm-helper">Atalhos para suas frases mais escolhidas. Todas continuam na lista abaixo.</p>
@@ -1250,7 +1259,8 @@
     <script src="js/rf-evaluation.js"></script>
     <script src="js/communication-usage.js"></script>
     <script src="js/arasaac.js"></script>
-    <script src="js/app.js?v=arasaac"></script>
+    <script src="js/app.js?v=pictogram-board"></script>
+    <script src="js/pictogram-board.js"></script>
     <script src="js/rf-evaluation-ui.js"></script>
     <script src="js/card-model-data.js"></script>
     <script src="js/card-model.js"></script>
