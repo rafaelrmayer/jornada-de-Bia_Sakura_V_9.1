@@ -1,4 +1,4 @@
-const CACHE = 'jornada-bia-sakura-v9-6-66';
+const CACHE = 'jornada-bia-sakura-v9-6-67';
 const CORE = [
   './',
   './index.html', './js/pictogram-board.js', './css/pictogram-board.css', './js/arasaac.js', './css/arasaac.css', './css/theme-contrast.css',
@@ -10,7 +10,7 @@ const CORE = [
   './js/card-model-data.js',
   './js/card-model.js',
   './css/card-suggestions.css',
-  './css/sakura-friendly.css', './css/sakura-board.css?v=agora-depois',
+  './css/sakura-friendly.css', './css/sakura-board.css?v=collapsed-cards',
   './assets/arasaac/5441.png', './assets/arasaac/37160.png', './assets/arasaac/11476.png',
   './assets/arasaac/2276.png', './assets/arasaac/2746.png', './assets/arasaac/6537.png',
   './assets/arasaac/7171.png', './assets/arasaac/15814.png', './assets/arasaac/36109.png',
@@ -29,7 +29,7 @@ const CORE = [
   './js/backup-crypto.js',
   './js/backup.js?v=sanitization',
   './js/security-advanced.js',
-  './js/sakura-ui.js', './js/random-forest.js', './js/neural-assistant.js', './js/app.js?v=pictogram-board', './js/routine-activities.js?v=safe-save', './js/experience.js', './js/sakura-activities-v9.js', './js/sakura-habits-v9-2.js',
+  './js/sakura-ui.js', './js/random-forest.js', './js/neural-assistant.js', './js/app.js?v=collapsed-cards', './js/routine-activities.js?v=safe-save', './js/experience.js', './js/sakura-activities-v9.js', './js/sakura-habits-v9-2.js',
   './manifest.json',
   './icon.svg', './icons/zen-sakura-logo.svg', './assets/sakura-prototipo.png', './assets/zen-landscape.svg',
   './icons/zen-heart.svg', './icons/zen-hands.svg', './icons/zen-smile.svg', './icons/zen-heart-rays.svg', './icons/chat.svg',
