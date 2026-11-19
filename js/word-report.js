@@ -7,7 +7,16 @@
   report.setAttribute('aria-label','Relatório visual de comunicação');
   const date=ts=>new Date(ts).toLocaleDateString('pt-BR');
   const header=el('header',undefined,'wr-header');
-  header.append(el('p','JARDIM DA BIA','wr-eyebrow'),el('h1','Resumo da semana'),el('p',date(range.start)+' a '+date(range.end-1),'wr-period'));report.append(header);
+  header.append(el('p','JARDIM DA BIA','wr-eyebrow'),el('h1','Resumo da semana'));
+  const identification=el('div',undefined,'wr-identification');
+  for(const [label,cls] of [['Nome:','wr-identification-name'],['Idade:','wr-identification-age']]){
+   const row=el('p',label,cls),line=el('span',undefined,'wr-write-line');
+   line.setAttribute('aria-hidden','true');row.append(line);identification.append(row);
+  }
+  const supportLevel=el('p',undefined,'wr-support-level');
+  supportLevel.hidden=true;identification.append(supportLevel);
+  header.append(identification,el('p',date(range.start)+' a '+date(range.end-1),'wr-period'));
+  report.append(header);
   const knownFunctions=Object.keys(lib.PURPOSE).filter(k=>k!=='unspecified'&&data.purposes[k]>0);
   const weekLogs=state.goals.flatMap(g=>g.logs).filter(l=>l.ts>=range.start&&l.ts<range.end&&l.ts<=Date.now());
   const days=new Set(weekLogs.map(l=>lib.day(l.ts))).size;
