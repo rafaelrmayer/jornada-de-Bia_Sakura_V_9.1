@@ -28,3 +28,10 @@ test('pranchas antigas e rótulos pessoais continuam utilizáveis no construtor'
     assert.equal(compose('Água', 'Tails', 'Agora'), 'Água Tails Agora.');
     assert.equal(compose(), undefined);
 });
+
+test('sequência explícita Eu, Quero e água mantém os três cartões e a frase',()=>{
+ assert.equal(compose('Eu','Quero','Beber água'),'Eu quero água.');
+ assert.equal(compose('Eu','Não','Quero','Beber água'),'Eu não quero água.');
+ assert.equal(compose('Eu','Quero','Mais','Beber água'),'Eu quero mais água.');
+ assert.equal(compose('Eu'),'Eu');
+});

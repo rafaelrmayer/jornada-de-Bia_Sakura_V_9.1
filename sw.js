@@ -1,7 +1,7 @@
-const CACHE = 'jornada-bia-sakura-v9-6-65';
+const CACHE = 'jornada-bia-sakura-v9-6-66';
 const CORE = [
   './',
-  './index.html', './js/arasaac.js', './css/arasaac.css', './css/theme-contrast.css',
+  './index.html', './js/pictogram-board.js', './css/pictogram-board.css', './js/arasaac.js', './css/arasaac.css', './css/theme-contrast.css',
   './js/guided-voice.js', './css/guided-voice.css',
   './js/google-access.js', './js/data-api-client.js', './js/data-account.js', './css/data-account.css', './css/support-settings.css?v=health-backup',
   './js/word-practice.js', './js/word-goals.js', './js/word-summary.js?v=identificacao', './js/word-report.js?v=identificacao', './css/word-goals.css?v=identificacao',
@@ -29,7 +29,7 @@ const CORE = [
   './js/backup-crypto.js',
   './js/backup.js?v=sanitization',
   './js/security-advanced.js',
-  './js/sakura-ui.js', './js/random-forest.js', './js/neural-assistant.js', './js/app.js?v=arasaac', './js/routine-activities.js?v=safe-save', './js/experience.js', './js/sakura-activities-v9.js', './js/sakura-habits-v9-2.js',
+  './js/sakura-ui.js', './js/random-forest.js', './js/neural-assistant.js', './js/app.js?v=pictogram-board', './js/routine-activities.js?v=safe-save', './js/experience.js', './js/sakura-activities-v9.js', './js/sakura-habits-v9-2.js',
   './manifest.json',
   './icon.svg', './icons/zen-sakura-logo.svg', './assets/sakura-prototipo.png', './assets/zen-landscape.svg',
   './icons/zen-heart.svg', './icons/zen-hands.svg', './icons/zen-smile.svg', './icons/zen-heart-rays.svg', './icons/chat.svg',

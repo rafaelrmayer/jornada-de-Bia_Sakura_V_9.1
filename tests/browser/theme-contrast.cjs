@@ -8,7 +8,7 @@ for(const theme of ['light','blue','dark','dark-blue']){
  await p.evaluate(()=>showPage('home'));await p.locator('[data-intent="quero"]').click();
  await pair('[data-intent="quero"] span','[data-intent="quero"]');
  await p.evaluate(()=>showPage('my-communication'));
- await pair('#myCommPhraseTitle','#page-my-communication .my-comm-panel');await pair('#myCommAddPhrase');
+ await pair('#myCommPhraseTitle','#page-my-communication .my-comm-panel');await pair('#myCommAddPhrase');await pair('#pictogramCards button .label','#pictogramCards button');await pair('#pictogramSentence','.pictogram-message');
  await p.evaluate(()=>showPage('settings'));await p.locator('#support-voice > summary').click();await pair('#voiceSelect','#voiceSelect');
  if(theme.startsWith('dark')){
   await p.evaluate(()=>showPage('medical'));await pair('#medSignal');

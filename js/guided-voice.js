@@ -35,11 +35,11 @@
  }
  function action(element){
   if(!element?.closest)return null;
-  const node=element.closest('#myCommPhraseList [data-speak], #myCommMostUsedGrid [data-speak], #neuralCards .neural-card, #neuralCardsFixed .neural-card, #symbolsGrid .symbol-card, #homeQuickSymbolsGrid .home-quick-symbol-card, #quickPhrasesGrid .quick-phrase-btn, #predictiveList .predictive-item, .bia-maybe-choice, #mostUsedGrid .most-used-card, #suggestionsList .suggestion-item, #adaptiveChoices .adaptive-choice, #hereBtn');
+  const node=element.closest('#pictogramBoard [data-pictogram-id], #myCommPhraseList [data-speak], #myCommMostUsedGrid [data-speak], #neuralCards .neural-card, #neuralCardsFixed .neural-card, #symbolsGrid .symbol-card, #homeQuickSymbolsGrid .home-quick-symbol-card, #quickPhrasesGrid .quick-phrase-btn, #predictiveList .predictive-item, .bia-maybe-choice, #mostUsedGrid .most-used-card, #suggestionsList .suggestion-item, #adaptiveChoices .adaptive-choice, #hereBtn');
   if(!available(node))return null;
   let label='',verb='Comunicar';
   if(node.hasAttribute('data-speak'))label=node.closest('.my-comm-item')?.querySelector('.my-comm-item-text strong')?.textContent;
-  else if(node.classList.contains('symbol-card')||node.classList.contains('home-quick-symbol-card')){label=node.querySelector('.label')?.textContent;verb='Usar símbolo';}
+  else if(node.hasAttribute('data-pictogram-id')||node.classList.contains('symbol-card')||node.classList.contains('home-quick-symbol-card')){label=node.querySelector('.label')?.textContent;verb='Usar símbolo';}
   else if(node.classList.contains('most-used-card')){label=node.querySelector('.label')?.textContent;verb='Usar símbolo';}
   else if(node.classList.contains('suggestion-item')||node.classList.contains('adaptive-choice')){label=node.dataset.guidedLabel;verb='Usar sugestão';}
   else if(node.id==='hereBtn')label='Eu estou aqui.';
@@ -83,6 +83,7 @@
   if(keyboard){$('guidedVoiceConfirm').focus({preventScroll:false});}
   if(prefs.focus)scheduleLabel(item.label);
  }
+ document.addEventListener('bia:composition-reset',()=>{stopPreview();clearChoice();});
  function mount(){
   stopPreview();clearChoice();
   const current=page(),supported=['page-home','page-cards','page-my-communication'].includes(current?.id);
