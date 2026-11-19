@@ -1,0 +1,59 @@
+/* Pares de superfície/texto consistentes; carregado após os estilos legados. */
+html:root[data-theme="dark"] {
+  --friendly-paper:#302630;--friendly-soft:#241e27;--friendly-ink:#fff2f7;
+  --friendly-muted:#e5ccd9;--friendly-line:#ab8d9e;--friendly-petal:#44313e;--friendly-selected:#50394a;
+  --calm-bg:#241e27;--calm-accent:#edb1cc;
+}
+html:root[data-theme="dark-blue"] {
+  --friendly-paper:#243649;--friendly-soft:#192736;--friendly-ink:#edf4ff;
+  --friendly-muted:#d1dfef;--friendly-line:#8aa7c2;--friendly-petal:#304a63;--friendly-selected:#355773;
+  --calm-bg:#192736;--calm-accent:#b8d7f4;
+}
+html:root[data-theme^="dark"] {
+  color-scheme:dark;
+  --calm-surface:var(--friendly-paper);--calm-panel:var(--friendly-paper);--calm-ink:var(--friendly-ink);
+  --calm-muted:var(--friendly-muted);--calm-stroke:var(--friendly-line);
+  --sakura-panel:var(--friendly-paper);--sakura-control:var(--friendly-selected);--sakura-ink:var(--friendly-ink);--sakura-muted:var(--friendly-muted);
+  --card-bg:var(--friendly-paper);--input-bg:var(--friendly-soft);--text-color:var(--friendly-ink);--text-light:var(--friendly-muted);--border-color:var(--friendly-line);
+}
+html:root[data-theme^="dark"] body {background-color:var(--calm-bg)!important;}
+html:root[data-theme^="dark"] #page-my-communication :is(.page-header,.my-comm-panel,.my-comm-item,.my-comm-category,.my-comm-symbol) {
+  background:var(--friendly-paper)!important;color:var(--friendly-ink)!important;border-color:var(--friendly-line)!important;
+}
+html:root[data-theme^="dark"] #page-my-communication :is(.btn-primary,.btn-save) {
+  background:var(--calm-accent)!important;color:var(--calm-bg)!important;-webkit-text-fill-color:var(--calm-bg)!important;
+}
+html:root[data-theme^="dark"] .sakura-board-categories button[aria-expanded="true"],
+html:root[data-theme^="dark"] .sakura-board-categories button[aria-expanded="true"] span {
+  color:var(--board-on-accent)!important;-webkit-text-fill-color:var(--board-on-accent)!important;
+}
+html:root[data-theme^="dark"] .phrase-builder-arrow {
+  background:var(--friendly-soft)!important;color:var(--friendly-ink)!important;-webkit-text-fill-color:var(--friendly-ink)!important;
+}
+html:root[data-theme^="dark"] .phrase-builder-icon {background:var(--friendly-selected)!important;}
+/* Pictogramas mantêm fundo branco para preservar o desenho original. */
+html:root[data-theme^="dark"] .sakura-board-pictogram {color:#202020!important;-webkit-text-fill-color:#202020!important;}
+html:root[data-theme^="dark"] :is(input,textarea)::placeholder {color:var(--friendly-muted)!important;opacity:1;}
+/* O relatório mantém suas próprias cores de papel e texto. */
+html:root[data-theme^="dark"] :is(.wg-report,#wgPrintReport) {color-scheme:light;}
+html:root:is(.bia-a11y-contrast,.bia-high-contrast) {
+  --friendly-paper:#000;--friendly-soft:#000;--friendly-ink:#fff;--friendly-muted:#fff;
+  --friendly-line:#fff;--friendly-petal:#000;--friendly-selected:#222;--calm-bg:#000;--calm-accent:#fff;
+}
+
+html:root[data-theme^="dark"] .sos-floating-button {background:#116b41!important;color:#fff!important;}
+/* Botões de ação nos temas claros usam texto branco sobre o destaque escuro. */
+html:root:not([data-theme^="dark"]) #page-my-communication :is(.btn-primary,.btn-save) {
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+}
+/* Regras antigas de texto escuro não podem vazar para o papel do relatório. */
+html:root[data-theme^="dark"] body .wg-report,
+html:root[data-theme^="dark"] body .wg-report :is(h1,h2,h3,p,span,strong,small,li,footer) {
+  color:#2d3c35!important;-webkit-text-fill-color:#2d3c35!important;
+}
+html:root:is(.bia-a11y-contrast,.bia-high-contrast) #page-my-communication :is(.btn-primary,.btn-save) {
+  background:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;
+}
+html:root[data-theme^="dark"] body > header .logo-container::before {
+  color:var(--friendly-ink)!important;-webkit-text-fill-color:var(--friendly-ink)!important;
+}
